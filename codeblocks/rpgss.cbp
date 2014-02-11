@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="rpgss" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/rpgss" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="TestPlay HideTitle Window" />
+				<Option host_application="C:/dev/rpg2003/Project/RPGSS/RPG_RT.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DBUILD_DLL" />
+				</Compiler>
+				<Linker>
+					<Add library="user32" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/rpgss" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="TestPlay HideTitle Window" />
+				<Option host_application="C:/dev/rpg2003/Project/RPGSS/RPG_RT.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Wall" />
+					<Add option="-DNDEBUG" />
+					<Add option="-DBUILD_DLL" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="user32" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wno-unused-local-typedefs" />
+			<Add option="-Wno-unused-label" />
+			<Add option="-msse2" />
+			<Add option="-mstackrealign" />
+			<Add option="-DRPGSS_CPP_LUA" />
+			<Add directory="../thirdparty/dynrpg-sdk-0.20/include" />
+			<Add directory="../thirdparty/physfs-2.0.3/include" />
+			<Add directory="../thirdparty/lua-5.2.3/include" />
+			<Add directory="../thirdparty/audiere-1.9.4/include" />
+			<Add directory="../thirdparty/corona-1.0.2/include" />
+			<Add directory="../thirdparty/zlib-1.2.8/include" />
+			<Add directory="../thirdparty/boost-1.55.0/include" />
+		</Compiler>
+		<Linker>
+			<Add option="-L../thirdparty/dynrpg-sdk-0.20/lib" />
+			<Add option="-L../thirdparty/physfs-2.0.3/lib" />
+			<Add option="-L../thirdparty/lua-5.2.3/lib" />
+			<Add option="-L../thirdparty/audiere-1.9.4/lib" />
+			<Add option="-L../thirdparty/corona-1.0.2/lib" />
+			<Add option="-L../thirdparty/zlib-1.2.8/lib" />
+			<Add library="dynrpg" />
+			<Add library="physfs.dll" />
+			<Add library="audiere" />
+			<Add library="corona" />
+			<Add library="lua52" />
+			<Add library="zdll" />
+		</Linker>
+		<ExtraCommands>
+			<Add after='xcopy /Y &quot;$(PROJECT_DIR)$(TARGET_OUTPUT_FILE)&quot; &quot;$(PROJECT_DIR)..\build\&quot;' />
+			<Add after='xcopy /Y &quot;$(PROJECT_DIR)$(TARGET_OUTPUT_FILE)&quot; &quot;C:\dev\rpg2003\Project\RPGSS\DynPlugins\&quot;' />
+			<Mode after="always" />
+		</ExtraCommands>
+		<Unit filename="../source/LuaBridge/LuaBridge.h" />
+		<Unit filename="../source/LuaBridge/RefCountedObject.h" />
+		<Unit filename="../source/LuaBridge/RefCountedPtr.h" />
+		<Unit filename="../source/LuaBridge/detail/CFunctions.h" />
+		<Unit filename="../source/LuaBridge/detail/ClassInfo.h" />
+		<Unit filename="../source/LuaBridge/detail/Constructor.h" />
+		<Unit filename="../source/LuaBridge/detail/FuncTraits.h" />
+		<Unit filename="../source/LuaBridge/detail/Iterator.h" />
+		<Unit filename="../source/LuaBridge/detail/LuaException.h" />
+		<Unit filename="../source/LuaBridge/detail/LuaHelpers.h" />
+		<Unit filename="../source/LuaBridge/detail/LuaRef.h" />
+		<Unit filename="../source/LuaBridge/detail/Namespace.h" />
+		<Unit filename="../source/LuaBridge/detail/Stack.h" />
+		<Unit filename="../source/LuaBridge/detail/TypeList.h" />
+		<Unit filename="../source/LuaBridge/detail/TypeTraits.h" />
+		<Unit filename="../source/LuaBridge/detail/Userdata.h" />
+		<Unit filename="../source/rpgss/Context.cpp" />
+		<Unit filename="../source/rpgss/Context.hpp" />
+		<Unit filename="../source/rpgss/TokenParser.cpp" />
+		<Unit filename="../source/rpgss/TokenParser.hpp" />
+		<Unit filename="../source/rpgss/audio/Sound.hpp" />
+		<Unit filename="../source/rpgss/audio/SoundEffect.hpp" />
+		<Unit filename="../source/rpgss/audio/audio.cpp" />
+		<Unit filename="../source/rpgss/audio/audio.hpp" />
+		<Unit filename="../source/rpgss/common/RefCountedObject.hpp" />
+		<Unit filename="../source/rpgss/common/RefCountedObjectPtr.hpp" />
+		<Unit filename="../source/rpgss/common/types.hpp" />
+		<Unit filename="../source/rpgss/core/ByteArray.cpp" />
+		<Unit filename="../source/rpgss/core/ByteArray.hpp" />
+		<Unit filename="../source/rpgss/core/Dim2.hpp" />
+		<Unit filename="../source/rpgss/core/Rect.hpp" />
+		<Unit filename="../source/rpgss/core/Vec2.hpp" />
+		<Unit filename="../source/rpgss/debug/Guard.cpp" />
+		<Unit filename="../source/rpgss/debug/Guard.hpp" />
+		<Unit filename="../source/rpgss/debug/Log.cpp" />
+		<Unit filename="../source/rpgss/debug/Log.hpp" />
+		<Unit filename="../source/rpgss/debug/debug.cpp" />
+		<Unit filename="../source/rpgss/debug/debug.hpp" />
+		<Unit filename="../source/rpgss/error.cpp" />
+		<Unit filename="../source/rpgss/error.hpp" />
+		<Unit filename="../source/rpgss/graphics/Image.cpp" />
+		<Unit filename="../source/rpgss/graphics/Image.hpp" />
+		<Unit filename="../source/rpgss/graphics/RGBA.hpp" />
+		<Unit filename="../source/rpgss/graphics/cpuinfo.cpp" />
+		<Unit filename="../source/rpgss/graphics/cpuinfo.hpp" />
+		<Unit filename="../source/rpgss/graphics/graphics.cpp" />
+		<Unit filename="../source/rpgss/graphics/graphics.hpp" />
+		<Unit filename="../source/rpgss/graphics/primitives.hpp" />
+		<Unit filename="../source/rpgss/input/input.cpp" />
+		<Unit filename="../source/rpgss/input/input.hpp" />
+		<Unit filename="../source/rpgss/io/BinaryReader.cpp" />
+		<Unit filename="../source/rpgss/io/BinaryReader.hpp" />
+		<Unit filename="../source/rpgss/io/BinaryWriter.cpp" />
+		<Unit filename="../source/rpgss/io/BinaryWriter.hpp" />
+		<Unit filename="../source/rpgss/io/Compressor.cpp" />
+		<Unit filename="../source/rpgss/io/Compressor.hpp" />
+		<Unit filename="../source/rpgss/io/Decompressor.cpp" />
+		<Unit filename="../source/rpgss/io/Decompressor.hpp" />
+		<Unit filename="../source/rpgss/io/FileStream.hpp" />
+		<Unit filename="../source/rpgss/io/MemoryStream.cpp" />
+		<Unit filename="../source/rpgss/io/MemoryStream.hpp" />
+		<Unit filename="../source/rpgss/io/Stream.hpp" />
+		<Unit filename="../source/rpgss/io/io.cpp" />
+		<Unit filename="../source/rpgss/io/io.hpp" />
+		<Unit filename="../source/rpgss/rpgss.cpp" />
+		<Unit filename="../source/rpgss/script/lua.hpp" />
+		<Unit filename="../source/rpgss/script/rpg.cpp" />
+		<Unit filename="../source/rpgss/script/rpg.hpp" />
+		<Unit filename="../source/rpgss/script/script.cpp" />
+		<Unit filename="../source/rpgss/script/script.hpp" />
+		<Unit filename="../source/rpgss/timer/timer.cpp" />
+		<Unit filename="../source/rpgss/timer/timer.hpp" />
+		<Unit filename="../source/rpgss/util/util.cpp" />
+		<Unit filename="../source/rpgss/util/util.hpp" />
+		<Unit filename="../source/rpgss/version.hpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
