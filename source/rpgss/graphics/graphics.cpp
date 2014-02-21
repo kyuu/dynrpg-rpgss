@@ -123,7 +123,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        bool WriteImage(Image* image, const std::string& filename)
+        bool WriteImage(const Image* image, const std::string& filename)
         {
             io::FileStream::Ptr file = io::OpenFile(filename, io::Stream::Out);
 
@@ -135,7 +135,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        bool WriteImage(Image* image, io::Stream* ostream)
+        bool WriteImage(const Image* image, io::Stream* ostream)
         {
             std::auto_ptr<corona::Image> img(corona::CreateImage(image->getWidth(), image->getHeight(), corona::PF_R8G8B8A8));
 

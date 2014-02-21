@@ -14,6 +14,9 @@
 namespace rpgss {
     namespace graphics {
 
+        // forward declaration
+        class Font;
+
         struct BlendMode {
             enum {
                 Set,
@@ -80,11 +83,13 @@ namespace rpgss {
             void drawTriangle(bool fill, const Vec2i& p1, const Vec2i& p2, const Vec2i& p3, RGBA color);
             void drawTriangle(bool fill, const Vec2i& p1, const Vec2i& p2, const Vec2i& p3, RGBA c1, RGBA c2, RGBA c3);
 
-            void draw(Image* image, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255));
-            void draw(Image* image, const Recti& rect, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255));
+            void draw(const Image* image, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
+            void draw(const Image* image, const Recti& rect, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
 
-            void drawq(Image* image, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255));
-            void drawq(Image* image, const Recti& rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255));
+            void drawq(const Image* image, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
+            void drawq(const Image* image, const Recti& rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
+
+            void drawText(const Font* font, Vec2i pos, const char* text, int len = -1, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
 
         private:
             // use New()
@@ -103,15 +108,15 @@ namespace rpgss {
             void clear_generic(RGBA color);
             void clear_sse2(RGBA color);
 
-            void draw_sse2_set(Image* image, const Recti& image_rect, const Vec2i& pos);
-            void draw_sse2_add(Image* image, const Recti& image_rect, const Vec2i& pos);
-            void draw_sse2_sub(Image* image, const Recti& image_rect, const Vec2i& pos);
-            void draw_sse2_mul(Image* image, const Recti& image_rect, const Vec2i& pos);
+            void draw_sse2_set(const Image* image, const Recti& image_rect, const Vec2i& pos);
+            void draw_sse2_add(const Image* image, const Recti& image_rect, const Vec2i& pos);
+            void draw_sse2_sub(const Image* image, const Recti& image_rect, const Vec2i& pos);
+            void draw_sse2_mul(const Image* image, const Recti& image_rect, const Vec2i& pos);
 
-            void draw_sse2_set_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
-            void draw_sse2_add_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
-            void draw_sse2_sub_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
-            void draw_sse2_mul_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
+            void draw_sse2_set(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
+            void draw_sse2_add(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
+            void draw_sse2_sub(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
+            void draw_sse2_mul(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color);
 
         private:
             int   _width;

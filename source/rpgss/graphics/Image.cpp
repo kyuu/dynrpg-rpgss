@@ -7,6 +7,7 @@
 #include "../debug/debug.hpp"
 #include "primitives.hpp"
 #include "cpuinfo.hpp"
+#include "Font.hpp"
 #include "Image.hpp"
 
 
@@ -696,7 +697,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_set(Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_set(const Image* image, const Recti& image_rect, const Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -712,11 +713,11 @@ namespace rpgss {
 
             rgba_set fallback_renderer;
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -755,7 +756,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_add(Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_add(const Image* image, const Recti& image_rect, const Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -771,11 +772,11 @@ namespace rpgss {
 
             rgba_add fallback_renderer;
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -817,7 +818,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_sub(Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_sub(const Image* image, const Recti& image_rect, const Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -833,11 +834,11 @@ namespace rpgss {
 
             rgba_sub fallback_renderer;
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -879,7 +880,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_mul(Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_mul(const Image* image, const Recti& image_rect, const Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -895,11 +896,11 @@ namespace rpgss {
 
             rgba_mul fallback_renderer;
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -958,7 +959,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_set_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_set(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -974,11 +975,11 @@ namespace rpgss {
 
             rgba_set_col fallback_renderer(color);
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -1029,7 +1030,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_add_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_add(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -1045,11 +1046,11 @@ namespace rpgss {
 
             rgba_add_col fallback_renderer(color);
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -1104,7 +1105,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_sub_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_sub(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -1120,11 +1121,11 @@ namespace rpgss {
 
             rgba_sub_col fallback_renderer(color);
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -1179,7 +1180,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_mul_col(Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_mul(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
@@ -1195,11 +1196,11 @@ namespace rpgss {
 
             rgba_mul_col fallback_renderer(color);
 
-            int   di = _width - dst_rect.getWidth();
+            int di = _width - dst_rect.getWidth();
             RGBA* dp = _pixels + dst_rect.getY() * _width + dst_rect.getX();
 
-            int   si = image->getWidth() - src_rect.getWidth();
-            RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
+            int si = image->getWidth() - src_rect.getWidth();
+            const RGBA* sp = image->getPixels() + src_rect.getY() * image->getWidth() + src_rect.getX();
 
             int num_blocks    = dst_rect.getWidth() / 4;
             int num_remaining = dst_rect.getWidth() % 4;
@@ -1268,7 +1269,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw(Image* image, const Vec2i& pos, float rotate, float scale, RGBA color)
+        Image::draw(const Image* image, const Vec2i& pos, float rotate, float scale, RGBA color)
         {
             Recti image_rect = Recti(image->getDimensions());
             draw(image, image_rect, pos, rotate, scale, color);
@@ -1276,34 +1277,50 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw(Image* image, const Recti& image_rect, const Vec2i& pos, float rotate, float scale, RGBA color)
+        Image::draw(const Image* image, const Recti& image_rect, const Vec2i& pos, float rotate, float scale, RGBA color)
         {
             if (CPUSupportsSSE2() && (rotate == 0.0 && scale == 1.0))
             {
                 if (color == RGBA(255, 255, 255, 255))
                 {
                     switch (_blendMode) {
-                    case BlendMode::Set:      draw_sse2_set(image, image_rect, pos); break;
+                    case BlendMode::Set:
+                        draw_sse2_set(image, image_rect, pos);
+                        break;
                     case BlendMode::Mix:
                         // difficult to implement with SSE2 intrinsics
                         primitives::TexturedRectangle(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_mix());
                         break;
-                    case BlendMode::Add:      draw_sse2_add(image, image_rect, pos); break;
-                    case BlendMode::Subtract: draw_sse2_sub(image, image_rect, pos); break;
-                    case BlendMode::Multiply: draw_sse2_mul(image, image_rect, pos); break;
+                    case BlendMode::Add:
+                        draw_sse2_add(image, image_rect, pos);
+                        break;
+                    case BlendMode::Subtract:
+                        draw_sse2_sub(image, image_rect, pos);
+                        break;
+                    case BlendMode::Multiply:
+                        draw_sse2_mul(image, image_rect, pos);
+                        break;
                     }
                 }
                 else
                 {
                     switch (_blendMode) {
-                    case BlendMode::Set:      draw_sse2_set_col(image, image_rect, pos, color); break;
+                    case BlendMode::Set:
+                        draw_sse2_set(image, image_rect, pos, color);
+                        break;
                     case BlendMode::Mix:
                         // difficult to implement with SSE2 intrinsics
                         primitives::TexturedRectangle(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_mix_col(color));
                         break;
-                    case BlendMode::Add:      draw_sse2_add_col(image, image_rect, pos, color); break;
-                    case BlendMode::Subtract: draw_sse2_sub_col(image, image_rect, pos, color); break;
-                    case BlendMode::Multiply: draw_sse2_mul_col(image, image_rect, pos, color); break;
+                    case BlendMode::Add:
+                        draw_sse2_add(image, image_rect, pos, color);
+                        break;
+                    case BlendMode::Subtract:
+                        draw_sse2_sub(image, image_rect, pos, color);
+                        break;
+                    case BlendMode::Multiply:
+                        draw_sse2_mul(image, image_rect, pos, color);
+                        break;
                     }
                 }
             }
@@ -1348,7 +1365,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawq(Image* image, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color)
+        Image::drawq(const Image* image, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color)
         {
             Recti image_rect = Recti(image->getDimensions());
             drawq(image, image_rect, ul, ur, lr, ll, color);
@@ -1356,7 +1373,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawq(Image* image, const Recti& image_rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color)
+        Image::drawq(const Image* image, const Recti& image_rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color)
         {
             Vec2i pos[4] = { ul, ur, lr, ll };
 
@@ -1378,6 +1395,57 @@ namespace rpgss {
                 case BlendMode::Add:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_add_col(color)); break;
                 case BlendMode::Subtract: primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_sub_col(color)); break;
                 case BlendMode::Multiply: primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_mul_col(color)); break;
+                }
+            }
+        }
+
+        //-----------------------------------------------------------------
+        void
+        Image::drawText(const Font* font, Vec2i pos, const char* text, int len, float scale, RGBA color)
+        {
+            if (len < 0) {
+                len = std::strlen(text);
+            }
+
+            int cur_x = pos.x;
+            int cur_y = pos.y;
+
+            for (int i = 0; i < len; i++)
+            {
+                switch (text[i])
+                {
+                    case ' ':
+                    {
+                        const Image* space_char_image = font->getCharImage(' ');
+                        int space_w = (int)(space_char_image ? space_char_image->getWidth() * scale : 0);
+                        cur_x += space_w;
+                        break;
+                    }
+                    case '\t':
+                    {
+                        const Image* space_char_image = font->getCharImage(' ');
+                        int tab_w = (int)(space_char_image ? space_char_image->getWidth() * font->getTabWidth() * scale : 0);
+                        if (tab_w > 0) {
+                            tab_w = tab_w - ((cur_x - pos.x) % tab_w);
+                        }
+                        cur_x += tab_w;
+                        break;
+                    }
+                    case '\n':
+                    {
+                        cur_x = pos.x;
+                        cur_y += (int)(font->getMaxCharHeight() * scale);
+                        break;
+                    }
+                    default:
+                    {
+                        const Image* char_image = font->getCharImage(text[i]);
+                        if (char_image) {
+                            draw(char_image, Vec2i(cur_x, cur_y), 0.0, scale, color);
+                            cur_x += (int)(char_image->getWidth() * scale);
+                        }
+                        break;
+                    }
                 }
             }
         }

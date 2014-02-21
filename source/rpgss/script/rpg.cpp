@@ -1228,6 +1228,116 @@ namespace rpgss {
         };
 
         /**********************************************************
+         *                       FONT CLASS
+         **********************************************************/
+
+        //---------------------------------------------------------
+        struct FontWrapper {
+            graphics::Font::Ptr This;
+
+            //---------------------------------------------------------
+            explicit FontWrapper(graphics::Font* ptr)
+                : This(ptr)
+            {
+            }
+
+            //---------------------------------------------------------
+            static graphics::Font* Get(lua_State* L, int index)
+            {
+                assert(index != 0);
+                int top = lua_gettop(L);
+                if (index < 0) { // allow negative indices
+                    index = top + index + 1;
+                }
+                if (index > top) {
+                    luaL_argerror(L, index, "Font expected, got nothing");
+                    return 0;
+                }
+                FontWrapper* wrapper = luabridge::Stack<FontWrapper*>::get(L, index);
+                if (wrapper) {
+                    return wrapper->This;
+                } else {
+                    const char* got = lua_typename(L, lua_type(L, index));
+                    const char* msg = lua_pushfstring(L, "Font expected, got %s", got);
+                    luaL_argerror(L, index, msg);
+                    return 0;
+                }
+            }
+
+            //---------------------------------------------------------
+            static graphics::Font* GetOpt(lua_State* L, int index)
+            {
+                assert(index != 0);
+                int top = lua_gettop(L);
+                if (index < 0) { // allow negative indices
+                    index = top + index + 1;
+                }
+                if (index > top) {
+                    return 0;
+                }
+                FontWrapper* wrapper = luabridge::Stack<FontWrapper*>::get(L, index);
+                if (wrapper) {
+                    return wrapper->This;
+                } else {
+                    return 0;
+                }
+            }
+
+            //---------------------------------------------------------
+            int get_maxCharWidth() const
+            {
+                return This->getMaxCharWidth();
+            }
+
+            //---------------------------------------------------------
+            int get_maxCharHeight() const
+            {
+                return This->getMaxCharHeight();
+            }
+
+            //---------------------------------------------------------
+            int get_tabWidth() const
+            {
+                return This->getTabWidth();
+            }
+
+            //---------------------------------------------------------
+            void set_tabWidth(int tabWidth)
+            {
+                This->setTabWidth(tabWidth);
+            }
+
+            //---------------------------------------------------------
+            int getStringWidth(lua_State* L)
+            {
+                size_t len;
+                const char* str = luaL_checklstring(L, 2, &len);
+                lua_pushnumber(L, This->getStringWidth(str, len));
+                return 1;
+            }
+
+            //---------------------------------------------------------
+            int wordWrapString(lua_State* L)
+            {
+                size_t len;
+                const char* str = luaL_checklstring(L, 2, &len);
+                int max_line_width = luaL_checkint(L, 3);
+
+                std::string text(str, len);
+                std::vector<std::pair<int, int> > lines;
+                This->wordWrapString(str, len, max_line_width, lines);
+
+                luabridge::LuaRef t = luabridge::newTable(L);
+                for (size_t i = 0; i < lines.size(); i++) {
+                    t[i+1] = text.substr(lines[i].first, lines[i].second);
+                }
+                luabridge::push(L, t);
+
+                return 1;
+            }
+        };
+
+        /**********************************************************
          *                       IMAGE CLASS
          **********************************************************/
 
@@ -1742,7 +1852,31 @@ namespace rpgss {
 
                 return 0;
             }
+
+            //---------------------------------------------------------
+            int drawText(lua_State* L)
+            {
+                graphics::Font* font = FontWrapper::Get(L, 2);
+                int x                = luaL_checkint(L, 3);
+                int y                = luaL_checkint(L, 4);
+                size_t len;
+                const char* text     = luaL_checklstring(L, 5, &len);
+                float scale          = luaL_optnumber(L, 6, 1.0);
+                u32 color            = luaL_optunsigned(L, 7, 0xFFFFFFFF);
+
+                This->drawText(
+                    font,
+                    Vec2i(x, y),
+                    text,
+                    len,
+                    scale,
+                    graphics::RGBA8888ToRGBA(color)
+                );
+
+                return 0;
+            }
         };
+
 
         /**********************************************************
          *                     CHARACTER CLASS
@@ -4756,6 +4890,114 @@ namespace rpgss {
         }
 
         //---------------------------------------------------------
+        int graphics_drawText(lua_State* L)
+        {
+            graphics::Font* font = FontWrapper::Get(L, 1);
+            int x                = luaL_checkint(L, 2);
+            int y                = luaL_checkint(L, 3);
+            size_t len;
+            const char* text     = luaL_checklstring(L, 4, &len);
+            float scale          = luaL_optnumber(L, 5, 1.0);
+            u32 color            = luaL_optunsigned(L, 6, 0xFFFFFFFF);
+
+            int cur_x = x;
+            int cur_y = y;
+
+            for (size_t i = 0; i < len; i++)
+            {
+                switch (text[i])
+                {
+                    case ' ':
+                    {
+                        const graphics::Image* space_char_image = font->getCharImage(' ');
+                        int space_w = (int)(space_char_image ? space_char_image->getWidth() * scale : 0);
+                        cur_x += space_w;
+                        break;
+                    }
+                    case '\t':
+                    {
+                        const graphics::Image* space_char_image = font->getCharImage(' ');
+                        int tab_w = (int)(space_char_image ? space_char_image->getWidth() * font->getTabWidth() * scale : 0);
+                        if (tab_w > 0) {
+                            tab_w = tab_w - ((cur_x - x) % tab_w);
+                        }
+                        cur_x += tab_w;
+                        break;
+                    }
+                    case '\n':
+                    {
+                        cur_x = x;
+                        cur_y += (int)(font->getMaxCharHeight() * scale);
+                        break;
+                    }
+                    default:
+                    {
+                        const graphics::Image* char_image = font->getCharImage(text[i]);
+                        if (char_image) {
+                            if (color == 0xFFFFFFFF)
+                            {
+                                graphics::primitives::TexturedRectangle(
+                                    Graphics::Pixels(),
+                                    Graphics::Pitch(),
+                                    Graphics::ClipRect,
+                                    Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
+                                    char_image->getPixels(),
+                                    char_image->getWidth(),
+                                    Recti(0, 0, char_image->getWidth(), char_image->getHeight()),
+                                    rgb565_mix()
+                                );
+                            }
+                            else
+                            {
+                                graphics::primitives::TexturedRectangle(
+                                    Graphics::Pixels(),
+                                    Graphics::Pitch(),
+                                    Graphics::ClipRect,
+                                    Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
+                                    char_image->getPixels(),
+                                    char_image->getWidth(),
+                                    Recti(0, 0, char_image->getWidth(), char_image->getHeight()),
+                                    rgb565_mix_col(graphics::RGBA8888ToRGBA(color))
+                                );
+                            }
+                            cur_x += (int)(char_image->getWidth() * scale);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        //---------------------------------------------------------
+        int graphics_newFont(lua_State* L)
+        {
+            if (lua_isstring(L, 1))
+            {
+                // newFont(filename)
+                const char* filename = luaL_checkstring(L, 1);
+
+                graphics::Image::Ptr fontImage = graphics::ReadImage(filename);
+                if (fontImage) {
+                    graphics::Font::Ptr font = graphics::Font::New(fontImage);
+                    luabridge::push(L, FontWrapper(font));
+                } else {
+                    lua_pushnil(L);
+                }
+            }
+            else
+            {
+                // newFont(fontImage)
+                graphics::Image* fontImage = ImageWrapper::Get(L, 1);
+                graphics::Font::Ptr font = graphics::Font::New(fontImage);
+                luabridge::push(L, FontWrapper(font));
+            }
+
+            return 1;
+        }
+
+        //---------------------------------------------------------
         int graphics_newImage(lua_State* L)
         {
             int nargs = lua_gettop(L);
@@ -5919,6 +6161,14 @@ namespace rpgss {
                     .endNamespace()
 
                     .beginNamespace("graphics")
+                        .beginClass<FontWrapper>("Font")
+                            .addProperty("maxCharWidth",        &FontWrapper::get_maxCharWidth)
+                            .addProperty("maxCharHeight",       &FontWrapper::get_maxCharHeight)
+                            .addProperty("tabWidth",            &FontWrapper::get_tabWidth,          &FontWrapper::set_tabWidth)
+                            .addCFunction("getStringWidth",     &FontWrapper::getStringWidth)
+                            .addCFunction("wordWrapString",     &FontWrapper::wordWrapString)
+                        .endClass()
+
                         .beginClass<ImageWrapper>("Image")
                             .addProperty("width",               &ImageWrapper::get_width)
                             .addProperty("height",              &ImageWrapper::get_height)
@@ -5945,6 +6195,7 @@ namespace rpgss {
                             .addCFunction("drawTriangle",       &ImageWrapper::drawTriangle)
                             .addCFunction("draw",               &ImageWrapper::draw)
                             .addCFunction("drawq",              &ImageWrapper::drawq)
+                            .addCFunction("drawText",           &ImageWrapper::drawText)
                         .endClass()
 
                         .addProperty("width",                   &graphics_get_width)
@@ -5969,6 +6220,8 @@ namespace rpgss {
                         .addCFunction("drawTriangle",           &graphics_drawTriangle)
                         .addCFunction("draw",                   &graphics_draw)
                         .addCFunction("drawq",                  &graphics_drawq)
+                        .addCFunction("drawText",               &graphics_drawText)
+                        .addCFunction("newFont",                &graphics_newFont)
                         .addCFunction("newImage",               &graphics_newImage)
                         .addCFunction("readImage",              &graphics_readImage)
                         .addCFunction("writeImage",             &graphics_writeImage)

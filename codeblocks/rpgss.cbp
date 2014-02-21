@@ -119,6 +119,8 @@
 		<Unit filename="../source/rpgss/debug/debug.hpp" />
 		<Unit filename="../source/rpgss/error.cpp" />
 		<Unit filename="../source/rpgss/error.hpp" />
+		<Unit filename="../source/rpgss/graphics/Font.cpp" />
+		<Unit filename="../source/rpgss/graphics/Font.hpp" />
 		<Unit filename="../source/rpgss/graphics/Image.cpp" />
 		<Unit filename="../source/rpgss/graphics/Image.hpp" />
 		<Unit filename="../source/rpgss/graphics/RGBA.hpp" />
