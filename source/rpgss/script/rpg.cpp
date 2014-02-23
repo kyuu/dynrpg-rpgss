@@ -1393,6 +1393,54 @@ namespace rpgss {
                 }
             }
 
+            //---------------------------------------------------------
+            u32 get_topLeftColor() const
+            {
+                return This->getBgColor(graphics::WindowSkin::TopLeftBgColor).toRGBA8888();
+            }
+
+            //---------------------------------------------------------
+            void set_topLeftColor(u32 newColor)
+            {
+                This->setBgColor(graphics::WindowSkin::TopLeftBgColor, graphics::RGBA8888ToRGBA(newColor));
+            }
+
+            //---------------------------------------------------------
+            u32 get_topRightColor() const
+            {
+                return This->getBgColor(graphics::WindowSkin::TopRightBgColor).toRGBA8888();
+            }
+
+            //---------------------------------------------------------
+            void set_topRightColor(u32 newColor)
+            {
+                This->setBgColor(graphics::WindowSkin::TopRightBgColor, graphics::RGBA8888ToRGBA(newColor));
+            }
+
+            //---------------------------------------------------------
+            u32 get_bottomRightColor() const
+            {
+                return This->getBgColor(graphics::WindowSkin::BottomRightBgColor).toRGBA8888();
+            }
+
+            //---------------------------------------------------------
+            void set_bottomRightColor(u32 newColor)
+            {
+                This->setBgColor(graphics::WindowSkin::BottomRightBgColor, graphics::RGBA8888ToRGBA(newColor));
+            }
+
+            //---------------------------------------------------------
+            u32 get_bottomLeftColor() const
+            {
+                return This->getBgColor(graphics::WindowSkin::BottomLeftBgColor).toRGBA8888();
+            }
+
+            //---------------------------------------------------------
+            void set_bottomLeftColor(u32 newColor)
+            {
+                This->setBgColor(graphics::WindowSkin::BottomLeftBgColor, graphics::RGBA8888ToRGBA(newColor));
+            }
+
         };
 
         /**********************************************************
@@ -6532,6 +6580,10 @@ namespace rpgss {
                         .endClass()
 
                         .beginClass<WindowSkinWrapper>("WindowSkin")
+                            .addProperty("topLeftColor",     &WindowSkinWrapper::get_topLeftColor,     &WindowSkinWrapper::set_topLeftColor)
+                            .addProperty("topRightColor",    &WindowSkinWrapper::get_topRightColor,    &WindowSkinWrapper::set_topRightColor)
+                            .addProperty("bottomRightColor", &WindowSkinWrapper::get_bottomRightColor, &WindowSkinWrapper::set_bottomRightColor)
+                            .addProperty("bottomLeftColor",  &WindowSkinWrapper::get_bottomLeftColor,  &WindowSkinWrapper::set_bottomLeftColor)
                         .endClass()
 
                         .beginClass<ImageWrapper>("Image")

@@ -40,6 +40,7 @@ namespace rpgss {
 
             const Image* getBorderImage(Border index) const;
             RGBA getBgColor(BgColor index) const;
+            void setBgColor(BgColor index, RGBA newColor);
 
         private:
             // use New()
@@ -65,6 +66,13 @@ namespace rpgss {
         WindowSkin::getBgColor(BgColor index) const
         {
             return _bgColors[index];
+        }
+
+        //-----------------------------------------------------------------
+        inline void
+        WindowSkin::setBgColor(BgColor index, RGBA newColor)
+        {
+            _bgColors[index] = newColor;
         }
 
     } // namespace graphics
