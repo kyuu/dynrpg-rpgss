@@ -5062,7 +5062,8 @@ namespace rpgss {
                     default:
                     {
                         const graphics::Image* char_image = font->getCharImage(text[i]);
-                        if (char_image) {
+                        if (char_image)
+                        {
                             if (color == 0xFFFFFFFF)
                             {
                                 graphics::primitives::TexturedRectangle(
@@ -5113,6 +5114,7 @@ namespace rpgss {
             luaL_argcheck(L, h >= 0, 5, "invalid height");
             luaL_argcheck(L, opacity >= 0 && opacity <= 255, 6, "invalid opacity");
 
+            // for brevity
             int x1 = x;
             int y1 = y;
             int x2 = x + w - 1;
@@ -5123,7 +5125,34 @@ namespace rpgss {
             const graphics::Image* brBorder = windowSkin->getBorderImage(graphics::WindowSkin::BottomRightBorder);
             const graphics::Image* blBorder = windowSkin->getBorderImage(graphics::WindowSkin::BottomLeftBorder);
 
-            // top left edge
+            // draw background
+            if (w > 0 && h > 0) {
+                graphics::RGBA tlColor = windowSkin->getBgColor(graphics::WindowSkin::TopLeftBgColor);
+                graphics::RGBA trColor = windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor);
+                graphics::RGBA brColor = windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor);
+                graphics::RGBA blColor = windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor);
+
+                // apply opacity
+                tlColor.alpha = (tlColor.alpha * opacity) / 255;
+                trColor.alpha = (trColor.alpha * opacity) / 255;
+                brColor.alpha = (brColor.alpha * opacity) / 255;
+                blColor.alpha = (blColor.alpha * opacity) / 255;
+
+                graphics::primitives::Rectangle(
+                    Graphics::Pixels(),
+                    Graphics::Pitch(),
+                    Graphics::ClipRect,
+                    true,
+                    Recti(x, y, w, h),
+                    tlColor,
+                    trColor,
+                    brColor,
+                    blColor,
+                    rgb565_mix()
+                );
+            }
+
+            // draw top left edge
             graphics::primitives::TexturedRectangle(
                 Graphics::Pixels(),
                 Graphics::Pitch(),
@@ -5135,7 +5164,7 @@ namespace rpgss {
                 rgb565_mix()
             );
 
-            // top right edge
+            // draw top right edge
             graphics::primitives::TexturedRectangle(
                 Graphics::Pixels(),
                 Graphics::Pitch(),
@@ -5147,7 +5176,7 @@ namespace rpgss {
                 rgb565_mix()
             );
 
-            // bottom right edge
+            // draw bottom right edge
             graphics::primitives::TexturedRectangle(
                 Graphics::Pixels(),
                 Graphics::Pitch(),
@@ -5159,7 +5188,7 @@ namespace rpgss {
                 rgb565_mix()
             );
 
-            // bottom left edge
+            // draw bottom left edge
             graphics::primitives::TexturedRectangle(
                 Graphics::Pixels(),
                 Graphics::Pitch(),
@@ -5171,14 +5200,15 @@ namespace rpgss {
                 rgb565_mix()
             );
 
-            // top and bottom borders
-            if (w > 0) {
+            // draw top and bottom borders
+            if (w > 0)
+            {
                 const graphics::Image* tBorder  = windowSkin->getBorderImage(graphics::WindowSkin::TopBorder);
                 const graphics::Image* bBorder  = windowSkin->getBorderImage(graphics::WindowSkin::BottomBorder);
 
                 int i;
 
-                // top border
+                // draw top border
                 i = x1;
                 while ((x2 - i) + 1 >= tBorder->getWidth()) {
                     graphics::primitives::TexturedRectangle(
@@ -5208,7 +5238,7 @@ namespace rpgss {
                     );
                 }
 
-                // bottom border
+                // draw bottom border
                 i = x1;
                 while ((x2 - i) + 1 >= bBorder->getWidth()) {
                     graphics::primitives::TexturedRectangle(
@@ -5239,14 +5269,15 @@ namespace rpgss {
                 }
             }
 
-            // left and right borders
-            if (h > 0) {
+            // draw left and right borders
+            if (h > 0)
+            {
                 const graphics::Image* lBorder  = windowSkin->getBorderImage(graphics::WindowSkin::LeftBorder);
                 const graphics::Image* rBorder  = windowSkin->getBorderImage(graphics::WindowSkin::RightBorder);
 
                 int i;
 
-                // left border
+                // draw left border
                 i = y1;
                 while ((y2 - i) + 1 >= lBorder->getHeight()) {
                     graphics::primitives::TexturedRectangle(
@@ -5276,7 +5307,7 @@ namespace rpgss {
                     );
                 }
 
-                // right border
+                // draw right border
                 i = y1;
                 while ((y2 - i) + 1 >= rBorder->getHeight()) {
                     graphics::primitives::TexturedRectangle(
@@ -5305,33 +5336,6 @@ namespace rpgss {
                         rgb565_mix()
                     );
                 }
-            }
-
-            // background
-            if (w > 0 && h > 0) {
-                graphics::RGBA tlColor = windowSkin->getBgColor(graphics::WindowSkin::TopLeftBgColor);
-                graphics::RGBA trColor = windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor);
-                graphics::RGBA brColor = windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor);
-                graphics::RGBA blColor = windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor);
-
-                // apply opacity
-                tlColor.alpha = (tlColor.alpha * opacity) / 255;
-                trColor.alpha = (trColor.alpha * opacity) / 255;
-                brColor.alpha = (brColor.alpha * opacity) / 255;
-                blColor.alpha = (blColor.alpha * opacity) / 255;
-
-                graphics::primitives::Rectangle(
-                    Graphics::Pixels(),
-                    Graphics::Pitch(),
-                    Graphics::ClipRect,
-                    true,
-                    Recti(x, y, w, h),
-                    tlColor,
-                    trColor,
-                    brColor,
-                    blColor,
-                    rgb565_mix()
-                );
             }
 
             return 0;

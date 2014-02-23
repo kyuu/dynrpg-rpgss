@@ -1441,8 +1441,34 @@ namespace rpgss {
                     default:
                     {
                         const Image* char_image = font->getCharImage(text[i]);
-                        if (char_image) {
-                            draw(char_image, Vec2i(cur_x, cur_y), 0.0, scale, color);
+                        if (char_image)
+                        {
+                            if (color == RGBA(255, 255, 255, 255))
+                            {
+                                primitives::TexturedRectangle(
+                                    _pixels,
+                                    _width,
+                                    _clipRect,
+                                    Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
+                                    char_image->getPixels(),
+                                    char_image->getWidth(),
+                                    Recti(char_image->getDimensions()),
+                                    rgba_mix()
+                                );
+                            }
+                            else
+                            {
+                                primitives::TexturedRectangle(
+                                    _pixels,
+                                    _width,
+                                    _clipRect,
+                                    Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
+                                    char_image->getPixels(),
+                                    char_image->getWidth(),
+                                    Recti(char_image->getDimensions()),
+                                    rgba_mix_col(color)
+                                );
+                            }
                             cur_x += (int)(char_image->getWidth() * scale);
                         }
                         break;
@@ -1460,6 +1486,7 @@ namespace rpgss {
                 return;
             }
 
+            // for brevity
             int x1 = windowRect.ul.x;
             int y1 = windowRect.ul.y;
             int x2 = windowRect.lr.x;
@@ -1470,76 +1497,9 @@ namespace rpgss {
             const Image* brBorder = windowSkin->getBorderImage(WindowSkin::BottomRightBorder);
             const Image* blBorder = windowSkin->getBorderImage(WindowSkin::BottomLeftBorder);
 
-            // top left edge
-            draw(tlBorder, Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()));
-
-            // top right edge
-            draw(trBorder, Vec2i(x2 + 1, y1 - trBorder->getHeight()));
-
-            // bottom right edge
-            draw(brBorder, Vec2i(x2 + 1, y2 + 1 ));
-
-            // bottom left edge
-            draw(blBorder, Vec2i(x1 - blBorder->getWidth(), y2 + 1 ));
-
-            // top and bottom borders
-            if (windowRect.getWidth() > 0) {
-                const Image* tBorder  = windowSkin->getBorderImage(WindowSkin::TopBorder);
-                const Image* bBorder  = windowSkin->getBorderImage(WindowSkin::BottomBorder);
-
-                int i;
-
-                // top border
-                i = x1;
-                while ((x2 - i) + 1 >= tBorder->getWidth()) {
-                    draw(tBorder, Vec2i(i, y1 - tBorder->getHeight()));
-                    i += tBorder->getWidth();
-                }
-                if ((x2 - i) + 1 > 0) {
-                    draw(tBorder, Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()), Vec2i(i, y1 - tBorder->getHeight()));
-                }
-
-                // bottom border
-                i = x1;
-                while ((x2 - i) + 1 >= bBorder->getWidth()) {
-                    draw(bBorder, Vec2i(i, y2 + 1));
-                    i += bBorder->getWidth();
-                }
-                if ((x2 - i) + 1 > 0) {
-                    draw(bBorder, Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()), Vec2i(i, y2 + 1));
-                }
-            }
-
-            // left and right borders
-            if (windowRect.getHeight() > 0) {
-                const Image* lBorder  = windowSkin->getBorderImage(WindowSkin::LeftBorder);
-                const Image* rBorder  = windowSkin->getBorderImage(WindowSkin::RightBorder);
-
-                int i;
-
-                // left border
-                i = y1;
-                while ((y2 - i) + 1 >= lBorder->getHeight()) {
-                    draw(lBorder, Vec2i(x1 - lBorder->getWidth(), i));
-                    i += lBorder->getHeight();
-                }
-                if ((y2 - i) + 1 > 0) {
-                    draw(lBorder, Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1), Vec2i(x1 - lBorder->getWidth(), i));
-                }
-
-                // right border
-                i = y1;
-                while ((y2 - i) + 1 >= rBorder->getHeight()) {
-                    draw(rBorder, Vec2i(x2 + 1, i));
-                    i += rBorder->getHeight();
-                }
-                if ((y2 - i) + 1 > 0) {
-                    draw(rBorder, Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1), Vec2i(x2 + 1, i));
-                }
-            }
-
-            // background
-            if (!windowRect.isEmpty()) {
+            // draw background
+            if (!windowRect.isEmpty())
+            {
                 RGBA tlColor = windowSkin->getBgColor(WindowSkin::TopLeftBgColor);
                 RGBA trColor = windowSkin->getBgColor(WindowSkin::TopRightBgColor);
                 RGBA brColor = windowSkin->getBgColor(WindowSkin::BottomRightBgColor);
@@ -1551,7 +1511,196 @@ namespace rpgss {
                 brColor.alpha = (brColor.alpha * opacity) / 255;
                 blColor.alpha = (blColor.alpha * opacity) / 255;
 
-                drawRectangle(true, windowRect, tlColor, trColor, brColor, blColor);
+                primitives::Rectangle(
+                    _pixels,
+                    _width,
+                    _clipRect,
+                    true,
+                    windowRect,
+                    tlColor,
+                    trColor,
+                    brColor,
+                    blColor,
+                    rgba_mix()
+                );
+            }
+
+            // draw top left edge
+            primitives::TexturedRectangle(
+                _pixels,
+                _width,
+                _clipRect,
+                Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()),
+                tlBorder->getPixels(),
+                tlBorder->getWidth(),
+                Recti(tlBorder->getDimensions()),
+                rgba_mix()
+            );
+
+            // draw top right edge
+            primitives::TexturedRectangle(
+                _pixels,
+                _width,
+                _clipRect,
+                Vec2i(x2 + 1, y1 - trBorder->getHeight()),
+                trBorder->getPixels(),
+                trBorder->getWidth(),
+                Recti(trBorder->getDimensions()),
+                rgba_mix()
+            );
+
+            // draw bottom right edge
+            primitives::TexturedRectangle(
+                _pixels,
+                _width,
+                _clipRect,
+                Vec2i(x2 + 1, y2 + 1 ),
+                brBorder->getPixels(),
+                brBorder->getWidth(),
+                Recti(brBorder->getDimensions()),
+                rgba_mix()
+            );
+
+            // draw bottom left edge
+            primitives::TexturedRectangle(
+                _pixels,
+                _width,
+                _clipRect,
+                Vec2i(x1 - blBorder->getWidth(), y2 + 1 ),
+                blBorder->getPixels(),
+                blBorder->getWidth(),
+                Recti(blBorder->getDimensions()),
+                rgba_mix()
+            );
+
+            // draw top and bottom borders
+            if (windowRect.getWidth() > 0)
+            {
+                const Image* tBorder  = windowSkin->getBorderImage(WindowSkin::TopBorder);
+                const Image* bBorder  = windowSkin->getBorderImage(WindowSkin::BottomBorder);
+
+                int i;
+
+                // draw top border
+                i = x1;
+                while ((x2 - i) + 1 >= tBorder->getWidth()) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(i, y1 - tBorder->getHeight()),
+                        tBorder->getPixels(),
+                        tBorder->getWidth(),
+                        Recti(tBorder->getDimensions()),
+                        rgba_mix()
+                    );
+                    i += tBorder->getWidth();
+                }
+                if ((x2 - i) + 1 > 0) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(i, y1 - tBorder->getHeight()),
+                        tBorder->getPixels(),
+                        tBorder->getWidth(),
+                        Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()),
+                        rgba_mix()
+                    );
+                }
+
+                // draw bottom border
+                i = x1;
+                while ((x2 - i) + 1 >= bBorder->getWidth()) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(i, y2 + 1),
+                        bBorder->getPixels(),
+                        bBorder->getWidth(),
+                        Recti(bBorder->getDimensions()),
+                        rgba_mix()
+                    );
+                    i += bBorder->getWidth();
+                }
+                if ((x2 - i) + 1 > 0) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(i, y2 + 1),
+                        bBorder->getPixels(),
+                        bBorder->getWidth(),
+                        Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()),
+                        rgba_mix()
+                    );
+                }
+            }
+
+            // draw left and right borders
+            if (windowRect.getHeight() > 0)
+            {
+                const Image* lBorder  = windowSkin->getBorderImage(WindowSkin::LeftBorder);
+                const Image* rBorder  = windowSkin->getBorderImage(WindowSkin::RightBorder);
+
+                int i;
+
+                // draw left border
+                i = y1;
+                while ((y2 - i) + 1 >= lBorder->getHeight()) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(x1 - lBorder->getWidth(), i),
+                        lBorder->getPixels(),
+                        lBorder->getWidth(),
+                        Recti(lBorder->getDimensions()),
+                        rgba_mix()
+                    );
+                    i += lBorder->getHeight();
+                }
+                if ((y2 - i) + 1 > 0) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(x1 - lBorder->getWidth(), i),
+                        lBorder->getPixels(),
+                        lBorder->getWidth(),
+                        Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1),
+                        rgba_mix()
+                    );
+                }
+
+                // draw right border
+                i = y1;
+                while ((y2 - i) + 1 >= rBorder->getHeight()) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(x2 + 1, i),
+                        rBorder->getPixels(),
+                        rBorder->getWidth(),
+                        Recti(rBorder->getDimensions()),
+                        rgba_mix()
+                    );
+                    i += rBorder->getHeight();
+                }
+                if ((y2 - i) + 1 > 0) {
+                    primitives::TexturedRectangle(
+                        _pixels,
+                        _width,
+                        _clipRect,
+                        Vec2i(x2 + 1, i),
+                        rBorder->getPixels(),
+                        rBorder->getWidth(),
+                        Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1),
+                        rgba_mix()
+                    );
+                }
             }
         }
 
