@@ -14,8 +14,9 @@
 namespace rpgss {
     namespace graphics {
 
-        // forward declaration
+        // forward declarations
         class Font;
+        class WindowSkin;
 
         struct BlendMode {
             enum {
@@ -84,10 +85,12 @@ namespace rpgss {
             void drawTriangle(bool fill, const Vec2i& p1, const Vec2i& p2, const Vec2i& p3, RGBA c1, RGBA c2, RGBA c3);
 
             void draw(const Image* image, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
-            void draw(const Image* image, const Recti& rect, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
+            void draw(const Image* image, const Recti& image_rect, const Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
 
             void drawq(const Image* image, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
-            void drawq(const Image* image, const Recti& rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
+            void drawq(const Image* image, const Recti& image_rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
+
+            void drawWindow(const WindowSkin* windowSkin, Recti windowRect, int opacity = 255);
 
             void drawText(const Font* font, Vec2i pos, const char* text, int len = -1, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
 

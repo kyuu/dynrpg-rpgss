@@ -3,6 +3,7 @@
 
 #include "../io/Stream.hpp"
 #include "Font.hpp"
+#include "WindowSkin.hpp"
 #include "Image.hpp"
 
 

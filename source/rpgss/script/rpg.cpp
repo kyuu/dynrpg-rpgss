@@ -1338,6 +1338,64 @@ namespace rpgss {
         };
 
         /**********************************************************
+         *                    WINDOWSKIN CLASS
+         **********************************************************/
+
+        //---------------------------------------------------------
+        struct WindowSkinWrapper {
+            graphics::WindowSkin::Ptr This;
+
+            //---------------------------------------------------------
+            explicit WindowSkinWrapper(graphics::WindowSkin* ptr)
+                : This(ptr)
+            {
+            }
+
+            //---------------------------------------------------------
+            static graphics::WindowSkin* Get(lua_State* L, int index)
+            {
+                assert(index != 0);
+                int top = lua_gettop(L);
+                if (index < 0) { // allow negative indices
+                    index = top + index + 1;
+                }
+                if (index > top) {
+                    luaL_argerror(L, index, "WindowSkin expected, got nothing");
+                    return 0;
+                }
+                WindowSkinWrapper* wrapper = luabridge::Stack<WindowSkinWrapper*>::get(L, index);
+                if (wrapper) {
+                    return wrapper->This;
+                } else {
+                    const char* got = lua_typename(L, lua_type(L, index));
+                    const char* msg = lua_pushfstring(L, "WindowSkin expected, got %s", got);
+                    luaL_argerror(L, index, msg);
+                    return 0;
+                }
+            }
+
+            //---------------------------------------------------------
+            static graphics::WindowSkin* GetOpt(lua_State* L, int index)
+            {
+                assert(index != 0);
+                int top = lua_gettop(L);
+                if (index < 0) { // allow negative indices
+                    index = top + index + 1;
+                }
+                if (index > top) {
+                    return 0;
+                }
+                WindowSkinWrapper* wrapper = luabridge::Stack<WindowSkinWrapper*>::get(L, index);
+                if (wrapper) {
+                    return wrapper->This;
+                } else {
+                    return 0;
+                }
+            }
+
+        };
+
+        /**********************************************************
          *                       IMAGE CLASS
          **********************************************************/
 
@@ -1871,6 +1929,29 @@ namespace rpgss {
                     len,
                     scale,
                     graphics::RGBA8888ToRGBA(color)
+                );
+
+                return 0;
+            }
+
+            //---------------------------------------------------------
+            int drawWindow(lua_State* L)
+            {
+                graphics::WindowSkin* windowSkin = WindowSkinWrapper::Get(L, 2);
+                int x = luaL_checkint(L, 3);
+                int y = luaL_checkint(L, 4);
+                int w = luaL_checkint(L, 5);
+                int h = luaL_checkint(L, 6);
+                int opacity = luaL_optint(L, 7, 255);
+
+                luaL_argcheck(L, w >= 0, 5, "invalid width");
+                luaL_argcheck(L, h >= 0, 6, "invalid height");
+                luaL_argcheck(L, opacity >= 0 && opacity <= 255, 7, "invalid opacity");
+
+                This->drawWindow(
+                    windowSkin,
+                    Recti(x, y, w, h),
+                    opacity
                 );
 
                 return 0;
@@ -4971,6 +5052,244 @@ namespace rpgss {
         }
 
         //---------------------------------------------------------
+        int graphics_drawWindow(lua_State* L)
+        {
+            graphics::WindowSkin* windowSkin = WindowSkinWrapper::Get(L, 1);
+            int x = luaL_checkint(L, 2);
+            int y = luaL_checkint(L, 3);
+            int w = luaL_checkint(L, 4);
+            int h = luaL_checkint(L, 5);
+            int opacity = luaL_optint(L, 6, 255);
+
+            luaL_argcheck(L, w >= 0, 4, "invalid width");
+            luaL_argcheck(L, h >= 0, 5, "invalid height");
+            luaL_argcheck(L, opacity >= 0 && opacity <= 255, 6, "invalid opacity");
+
+            int x1 = x;
+            int y1 = y;
+            int x2 = x + w - 1;
+            int y2 = y + h - 1;
+
+            const graphics::Image* tlBorder = windowSkin->getBorderImage(graphics::WindowSkin::TopLeftBorder);
+            const graphics::Image* trBorder = windowSkin->getBorderImage(graphics::WindowSkin::TopRightBorder);
+            const graphics::Image* brBorder = windowSkin->getBorderImage(graphics::WindowSkin::BottomRightBorder);
+            const graphics::Image* blBorder = windowSkin->getBorderImage(graphics::WindowSkin::BottomLeftBorder);
+
+            // top left edge
+            graphics::primitives::TexturedRectangle(
+                Graphics::Pixels(),
+                Graphics::Pitch(),
+                Graphics::ClipRect,
+                Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()),
+                tlBorder->getPixels(),
+                tlBorder->getWidth(),
+                Recti(tlBorder->getDimensions()),
+                rgb565_mix()
+            );
+
+            // top right edge
+            graphics::primitives::TexturedRectangle(
+                Graphics::Pixels(),
+                Graphics::Pitch(),
+                Graphics::ClipRect,
+                Vec2i(x2 + 1, y1 - trBorder->getHeight()),
+                trBorder->getPixels(),
+                trBorder->getWidth(),
+                Recti(trBorder->getDimensions()),
+                rgb565_mix()
+            );
+
+            // bottom right edge
+            graphics::primitives::TexturedRectangle(
+                Graphics::Pixels(),
+                Graphics::Pitch(),
+                Graphics::ClipRect,
+                Vec2i(x2 + 1, y2 + 1 ),
+                brBorder->getPixels(),
+                brBorder->getWidth(),
+                Recti(brBorder->getDimensions()),
+                rgb565_mix()
+            );
+
+            // bottom left edge
+            graphics::primitives::TexturedRectangle(
+                Graphics::Pixels(),
+                Graphics::Pitch(),
+                Graphics::ClipRect,
+                Vec2i(x1 - blBorder->getWidth(), y2 + 1 ),
+                blBorder->getPixels(),
+                blBorder->getWidth(),
+                Recti(blBorder->getDimensions()),
+                rgb565_mix()
+            );
+
+            // top and bottom borders
+            if (w > 0) {
+                const graphics::Image* tBorder  = windowSkin->getBorderImage(graphics::WindowSkin::TopBorder);
+                const graphics::Image* bBorder  = windowSkin->getBorderImage(graphics::WindowSkin::BottomBorder);
+
+                int i;
+
+                // top border
+                i = x1;
+                while ((x2 - i) + 1 >= tBorder->getWidth()) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(i, y1 - tBorder->getHeight()),
+                        tBorder->getPixels(),
+                        tBorder->getWidth(),
+                        Recti(tBorder->getDimensions()),
+                        rgb565_mix()
+                    );
+
+                    i += tBorder->getWidth();
+                }
+
+                if ((x2 - i) + 1 > 0) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(i, y1 - tBorder->getHeight()),
+                        tBorder->getPixels(),
+                        tBorder->getWidth(),
+                        Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()),
+                        rgb565_mix()
+                    );
+                }
+
+                // bottom border
+                i = x1;
+                while ((x2 - i) + 1 >= bBorder->getWidth()) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(i, y2 + 1),
+                        bBorder->getPixels(),
+                        bBorder->getWidth(),
+                        Recti(bBorder->getDimensions()),
+                        rgb565_mix()
+                    );
+
+                    i += bBorder->getWidth();
+                }
+
+                if ((x2 - i) + 1 > 0) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(i, y2 + 1),
+                        bBorder->getPixels(),
+                        bBorder->getWidth(),
+                        Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()),
+                        rgb565_mix()
+                    );
+                }
+            }
+
+            // left and right borders
+            if (h > 0) {
+                const graphics::Image* lBorder  = windowSkin->getBorderImage(graphics::WindowSkin::LeftBorder);
+                const graphics::Image* rBorder  = windowSkin->getBorderImage(graphics::WindowSkin::RightBorder);
+
+                int i;
+
+                // left border
+                i = y1;
+                while ((y2 - i) + 1 >= lBorder->getHeight()) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(x1 - lBorder->getWidth(), i),
+                        lBorder->getPixels(),
+                        lBorder->getWidth(),
+                        Recti(lBorder->getDimensions()),
+                        rgb565_mix()
+                    );
+
+                    i += lBorder->getHeight();
+                }
+
+                if ((y2 - i) + 1 > 0) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(x1 - lBorder->getWidth(), i),
+                        lBorder->getPixels(),
+                        lBorder->getWidth(),
+                        Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1),
+                        rgb565_mix()
+                    );
+                }
+
+                // right border
+                i = y1;
+                while ((y2 - i) + 1 >= rBorder->getHeight()) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(x2 + 1, i),
+                        rBorder->getPixels(),
+                        rBorder->getWidth(),
+                        Recti(rBorder->getDimensions()),
+                        rgb565_mix()
+                    );
+
+                    i += rBorder->getHeight();
+                }
+
+                if ((y2 - i) + 1 > 0) {
+                    graphics::primitives::TexturedRectangle(
+                        Graphics::Pixels(),
+                        Graphics::Pitch(),
+                        Graphics::ClipRect,
+                        Vec2i(x2 + 1, i),
+                        rBorder->getPixels(),
+                        rBorder->getWidth(),
+                        Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1),
+                        rgb565_mix()
+                    );
+                }
+            }
+
+            // background
+            if (w > 0 && h > 0) {
+                graphics::RGBA tlColor = windowSkin->getBgColor(graphics::WindowSkin::TopLeftBgColor);
+                graphics::RGBA trColor = windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor);
+                graphics::RGBA brColor = windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor);
+                graphics::RGBA blColor = windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor);
+
+                // apply opacity
+                tlColor.alpha = (tlColor.alpha * opacity) / 255;
+                trColor.alpha = (trColor.alpha * opacity) / 255;
+                brColor.alpha = (brColor.alpha * opacity) / 255;
+                blColor.alpha = (blColor.alpha * opacity) / 255;
+
+                graphics::primitives::Rectangle(
+                    Graphics::Pixels(),
+                    Graphics::Pitch(),
+                    Graphics::ClipRect,
+                    true,
+                    Recti(x, y, w, h),
+                    tlColor,
+                    trColor,
+                    brColor,
+                    blColor,
+                    rgb565_mix()
+                );
+            }
+
+            return 0;
+        }
+
+        //---------------------------------------------------------
         int graphics_newFont(lua_State* L)
         {
             if (lua_isstring(L, 1))
@@ -4981,7 +5300,11 @@ namespace rpgss {
                 graphics::Image::Ptr fontImage = graphics::ReadImage(filename);
                 if (fontImage) {
                     graphics::Font::Ptr font = graphics::Font::New(fontImage);
-                    luabridge::push(L, FontWrapper(font));
+                    if (font) {
+                        luabridge::push(L, FontWrapper(font));
+                    } else {
+                        lua_pushnil(L);
+                    }
                 } else {
                     lua_pushnil(L);
                 }
@@ -4991,7 +5314,46 @@ namespace rpgss {
                 // newFont(fontImage)
                 graphics::Image* fontImage = ImageWrapper::Get(L, 1);
                 graphics::Font::Ptr font = graphics::Font::New(fontImage);
-                luabridge::push(L, FontWrapper(font));
+                if (font) {
+                    luabridge::push(L, FontWrapper(font));
+                } else {
+                    lua_pushnil(L);
+                }
+            }
+
+            return 1;
+        }
+
+        //---------------------------------------------------------
+        int graphics_newWindowSkin(lua_State* L)
+        {
+            if (lua_isstring(L, 1))
+            {
+                // newWindowSkin(filename)
+                const char* filename = luaL_checkstring(L, 1);
+
+                graphics::Image::Ptr windowSkinImage = graphics::ReadImage(filename);
+                if (windowSkinImage) {
+                    graphics::WindowSkin::Ptr windowSkin = graphics::WindowSkin::New(windowSkinImage);
+                    if (windowSkin) {
+                        luabridge::push(L, WindowSkinWrapper(windowSkin));
+                    } else {
+                        lua_pushnil(L);
+                    }
+                } else {
+                    lua_pushnil(L);
+                }
+            }
+            else
+            {
+                // newWindowSkin(windowSkinImage)
+                graphics::Image* windowSkinImage = ImageWrapper::Get(L, 1);
+                graphics::WindowSkin::Ptr windowSkin = graphics::WindowSkin::New(windowSkinImage);
+                if (windowSkin) {
+                    luabridge::push(L, WindowSkinWrapper(windowSkin));
+                } else {
+                    lua_pushnil(L);
+                }
             }
 
             return 1;
@@ -6169,6 +6531,9 @@ namespace rpgss {
                             .addCFunction("wordWrapString",     &FontWrapper::wordWrapString)
                         .endClass()
 
+                        .beginClass<WindowSkinWrapper>("WindowSkin")
+                        .endClass()
+
                         .beginClass<ImageWrapper>("Image")
                             .addProperty("width",               &ImageWrapper::get_width)
                             .addProperty("height",              &ImageWrapper::get_height)
@@ -6196,6 +6561,7 @@ namespace rpgss {
                             .addCFunction("draw",               &ImageWrapper::draw)
                             .addCFunction("drawq",              &ImageWrapper::drawq)
                             .addCFunction("drawText",           &ImageWrapper::drawText)
+                            .addCFunction("drawWindow",         &ImageWrapper::drawWindow)
                         .endClass()
 
                         .addProperty("width",                   &graphics_get_width)
@@ -6221,7 +6587,9 @@ namespace rpgss {
                         .addCFunction("draw",                   &graphics_draw)
                         .addCFunction("drawq",                  &graphics_drawq)
                         .addCFunction("drawText",               &graphics_drawText)
+                        .addCFunction("drawWindow",             &graphics_drawWindow)
                         .addCFunction("newFont",                &graphics_newFont)
+                        .addCFunction("newWindowSkin",          &graphics_newWindowSkin)
                         .addCFunction("newImage",               &graphics_newImage)
                         .addCFunction("readImage",              &graphics_readImage)
                         .addCFunction("writeImage",             &graphics_writeImage)

@@ -8,6 +8,7 @@
 #include "primitives.hpp"
 #include "cpuinfo.hpp"
 #include "Font.hpp"
+#include "WindowSkin.hpp"
 #include "Image.hpp"
 
 
@@ -1447,6 +1448,110 @@ namespace rpgss {
                         break;
                     }
                 }
+            }
+        }
+
+        //-----------------------------------------------------------------
+        void
+        Image::drawWindow(const WindowSkin* windowSkin, Recti windowRect, int opacity)
+        {
+            if (!windowRect.isValid())
+            {
+                return;
+            }
+
+            int x1 = windowRect.ul.x;
+            int y1 = windowRect.ul.y;
+            int x2 = windowRect.lr.x;
+            int y2 = windowRect.lr.y;
+
+            const Image* tlBorder = windowSkin->getBorderImage(WindowSkin::TopLeftBorder);
+            const Image* trBorder = windowSkin->getBorderImage(WindowSkin::TopRightBorder);
+            const Image* brBorder = windowSkin->getBorderImage(WindowSkin::BottomRightBorder);
+            const Image* blBorder = windowSkin->getBorderImage(WindowSkin::BottomLeftBorder);
+
+            // top left edge
+            draw(tlBorder, Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()));
+
+            // top right edge
+            draw(trBorder, Vec2i(x2 + 1, y1 - trBorder->getHeight()));
+
+            // bottom right edge
+            draw(brBorder, Vec2i(x2 + 1, y2 + 1 ));
+
+            // bottom left edge
+            draw(blBorder, Vec2i(x1 - blBorder->getWidth(), y2 + 1 ));
+
+            // top and bottom borders
+            if (windowRect.getWidth() > 0) {
+                const Image* tBorder  = windowSkin->getBorderImage(WindowSkin::TopBorder);
+                const Image* bBorder  = windowSkin->getBorderImage(WindowSkin::BottomBorder);
+
+                int i;
+
+                // top border
+                i = x1;
+                while ((x2 - i) + 1 >= tBorder->getWidth()) {
+                    draw(tBorder, Vec2i(i, y1 - tBorder->getHeight()));
+                    i += tBorder->getWidth();
+                }
+                if ((x2 - i) + 1 > 0) {
+                    draw(tBorder, Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()), Vec2i(i, y1 - tBorder->getHeight()));
+                }
+
+                // bottom border
+                i = x1;
+                while ((x2 - i) + 1 >= bBorder->getWidth()) {
+                    draw(bBorder, Vec2i(i, y2 + 1));
+                    i += bBorder->getWidth();
+                }
+                if ((x2 - i) + 1 > 0) {
+                    draw(bBorder, Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()), Vec2i(i, y2 + 1));
+                }
+            }
+
+            // left and right borders
+            if (windowRect.getHeight() > 0) {
+                const Image* lBorder  = windowSkin->getBorderImage(WindowSkin::LeftBorder);
+                const Image* rBorder  = windowSkin->getBorderImage(WindowSkin::RightBorder);
+
+                int i;
+
+                // left border
+                i = y1;
+                while ((y2 - i) + 1 >= lBorder->getHeight()) {
+                    draw(lBorder, Vec2i(x1 - lBorder->getWidth(), i));
+                    i += lBorder->getHeight();
+                }
+                if ((y2 - i) + 1 > 0) {
+                    draw(lBorder, Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1), Vec2i(x1 - lBorder->getWidth(), i));
+                }
+
+                // right border
+                i = y1;
+                while ((y2 - i) + 1 >= rBorder->getHeight()) {
+                    draw(rBorder, Vec2i(x2 + 1, i));
+                    i += rBorder->getHeight();
+                }
+                if ((y2 - i) + 1 > 0) {
+                    draw(rBorder, Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1), Vec2i(x2 + 1, i));
+                }
+            }
+
+            // background
+            if (!windowRect.isEmpty()) {
+                RGBA tlColor = windowSkin->getBgColor(WindowSkin::TopLeftBgColor);
+                RGBA trColor = windowSkin->getBgColor(WindowSkin::TopRightBgColor);
+                RGBA brColor = windowSkin->getBgColor(WindowSkin::BottomRightBgColor);
+                RGBA blColor = windowSkin->getBgColor(WindowSkin::BottomLeftBgColor);
+
+                // apply opacity
+                tlColor.alpha = (tlColor.alpha * opacity) / 255;
+                trColor.alpha = (trColor.alpha * opacity) / 255;
+                brColor.alpha = (brColor.alpha * opacity) / 255;
+                blColor.alpha = (blColor.alpha * opacity) / 255;
+
+                drawRectangle(true, windowRect, tlColor, trColor, brColor, blColor);
             }
         }
 

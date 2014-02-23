@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstring>
 
-#include "../debug/debug.hpp"
+#include "../core/Rect.hpp"
 #include "Font.hpp"
 
 #define RPGSS_MIN_FONT_CHAR_WIDTH  2
@@ -23,7 +23,7 @@ namespace rpgss {
 
             Font::Ptr font = new Font();
 
-            if (!font->initChars(fontImage)) {
+            if (!font->initFromImage(fontImage)) {
                 return 0;
             }
 
@@ -45,7 +45,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         bool
-        Font::initChars(Image* fontImage)
+        Font::initFromImage(Image* fontImage)
         {
             assert(fontImage);
 

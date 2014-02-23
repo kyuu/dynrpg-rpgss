@@ -36,7 +36,7 @@ namespace rpgss {
             Font();
             ~Font();
 
-            bool initChars(Image* charAtlas);
+            bool initFromImage(Image* fontImage);
 
         private:
             std::vector<Image::Ptr> _chars;

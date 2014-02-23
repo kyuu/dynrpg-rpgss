@@ -124,6 +124,8 @@
 		<Unit filename="../source/rpgss/graphics/Image.cpp" />
 		<Unit filename="../source/rpgss/graphics/Image.hpp" />
 		<Unit filename="../source/rpgss/graphics/RGBA.hpp" />
+		<Unit filename="../source/rpgss/graphics/WindowSkin.cpp" />
+		<Unit filename="../source/rpgss/graphics/WindowSkin.hpp" />
 		<Unit filename="../source/rpgss/graphics/cpuinfo.cpp" />
 		<Unit filename="../source/rpgss/graphics/cpuinfo.hpp" />
 		<Unit filename="../source/rpgss/graphics/graphics.cpp" />
