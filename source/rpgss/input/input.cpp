@@ -131,7 +131,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        Vec2i GetMousePosition()
+        core::Vec2i GetMousePosition()
         {
             POINT mousePos;
             GetCursorPos(&mousePos);
@@ -144,7 +144,7 @@ namespace rpgss {
                     mousePos.y /= 2;
                 }
             }
-            return Vec2i(mousePos.x, mousePos.y);
+            return core::Vec2i(mousePos.x, mousePos.y);
         }
 
         //-----------------------------------------------------------------

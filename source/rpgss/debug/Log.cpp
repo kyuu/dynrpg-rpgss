@@ -1,6 +1,6 @@
 #include <ctime>
 
-#include "../util/util.hpp"
+#include "../common/stringutil.hpp"
 #include "Log.hpp"
 
 
@@ -63,7 +63,7 @@ namespace rpgss {
             }
 
             std::vector<std::string> lines;
-            util::SplitString(_msg.str(), '\n', lines);
+            SplitString(_msg.str(), '\n', lines);
 
             for (size_t i = 0; i < lines.size(); i++) {
                 s_outputStream << oss.str() << lines[i] << std::endl;

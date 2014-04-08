@@ -163,17 +163,17 @@ namespace rpgss {
 
              _borderImages.resize(8);
 
-            _borderImages[TopLeftBorder]     = windowSkinImage->copyRect(Recti(tl_x1, tl_y1, (tl_x2 - tl_x1) + 1, (tl_y2 - tl_y1) + 1));
-            _borderImages[TopRightBorder]    = windowSkinImage->copyRect(Recti(tr_x1, tr_y1, (tr_x2 - tr_x1) + 1, (tr_y2 - tr_y1) + 1));
+            _borderImages[TopLeftBorder]     = windowSkinImage->copyRect(core::Recti(tl_x1, tl_y1, (tl_x2 - tl_x1) + 1, (tl_y2 - tl_y1) + 1));
+            _borderImages[TopRightBorder]    = windowSkinImage->copyRect(core::Recti(tr_x1, tr_y1, (tr_x2 - tr_x1) + 1, (tr_y2 - tr_y1) + 1));
 
-            _borderImages[BottomLeftBorder]  = windowSkinImage->copyRect(Recti(bl_x1, bl_y1, (bl_x2 - bl_x1) + 1, (bl_y2 - bl_y1) + 1));
-            _borderImages[BottomRightBorder] = windowSkinImage->copyRect(Recti(br_x1, br_y1, (br_x2 - br_x1) + 1, (br_y2 - br_y1) + 1));
+            _borderImages[BottomLeftBorder]  = windowSkinImage->copyRect(core::Recti(bl_x1, bl_y1, (bl_x2 - bl_x1) + 1, (bl_y2 - bl_y1) + 1));
+            _borderImages[BottomRightBorder] = windowSkinImage->copyRect(core::Recti(br_x1, br_y1, (br_x2 - br_x1) + 1, (br_y2 - br_y1) + 1));
 
-            _borderImages[TopBorder]         = windowSkinImage->copyRect(Recti(tl_x2 + 2, tl_y1, (tr_x1 - 2) - (tl_x2 + 2) + 1, (tl_y2 - tl_y1) + 1));
-            _borderImages[BottomBorder]      = windowSkinImage->copyRect(Recti(bl_x2 + 2, bl_y1, (br_x1 - 2) - (bl_x2 + 2) + 1, (bl_y2 - bl_y1) + 1));
+            _borderImages[TopBorder]         = windowSkinImage->copyRect(core::Recti(tl_x2 + 2, tl_y1, (tr_x1 - 2) - (tl_x2 + 2) + 1, (tl_y2 - tl_y1) + 1));
+            _borderImages[BottomBorder]      = windowSkinImage->copyRect(core::Recti(bl_x2 + 2, bl_y1, (br_x1 - 2) - (bl_x2 + 2) + 1, (bl_y2 - bl_y1) + 1));
 
-            _borderImages[LeftBorder]        = windowSkinImage->copyRect(Recti(tl_x1, tl_y2 + 2, (tl_x2 - tl_x1) + 1, (bl_y1 - 2) - (tl_y2 + 2) + 1));
-            _borderImages[RightBorder]       = windowSkinImage->copyRect(Recti(tr_x1, tr_y2 + 2, (tr_x2 - tr_x1) + 1, (br_y1 - 2) - (tr_y2 + 2) + 1));
+            _borderImages[LeftBorder]        = windowSkinImage->copyRect(core::Recti(tl_x1, tl_y2 + 2, (tl_x2 - tl_x1) + 1, (bl_y1 - 2) - (tl_y2 + 2) + 1));
+            _borderImages[RightBorder]       = windowSkinImage->copyRect(core::Recti(tr_x1, tr_y2 + 2, (tr_x2 - tr_x1) + 1, (br_y1 - 2) - (tr_y2 + 2) + 1));
 
             /*
              * extract background colors

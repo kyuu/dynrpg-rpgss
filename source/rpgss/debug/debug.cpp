@@ -15,7 +15,7 @@ namespace rpgss {
         //---------------------------------------------------------
         void ShowMessage(const char* format, ...)
         {
-            ByteArray::Ptr buffer = ByteArray::New(4096);
+            core::ByteArray::Ptr buffer = core::ByteArray::New(4096);
             std::string msg;
 
             // format message
@@ -44,7 +44,7 @@ namespace rpgss {
         //---------------------------------------------------------
         void ShowError(const char* format, ...)
         {
-            ByteArray::Ptr buffer = ByteArray::New(4096);
+            core::ByteArray::Ptr buffer = core::ByteArray::New(4096);
             std::string msg;
 
             // format message

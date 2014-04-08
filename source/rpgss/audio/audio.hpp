@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "../io/Stream.hpp"
+#include "../io/File.hpp"
 #include "Sound.hpp"
 #include "SoundEffect.hpp"
 
@@ -15,9 +15,9 @@ namespace rpgss {
         void DeinitAudioSubsystem();
 
         Sound::Ptr OpenSound(const std::string& filename);
-        Sound::Ptr OpenSound(io::Stream* istream);
+        Sound::Ptr OpenSound(io::File* istream);
         SoundEffect::Ptr OpenSoundEffect(const std::string& filename);
-        SoundEffect::Ptr OpenSoundEffect(io::Stream* istream);
+        SoundEffect::Ptr OpenSoundEffect(io::File* istream);
 
     } // namespace audio
 } // namespace rpgss

@@ -24,4 +24,4 @@ namespace rpgss {
 } // namespace rpgss
 
 
-#endif
+#endif // RPGSS_TYPES_HPP_INCLUDED

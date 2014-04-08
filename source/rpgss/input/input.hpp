@@ -114,7 +114,7 @@ namespace rpgss {
 
         bool  IsKeyPressed(int key);
         bool  IsAnyKeyPressed();
-        Vec2i GetMousePosition();
+        core::Vec2i GetMousePosition();
         bool  IsMouseButtonPressed(int mbutton);
         bool  IsAnyMouseButtonPressed();
 

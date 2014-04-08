@@ -4,9 +4,9 @@
 
 #include <emmintrin.h>
 
+#include "../common/cpuinfo.hpp"
 #include "../debug/debug.hpp"
 #include "primitives.hpp"
-#include "cpuinfo.hpp"
 #include "Font.hpp"
 #include "WindowSkin.hpp"
 #include "Image.hpp"
@@ -108,12 +108,12 @@ namespace rpgss {
             _width    = new_width;
             _height   = new_height;
             _pixels   = new_pixels;
-            _clipRect = Recti(new_width, new_height);
+            _clipRect = core::Recti(new_width, new_height);
         }
 
         //-----------------------------------------------------------------
         void
-        Image::setClipRect(const Recti& clipRect)
+        Image::setClipRect(const core::Recti& clipRect)
         {
             if (clipRect.isValid() && clipRect.isInside(0, 0, _width, _height)) {
                 _clipRect = clipRect;
@@ -139,7 +139,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         Image::Ptr
-        Image::copyRect_generic(const Recti& rect, Image* destination)
+        Image::copyRect_generic(const core::Recti& rect, Image* destination)
         {
             if (rect.isEmpty() || !rect.isInside(0, 0, _width, _height)) {
                 return 0;
@@ -170,7 +170,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         Image::Ptr
-        Image::copyRect_sse2(const Recti& rect, Image* destination)
+        Image::copyRect_sse2(const core::Recti& rect, Image* destination)
         {
             if (rect.isEmpty() || !rect.isInside(0, 0, _width, _height)) {
                 return 0;
@@ -215,9 +215,9 @@ namespace rpgss {
 
         //-------------------- ---------------------------------------------
         Image::Ptr
-        Image::copyRect(const Recti& rect, Image* destination)
+        Image::copyRect(const core::Recti& rect, Image* destination)
         {
-            if (CPUSupportsSSE2()) {
+            if (CpuSupportsSse2()) {
                 return copyRect_sse2(rect, destination);
             } else {
                 return copyRect_generic(rect, destination);
@@ -310,7 +310,7 @@ namespace rpgss {
         void
         Image::clear(RGBA color)
         {
-            if (CPUSupportsSSE2()) {
+            if (CpuSupportsSse2()) {
                 return clear_sse2(color);
             } else {
                 return clear_generic(color);
@@ -502,7 +502,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawPoint(const Vec2i& pos, RGBA color)
+        Image::drawPoint(const core::Vec2i& pos, RGBA color)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Point(_pixels, _width, _clipRect, pos, color, rgba_set()); break;
@@ -515,7 +515,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawLine(const Vec2i& startPos, const Vec2i& endPos, RGBA color)
+        Image::drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA color)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, color, rgba_set()); break;
@@ -528,7 +528,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawLine(const Vec2i& startPos, const Vec2i& endPos, RGBA startColor, RGBA endColor)
+        Image::drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA startColor, RGBA endColor)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, startColor, endColor, rgba_set()); break;
@@ -541,7 +541,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawRectangle(bool fill, const Recti& rect, RGBA color)
+        Image::drawRectangle(bool fill, const core::Recti& rect, RGBA color)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, color, rgba_set()); break;
@@ -554,7 +554,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawRectangle(bool fill, const Recti& rect, RGBA ulColor, RGBA urColor, RGBA lrColor, RGBA llColor)
+        Image::drawRectangle(bool fill, const core::Recti& rect, RGBA ulColor, RGBA urColor, RGBA lrColor, RGBA llColor)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, ulColor, urColor, lrColor, llColor, rgba_set()); break;
@@ -567,7 +567,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawCircle(bool fill, const Vec2i& center, int radius, RGBA color)
+        Image::drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA color)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, color, rgba_set()); break;
@@ -580,7 +580,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawCircle(bool fill, const Vec2i& center, int radius, RGBA innerColor, RGBA outerColor)
+        Image::drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA innerColor, RGBA outerColor)
         {
             switch (_blendMode) {
             case BlendMode::Set:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, innerColor, outerColor, rgba_set()); break;
@@ -593,14 +593,14 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawTriangle(bool fill, const Vec2i& p1, const Vec2i& p2, const Vec2i& p3, RGBA color)
+        Image::drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA color)
         {
             // TODO
         }
 
         //-----------------------------------------------------------------
         void
-        Image::drawTriangle(bool fill, const Vec2i& p1, const Vec2i& p2, const Vec2i& p3, RGBA c1, RGBA c2, RGBA c3)
+        Image::drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA c1, RGBA c2, RGBA c3)
         {
             // TODO
         }
@@ -698,19 +698,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_set(const Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_set(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_set fallback_renderer;
 
@@ -757,19 +757,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_add(const Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_add(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_add fallback_renderer;
 
@@ -819,19 +819,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_sub(const Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_sub(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_sub fallback_renderer;
 
@@ -881,19 +881,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_mul(const Image* image, const Recti& image_rect, const Vec2i& pos)
+        Image::draw_sse2_mul(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_mul fallback_renderer;
 
@@ -960,19 +960,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_set(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_set(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_set_col fallback_renderer(color);
 
@@ -1031,19 +1031,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_add(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_add(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_add_col fallback_renderer(color);
 
@@ -1106,19 +1106,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_sub(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_sub(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_sub_col fallback_renderer(color);
 
@@ -1181,19 +1181,19 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw_sse2_mul(const Image* image, const Recti& image_rect, const Vec2i& pos, RGBA color)
+        Image::draw_sse2_mul(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, RGBA color)
         {
             if (_clipRect.isEmpty() || image_rect.isEmpty()) {
                 return;
             }
 
-            Recti dst_rect = Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
+            core::Recti dst_rect = core::Recti(pos, image_rect.getDimensions()).getIntersection(_clipRect);
 
             if (dst_rect.isEmpty()) {
                 return;
             }
 
-            Recti src_rect = Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
+            core::Recti src_rect = core::Recti(image_rect.getPosition() + (dst_rect.getPosition() - pos), dst_rect.getDimensions());
 
             rgba_mul_col fallback_renderer(color);
 
@@ -1270,17 +1270,17 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw(const Image* image, const Vec2i& pos, float rotate, float scale, RGBA color)
+        Image::draw(const Image* image, const core::Vec2i& pos, float rotate, float scale, RGBA color)
         {
-            Recti image_rect = Recti(image->getDimensions());
+            core::Recti image_rect = core::Recti(image->getDimensions());
             draw(image, image_rect, pos, rotate, scale, color);
         }
 
         //-----------------------------------------------------------------
         void
-        Image::draw(const Image* image, const Recti& image_rect, const Vec2i& pos, float rotate, float scale, RGBA color)
+        Image::draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float rotate, float scale, RGBA color)
         {
-            if (CPUSupportsSSE2() && (rotate == 0.0 && scale == 1.0))
+            if (CpuSupportsSse2() && (rotate == 0.0 && scale == 1.0))
             {
                 if (color == RGBA(255, 255, 255, 255))
                 {
@@ -1327,7 +1327,7 @@ namespace rpgss {
             }
             else if (rotate == 0.0)
             {
-                Recti rect = Recti(pos, image->getDimensions()).scale(scale);
+                core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
 
                 if (color == RGBA(255, 255, 255, 255))
                 {
@@ -1352,13 +1352,13 @@ namespace rpgss {
             }
             else
             {
-                Recti rect = Recti(pos, image->getDimensions()).scale(scale);
-                Vec2i center_of_rotation = rect.getCenter();
+                core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
+                core::Vec2i center_of_rotation = rect.getCenter();
 
-                Vec2i ul = rect.getUpperLeft().rotateBy(rotate, center_of_rotation);
-                Vec2i ur = rect.getUpperRight().rotateBy(rotate, center_of_rotation);
-                Vec2i lr = rect.getLowerRight().rotateBy(rotate, center_of_rotation);
-                Vec2i ll = rect.getLowerLeft().rotateBy(rotate, center_of_rotation);
+                core::Vec2i ul = rect.getUpperLeft().rotateBy(rotate, center_of_rotation);
+                core::Vec2i ur = rect.getUpperRight().rotateBy(rotate, center_of_rotation);
+                core::Vec2i lr = rect.getLowerRight().rotateBy(rotate, center_of_rotation);
+                core::Vec2i ll = rect.getLowerLeft().rotateBy(rotate, center_of_rotation);
 
                 drawq(image, image_rect, ul, ur, lr, ll, color);
             }
@@ -1366,17 +1366,17 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawq(const Image* image, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color)
+        Image::drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color)
         {
-            Recti image_rect = Recti(image->getDimensions());
+            core::Recti image_rect = core::Recti(image->getDimensions());
             drawq(image, image_rect, ul, ur, lr, ll, color);
         }
 
         //-----------------------------------------------------------------
         void
-        Image::drawq(const Image* image, const Recti& image_rect, const Vec2i& ul, const Vec2i& ur, const Vec2i& lr, const Vec2i& ll, RGBA color)
+        Image::drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color)
         {
-            Vec2i pos[4] = { ul, ur, lr, ll };
+            core::Vec2i pos[4] = { ul, ur, lr, ll };
 
             if (color == RGBA(255, 255, 255, 255))
             {
@@ -1402,7 +1402,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawText(const Font* font, Vec2i pos, const char* text, int len, float scale, RGBA color)
+        Image::drawText(const Font* font, core::Vec2i pos, const char* text, int len, float scale, RGBA color)
         {
             if (len < 0) {
                 len = std::strlen(text);
@@ -1449,10 +1449,10 @@ namespace rpgss {
                                     _pixels,
                                     _width,
                                     _clipRect,
-                                    Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
+                                    core::Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
                                     char_image->getPixels(),
                                     char_image->getWidth(),
-                                    Recti(char_image->getDimensions()),
+                                    core::Recti(char_image->getDimensions()),
                                     rgba_mix()
                                 );
                             }
@@ -1462,10 +1462,10 @@ namespace rpgss {
                                     _pixels,
                                     _width,
                                     _clipRect,
-                                    Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
+                                    core::Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
                                     char_image->getPixels(),
                                     char_image->getWidth(),
-                                    Recti(char_image->getDimensions()),
+                                    core::Recti(char_image->getDimensions()),
                                     rgba_mix_col(color)
                                 );
                             }
@@ -1479,7 +1479,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawWindow(const WindowSkin* windowSkin, Recti windowRect, int opacity)
+        Image::drawWindow(const WindowSkin* windowSkin, core::Recti windowRect, int opacity)
         {
             if (!windowRect.isValid())
             {
@@ -1530,10 +1530,10 @@ namespace rpgss {
                 _pixels,
                 _width,
                 _clipRect,
-                Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()),
+                core::Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()),
                 tlBorder->getPixels(),
                 tlBorder->getWidth(),
-                Recti(tlBorder->getDimensions()),
+                core::Recti(tlBorder->getDimensions()),
                 rgba_mix()
             );
 
@@ -1542,10 +1542,10 @@ namespace rpgss {
                 _pixels,
                 _width,
                 _clipRect,
-                Vec2i(x2 + 1, y1 - trBorder->getHeight()),
+                core::Vec2i(x2 + 1, y1 - trBorder->getHeight()),
                 trBorder->getPixels(),
                 trBorder->getWidth(),
-                Recti(trBorder->getDimensions()),
+                core::Recti(trBorder->getDimensions()),
                 rgba_mix()
             );
 
@@ -1554,10 +1554,10 @@ namespace rpgss {
                 _pixels,
                 _width,
                 _clipRect,
-                Vec2i(x2 + 1, y2 + 1 ),
+                core::Vec2i(x2 + 1, y2 + 1 ),
                 brBorder->getPixels(),
                 brBorder->getWidth(),
-                Recti(brBorder->getDimensions()),
+                core::Recti(brBorder->getDimensions()),
                 rgba_mix()
             );
 
@@ -1566,10 +1566,10 @@ namespace rpgss {
                 _pixels,
                 _width,
                 _clipRect,
-                Vec2i(x1 - blBorder->getWidth(), y2 + 1 ),
+                core::Vec2i(x1 - blBorder->getWidth(), y2 + 1 ),
                 blBorder->getPixels(),
                 blBorder->getWidth(),
-                Recti(blBorder->getDimensions()),
+                core::Recti(blBorder->getDimensions()),
                 rgba_mix()
             );
 
@@ -1588,10 +1588,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(i, y1 - tBorder->getHeight()),
+                        core::Vec2i(i, y1 - tBorder->getHeight()),
                         tBorder->getPixels(),
                         tBorder->getWidth(),
-                        Recti(tBorder->getDimensions()),
+                        core::Recti(tBorder->getDimensions()),
                         rgba_mix()
                     );
                     i += tBorder->getWidth();
@@ -1601,10 +1601,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(i, y1 - tBorder->getHeight()),
+                        core::Vec2i(i, y1 - tBorder->getHeight()),
                         tBorder->getPixels(),
                         tBorder->getWidth(),
-                        Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()),
+                        core::Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()),
                         rgba_mix()
                     );
                 }
@@ -1616,10 +1616,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(i, y2 + 1),
+                        core::Vec2i(i, y2 + 1),
                         bBorder->getPixels(),
                         bBorder->getWidth(),
-                        Recti(bBorder->getDimensions()),
+                        core::Recti(bBorder->getDimensions()),
                         rgba_mix()
                     );
                     i += bBorder->getWidth();
@@ -1629,10 +1629,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(i, y2 + 1),
+                        core::Vec2i(i, y2 + 1),
                         bBorder->getPixels(),
                         bBorder->getWidth(),
-                        Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()),
+                        core::Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()),
                         rgba_mix()
                     );
                 }
@@ -1653,10 +1653,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(x1 - lBorder->getWidth(), i),
+                        core::Vec2i(x1 - lBorder->getWidth(), i),
                         lBorder->getPixels(),
                         lBorder->getWidth(),
-                        Recti(lBorder->getDimensions()),
+                        core::Recti(lBorder->getDimensions()),
                         rgba_mix()
                     );
                     i += lBorder->getHeight();
@@ -1666,10 +1666,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(x1 - lBorder->getWidth(), i),
+                        core::Vec2i(x1 - lBorder->getWidth(), i),
                         lBorder->getPixels(),
                         lBorder->getWidth(),
-                        Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1),
+                        core::Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1),
                         rgba_mix()
                     );
                 }
@@ -1681,10 +1681,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(x2 + 1, i),
+                        core::Vec2i(x2 + 1, i),
                         rBorder->getPixels(),
                         rBorder->getWidth(),
-                        Recti(rBorder->getDimensions()),
+                        core::Recti(rBorder->getDimensions()),
                         rgba_mix()
                     );
                     i += rBorder->getHeight();
@@ -1694,10 +1694,10 @@ namespace rpgss {
                         _pixels,
                         _width,
                         _clipRect,
-                        Vec2i(x2 + 1, i),
+                        core::Vec2i(x2 + 1, i),
                         rBorder->getPixels(),
                         rBorder->getWidth(),
-                        Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1),
+                        core::Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1),
                         rgba_mix()
                     );
                 }

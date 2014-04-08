@@ -23,8 +23,8 @@ namespace rpgss {
             void Point(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i& pos,
+                const core::Recti& dstClipRect,
+                const core::Vec2i& pos,
                 RGBA         color,
                 renderT      renderer)
             {
@@ -59,7 +59,7 @@ namespace rpgss {
                 return true;
             }
 
-            static bool clip_line(int& x1, int& y1, int& x2, int& y2, float& u1, float& u2, const Recti& clipRect)
+            static bool clip_line(int& x1, int& y1, int& x2, int& y2, float& u1, float& u2, const core::Recti& clipRect)
             {
                 float dx = (float)(x2 - x1);
                 float dy;
@@ -90,7 +90,7 @@ namespace rpgss {
             }
 
             //-----------------------------------------------------------------
-            inline bool is_line_clipped(int x1, int y1, int x2, int y2, const Recti& clipRect)
+            inline bool is_line_clipped(int x1, int y1, int x2, int y2, const core::Recti& clipRect)
             {
                 // return true if any end point lies outside of the clipping rectangle
                 return (x1 < clipRect.ul.x || x2 < clipRect.ul.x ||
@@ -104,9 +104,9 @@ namespace rpgss {
             void Line(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i& startPos,
-                const Vec2i& endPos,
+                core::Recti  dstClipRect,
+                core::Vec2i  startPos,
+                core::Vec2i  endPos,
                 RGBA         color,
                 renderT      renderer)
             {
@@ -250,9 +250,9 @@ namespace rpgss {
             void Line(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i& startPos,
-                const Vec2i& endPos,
+                core::Recti  dstClipRect,
+                core::Vec2i  startPos,
+                core::Vec2i  endPos,
                 RGBA         startColor,
                 RGBA         endColor,
                 renderT      renderer)
@@ -427,9 +427,9 @@ namespace rpgss {
             void Rectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
+                core::Recti  dstClipRect,
                 bool         fill,
-                const Recti& rect,
+                core::Recti  rect,
                 RGBA         color,
                 renderT      renderer)
             {
@@ -448,7 +448,7 @@ namespace rpgss {
                 else
                 {
                     // filled rectangle
-                    Recti drct = dstClipRect.getIntersection(rect);
+                    core::Recti drct = dstClipRect.getIntersection(rect);
                     if (drct.isEmpty()) {
                         return;
                     }
@@ -493,9 +493,9 @@ namespace rpgss {
             void Rectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
+                core::Recti  dstClipRect,
                 bool         fill,
-                const Recti& rect,
+                core::Recti  rect,
                 RGBA         ulColor,
                 RGBA         urColor,
                 RGBA         lrColor,
@@ -523,7 +523,7 @@ namespace rpgss {
                 else
                 {
                     // filled rectangle
-                    Recti drct = dstClipRect.getIntersection(rect);
+                    core::Recti drct = dstClipRect.getIntersection(rect);
                     if (drct.isEmpty()) {
                         return;
                     }
@@ -606,8 +606,8 @@ namespace rpgss {
             void Triangle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i  vertices[4],
+                core::Recti  dstClipRect,
+                core::Vec2i  vertices[4],
                 RGBA         color,
                 renderT      renderer)
             {
@@ -619,8 +619,8 @@ namespace rpgss {
             void Triangle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i  vertices[4],
+                core::Recti  dstClipRect,
+                core::Vec2i  vertices[4],
                 RGBA         colors[3],
                 renderT      renderer)
             {
@@ -632,9 +632,9 @@ namespace rpgss {
             void Circle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
+                core::Recti  dstClipRect,
                 bool         fill,
-                const Vec2i& center,
+                core::Vec2i  center,
                 int          radius,
                 RGBA         color,
                 renderT      renderer)
@@ -643,7 +643,7 @@ namespace rpgss {
                 int x = center.x;
                 int y = center.y;
 
-                Recti bbox = Recti(x - r, y - r, r * 2, r * 2);
+                core::Recti bbox = core::Recti(x - r, y - r, r * 2, r * 2);
 
                 if (r <= 0 || dstClipRect.isEmpty() || dstClipRect.getIntersection(bbox).isEmpty()) {
                     return;
@@ -783,9 +783,9 @@ namespace rpgss {
             void Circle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
+                core::Recti  dstClipRect,
                 bool         fill,
-                const Vec2i& center,
+                core::Vec2i  center,
                 int          radius,
                 RGBA         innerColor,
                 RGBA         outerColor,
@@ -803,7 +803,7 @@ namespace rpgss {
 
                 if (r <= 0 ||
                     dstClipRect.isEmpty() ||
-                    dstClipRect.getIntersection(Recti(x - r, y - r, r * 2, r * 2)).isEmpty())
+                    dstClipRect.getIntersection(core::Recti(x - r, y - r, r * 2, r * 2)).isEmpty())
                 {
                     return;
                 }
@@ -866,23 +866,23 @@ namespace rpgss {
             void TexturedRectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i& dstPos,
+                core::Recti  dstClipRect,
+                core::Vec2i  dstPos,
                 const srcT*  srcPixels,
                 int          srcPitch,
-                const Recti& srcRect,
+                core::Recti  srcRect,
                 renderT      renderer)
             {
                 if (dstClipRect.isEmpty() || srcRect.isEmpty()) {
                     return;
                 }
 
-                Recti drct = Recti(dstPos, srcRect.getDimensions()).getIntersection(dstClipRect);
+                core::Recti drct = core::Recti(dstPos, srcRect.getDimensions()).getIntersection(dstClipRect);
                 if (drct.isEmpty()) {
                     return;
                 }
 
-                Recti srct(srcRect.getPosition() + (drct.getPosition() - dstPos), drct.getDimensions());
+                core::Recti srct(srcRect.getPosition() + (drct.getPosition() - dstPos), drct.getDimensions());
 
                 const int dinc = dstPitch - drct.getWidth();
                 dstT*     dptr = dstPixels + (drct.getY() * dstPitch) + drct.getX();
@@ -910,11 +910,11 @@ namespace rpgss {
             void TexturedRectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Recti& dstRect,
+                core::Recti  dstClipRect,
+                core::Recti  dstRect,
                 srcT*        srcPixels,
                 int          srcPitch,
-                const Recti& srcRect,
+                core::Recti  srcRect,
                 renderT      renderer)
             {
                 if (dstClipRect.isEmpty() || dstRect.isEmpty() || srcRect.isEmpty()) {
@@ -927,12 +927,12 @@ namespace rpgss {
                     return;
                 }
 
-                Recti drct = dstRect.getIntersection(dstClipRect);
+                core::Recti drct = dstRect.getIntersection(dstClipRect);
                 if (drct.isEmpty()) {
                     return;
                 }
 
-                Recti srct(
+                core::Recti srct(
                     srcRect.getX() + (int)( srcRect.getWidth()  * ( ( drct.getX() - dstRect.getX() ) / (float)dstRect.getWidth()  ) ),
                     srcRect.getY() + (int)( srcRect.getHeight() * ( ( drct.getY() - dstRect.getY() ) / (float)dstRect.getHeight() ) ),
                                      (int)( srcRect.getWidth()  * (   drct.getWidth()                / (float)dstRect.getWidth()  ) ),
@@ -985,11 +985,11 @@ namespace rpgss {
             void TexturedQuad(
                 dstT*        dstPixels,
                 int          dstPitch,
-                const Recti& dstClipRect,
-                const Vec2i  dstPos[4],
+                core::Recti  dstClipRect,
+                core::Vec2i  dstPos[4],
                 srcT*        srcPixels,
                 int          srcPitch,
-                const Recti& srcRect,
+                core::Recti  srcRect,
                 renderT      renderer)
             {
                 if (dstClipRect.isEmpty()) {

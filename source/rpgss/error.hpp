@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "script/lua.hpp"
+#include "script/lua_include.hpp"
 
 
 namespace rpgss {

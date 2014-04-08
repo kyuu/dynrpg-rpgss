@@ -9,77 +9,81 @@
 
 
 namespace rpgss {
+    namespace core {
 
-    class ByteArray : public RefCountedObject {
-    public:
-        typedef RefCountedObjectPtr<ByteArray> Ptr;
+        class ByteArray : public RefCountedObject {
+        public:
+            typedef RefCountedObjectPtr<ByteArray> Ptr;
 
-    public:
-        static ByteArray::Ptr New(int size = 0);
-        static ByteArray::Ptr New(int size, u8 value);
-        static ByteArray::Ptr New(const u8* buffer, int bufferSize);
-        static ByteArray::Ptr New(const ByteArray* that);
+        public:
+            static ByteArray::Ptr New(int size = 0);
+            static ByteArray::Ptr New(int size, u8 value);
+            static ByteArray::Ptr New(const u8* buffer, int bufferSize);
+            static ByteArray::Ptr New(const ByteArray* that);
 
-    public:
-        int getSize() const;
-        u8* getBuffer();
-        const u8* getBuffer() const;
-        u8& at(int n);
-        u8 at(int n) const;
+        public:
+            int getSize() const;
+            u8* getBuffer();
+            const u8* getBuffer() const;
+            u8& at(int n);
+            u8 at(int n) const;
 
-        void resize(int size);
-        void resize(int size, u8 fillValue);
-        void reset(const u8* buffer, int bufferSize);
-        ByteArray::Ptr concat(const ByteArray* that) const;
-        void append(const ByteArray* that);
-        void memset(u8 value);
-        void clear();
-        void swap(ByteArray* that);
+            std::string toString() const;
 
-    private:
-        ByteArray(); // use New()
-        ~ByteArray();
+            void resize(int size);
+            void resize(int size, u8 fillValue);
+            void reset(const u8* buffer, int bufferSize);
+            ByteArray::Ptr concat(const ByteArray* that) const;
+            void append(const ByteArray* that);
+            void memset(u8 value);
+            void clear();
+            void swap(ByteArray* that);
 
-    private:
-        u8* _buffer;
-        int _size;
-    };
+        private:
+            ByteArray(); // use New()
+            ~ByteArray();
 
-    //-----------------------------------------------------------------
-    inline int
-    ByteArray::getSize() const
-    {
-        return _size;
-    }
+        private:
+            u8* _buffer;
+            int _size;
+        };
 
-    //-----------------------------------------------------------------
-    inline u8*
-    ByteArray::getBuffer()
-    {
-        return _buffer;
-    }
+        //-----------------------------------------------------------------
+        inline int
+        ByteArray::getSize() const
+        {
+            return _size;
+        }
 
-    //-----------------------------------------------------------------
-    inline const u8*
-    ByteArray::getBuffer() const
-    {
-        return _buffer;
-    }
+        //-----------------------------------------------------------------
+        inline u8*
+        ByteArray::getBuffer()
+        {
+            return _buffer;
+        }
 
-    //-----------------------------------------------------------------
-    inline u8&
-    ByteArray::at(int n)
-    {
-        return _buffer[n];
-    }
+        //-----------------------------------------------------------------
+        inline const u8*
+        ByteArray::getBuffer() const
+        {
+            return _buffer;
+        }
 
-    //-----------------------------------------------------------------
-    inline u8
-    ByteArray::at(int n) const
-    {
-        return _buffer[n];
-    }
+        //-----------------------------------------------------------------
+        inline u8&
+        ByteArray::at(int n)
+        {
+            return _buffer[n];
+        }
 
+        //-----------------------------------------------------------------
+        inline u8
+        ByteArray::at(int n) const
+        {
+            return _buffer[n];
+        }
+
+    } // namespace core
 } // namespace rpgss
 
 

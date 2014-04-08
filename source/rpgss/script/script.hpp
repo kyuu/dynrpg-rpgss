@@ -1,14 +1,46 @@
 #ifndef RPGSS_SCRIPT_SCRIPT_HPP_INCLUDED
 #define RPGSS_SCRIPT_SCRIPT_HPP_INCLUDED
 
-#include "lua.hpp"
-#include "rpg.hpp"
+#include "../common/RefCountedObjectPtr.hpp"
+#include "lua_include.hpp"
+#include "audio_module/audio_module.hpp"
+#include "core_module/core_module.hpp"
+#include "game_module/game_module.hpp"
+#include "graphics_module/graphics_module.hpp"
+#include "io_module/io_module.hpp"
+#include "keyboard_module/keyboard_module.hpp"
+#include "mouse_module/mouse_module.hpp"
+#include "timer_module/timer_module.hpp"
+#include "util_module/util_module.hpp"
+
 
 #define RPGSS_STACK_TRACE_MAGIC "<7wh39hsfguihw489hw38>"
 
 
+// register rpgss::RefCountedObjectPtr as container in luabridge
+namespace luabridge {
+
+    // forward declaration
+    template <class T>
+    struct ContainerTraits;
+
+    template <class T>
+    struct ContainerTraits <rpgss::RefCountedObjectPtr <T> >
+    {
+        typedef T Type;
+
+        static T* get (rpgss::RefCountedObjectPtr <T> const& c)
+        {
+            return c.get ();
+        }
+    };
+
+} // namespace luabridge
+
 namespace rpgss {
     namespace script {
+
+        bool RegisterModules(lua_State* L);
 
         bool DoFile(lua_State* L, const std::string& filename);
         bool Call(lua_State* L, int nargs, int nresults);

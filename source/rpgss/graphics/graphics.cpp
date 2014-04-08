@@ -6,7 +6,7 @@
 
 #include "../debug/debug.hpp"
 #include "../io/io.hpp"
-#include "cpuinfo.hpp"
+#include "../common/cpuinfo.hpp"
 #include "graphics.hpp"
 
 
@@ -16,7 +16,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         struct CoronaFileAdapter : public corona::DLLImplementation<corona::File>
         {
-            CoronaFileAdapter(io::Stream* stream) : _stream(stream) {
+            CoronaFileAdapter(io::File* stream) : _stream(stream) {
             }
 
             ~CoronaFileAdapter() {
@@ -32,9 +32,9 @@ namespace rpgss {
 
             bool COR_CALL seek(int pos, corona::File::SeekMode mode) {
                 switch (mode) {
-                case corona::File::BEGIN:   return _stream->seek(pos, io::Stream::Begin);
-                case corona::File::CURRENT: return _stream->seek(pos, io::Stream::Current);
-                case corona::File::END:     return _stream->seek(pos, io::Stream::End);
+                case corona::File::BEGIN:   return _stream->seek(pos, io::File::Begin);
+                case corona::File::CURRENT: return _stream->seek(pos, io::File::Current);
+                case corona::File::END:     return _stream->seek(pos, io::File::End);
                 default:
                     return false;
                 }
@@ -45,7 +45,7 @@ namespace rpgss {
             }
 
         private:
-            io::Stream::Ptr _stream;
+            io::File::Ptr _stream;
         };
 
         //-----------------------------------------------------------------
@@ -55,10 +55,10 @@ namespace rpgss {
 
             debug::Log() << "Initializing graphics subsystem...";
 
-            debug::Log() << "CPU supports MMX:  " << (CPUSupportsMMX()  ? "yes" : "no");
-            debug::Log() << "CPU supports SSE:  " << (CPUSupportsSSE()  ? "yes" : "no");
-            debug::Log() << "CPU supports SSE2: " << (CPUSupportsSSE2() ? "yes" : "no");
-            debug::Log() << "CPU supports SSE3: " << (CPUSupportsSSE3() ? "yes" : "no");
+            debug::Log() << "CPU supports MMX:  " << (CpuSupportsMmx()  ? "yes" : "no");
+            debug::Log() << "CPU supports SSE:  " << (CpuSupportsSse()  ? "yes" : "no");
+            debug::Log() << "CPU supports SSE2: " << (CpuSupportsSse2() ? "yes" : "no");
+            debug::Log() << "CPU supports SSE3: " << (CpuSupportsSse3() ? "yes" : "no");
 
             debug::Log() << "Linked Corona version is " << corona::GetVersion();
 
@@ -100,7 +100,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         Image::Ptr ReadImage(const std::string& filename)
         {
-            io::FileStream::Ptr file = io::OpenFile(filename);
+            io::File::Ptr file = io::OpenFile(filename);
 
             if (!file) {
                 return 0;
@@ -110,7 +110,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        Image::Ptr ReadImage(io::Stream* istream)
+        Image::Ptr ReadImage(io::File* istream)
         {
             CoronaFileAdapter fileAdapter(istream);
             std::auto_ptr<corona::Image> img(corona::OpenImage(&fileAdapter, corona::PF_R8G8B8A8));
@@ -125,7 +125,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         bool WriteImage(const Image* image, const std::string& filename)
         {
-            io::FileStream::Ptr file = io::OpenFile(filename, io::Stream::Out);
+            io::File::Ptr file = io::OpenFile(filename, io::File::Out);
 
             if (!file) {
                 return false;
@@ -135,7 +135,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        bool WriteImage(const Image* image, io::Stream* ostream)
+        bool WriteImage(const Image* image, io::File* ostream)
         {
             std::auto_ptr<corona::Image> img(corona::CreateImage(image->getWidth(), image->getHeight(), corona::PF_R8G8B8A8));
 

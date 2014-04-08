@@ -1,5 +1,5 @@
 #include "../debug/debug.hpp"
-#include "../util/util.hpp"
+#include "../common/stringutil.hpp"
 #include "../core/ByteArray.hpp"
 #include "../io/io.hpp"
 #include "script.hpp"
@@ -14,13 +14,13 @@ namespace rpgss {
 
             //---------------------------------------------------------
             struct _io_context {
-                ByteArray::Ptr buffer;
-                io::Stream::Ptr stream;
+                core::ByteArray::Ptr buffer;
+                io::File::Ptr stream;
 
-                explicit _io_context(io::Stream* s)
+                explicit _io_context(io::File* s)
                     : stream(s)
                 {
-                    buffer = ByteArray::New(RPGSS_READER_BUFFER_SIZE);
+                    buffer = core::ByteArray::New(RPGSS_READER_BUFFER_SIZE);
                 }
 
                 ~_io_context() {
@@ -65,6 +65,22 @@ namespace rpgss {
             }
 
         } // anonymous namespace
+
+        //---------------------------------------------------------
+        bool RegisterModules(lua_State* L)
+        {
+            return (
+                audio_module::RegisterAudioModule(L) &&
+                core_module::RegisterCoreModule(L) &&
+                game_module::RegisterGameModule(L) &&
+                graphics_module::RegisterGraphicsModule(L) &&
+                io_module::RegisterIoModule(L) &&
+                keyboard_module::RegisterKeyboardModule(L) &&
+                mouse_module::RegisterMouseModule(L) &&
+                timer_module::RegisterTimerModule(L) &&
+                util_module::RegisterUtilModule(L)
+            );
+        }
 
         //---------------------------------------------------------
         bool DoFile(lua_State* L, const std::string& filename)
@@ -203,7 +219,7 @@ namespace rpgss {
                     goto error;
                 }
 
-                std::string filepath = "Scripts/" + util::ReplaceString(filename, ".", "/");
+                std::string filepath = "Scripts/" + ReplaceString(filename, ".", "/");
                 std::string filepath_lua;
                 std::string filepath_luac;
 
@@ -243,7 +259,7 @@ namespace rpgss {
                 }
 
                 // open input stream
-                io::Stream::Ptr is = io::OpenFile(filepath);
+                io::File::Ptr is = io::OpenFile(filepath);
                 if (!is) {
                     lua_pushstring(L, "could not open file '");
                     lua_pushstring(L, filepath.c_str());
@@ -254,7 +270,7 @@ namespace rpgss {
 
                 // load chunk
                 _io_context ictx(is);
-                int result = lua_load(L, _reader, &ictx, ("@" + filepath).c_str(), "bt");
+                int result = lua_load(L, _reader, &ictx, ("@" + filepath).c_str());
                 if (result != LUA_OK) {
                     if (result == LUA_ERRSYNTAX) {
                         lua_pushstring(L, "syntax error: ");
@@ -266,7 +282,7 @@ namespace rpgss {
 
                 // automatically create bytecode versions of plain text files, silently ignore any errors
                 if (filepath.rfind(".lua") == filepath.size() - 4) {
-                    io::Stream::Ptr os = io::OpenFile(filepath + "c", io::Stream::Out);
+                    io::File::Ptr os = io::OpenFile(filepath + "c", io::File::Out);
                     if (os) {
                         _io_context octx(os);
                         lua_dump(L, _writer, &octx);

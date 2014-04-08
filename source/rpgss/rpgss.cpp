@@ -4,6 +4,7 @@
 
 #include <DynRPG/DynRPG.h>
 
+#include "common/types.hpp"
 #include "debug/debug.hpp"
 #include "script/script.hpp"
 #include "io/io.hpp"
@@ -15,7 +16,7 @@
 #include "Context.hpp"
 
 // for brevity
-#define Interpreter() rpgss::Context::Current().interpreter()
+#define LUA_STATE rpgss::Context::Current().interpreter()
 
 
 //---------------------------------------------------------
@@ -53,18 +54,18 @@ void onInitFinished()
         return;
     }
 
-    if (!rpgss::script::DoFile(Interpreter(), "boot")) {
-        rpgss::ReportLuaError(Interpreter());
+    if (!rpgss::script::DoFile(LUA_STATE, "boot")) {
+        rpgss::ReportLuaError(LUA_STATE);
         return;
     }
 
-    lua_getglobal(Interpreter(), "onInit");
-    if (lua_isfunction(Interpreter(), -1)) {
-        if (!rpgss::script::Call(Interpreter(), 0, 0)) {
-            rpgss::ReportLuaError(Interpreter());
+    lua_getglobal(LUA_STATE, "onInit");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        if (!rpgss::script::Call(LUA_STATE, 0, 0)) {
+            rpgss::ReportLuaError(LUA_STATE);
         }
     } else {
-        lua_pop(Interpreter(), 1); // pop result of lua_getglobal()
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
 }
 
@@ -74,13 +75,13 @@ void onInitTitleScreen()
 {
     RPGSS_DEBUG_GUARD("onInitTitleScreen()")
 
-    lua_getglobal(Interpreter(), "onTitleScreen");
-    if (lua_isfunction(Interpreter(), -1)) {
-        if (!rpgss::script::Call(Interpreter(), 0, 0)) {
-            rpgss::ReportLuaError(Interpreter());
+    lua_getglobal(LUA_STATE, "onTitleScreen");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        if (!rpgss::script::Call(LUA_STATE, 0, 0)) {
+            rpgss::ReportLuaError(LUA_STATE);
         }
     } else {
-        lua_pop(Interpreter(), 1); // pop result of lua_getglobal()
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
 }
 
@@ -90,13 +91,13 @@ void onNewGame()
 {
     RPGSS_DEBUG_GUARD("onNewGame()")
 
-    lua_getglobal(Interpreter(), "onNewGame");
-    if (lua_isfunction(Interpreter(), -1)) {
-        if (!rpgss::script::Call(Interpreter(), 0, 0)) {
-            rpgss::ReportLuaError(Interpreter());
+    lua_getglobal(LUA_STATE, "onNewGame");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        if (!rpgss::script::Call(LUA_STATE, 0, 0)) {
+            rpgss::ReportLuaError(LUA_STATE);
         }
     } else {
-        lua_pop(Interpreter(), 1); // pop result of lua_getglobal()
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
 }
 
@@ -106,13 +107,21 @@ void onLoadGame(int id, char* data, int length)
 {
     RPGSS_DEBUG_GUARD("onLoadGame()")
 
-    lua_getglobal(Interpreter(), "onLoadGame");
-    if (lua_isfunction(Interpreter(), -1)) {
-        if (!rpgss::script::Call(Interpreter(), 0, 0)) {
-            rpgss::ReportLuaError(Interpreter());
+    lua_getglobal(LUA_STATE, "onLoadGame");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        lua_pushinteger(LUA_STATE, id);
+
+        // push function argument 2
+        rpgss::core::ByteArray::Ptr saved_data = rpgss::core::ByteArray::New((const rpgss::u8*)data, length);
+        rpgss::script::core_module::ByteArrayWrapper::Push(LUA_STATE, saved_data);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 2, 0)) {
+            rpgss::ReportLuaError(LUA_STATE);
         }
     } else {
-        lua_pop(Interpreter(), 1); // pop result of lua_getglobal()
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
 }
 
@@ -122,13 +131,32 @@ void onSaveGame(int id, void __cdecl (* savePluginData)(char* data, int length))
 {
     RPGSS_DEBUG_GUARD("onSaveGame()")
 
-    lua_getglobal(Interpreter(), "onSaveGame");
-    if (lua_isfunction(Interpreter(), -1)) {
-        if (!rpgss::script::Call(Interpreter(), 0, 0)) {
-            rpgss::ReportLuaError(Interpreter());
+    lua_getglobal(LUA_STATE, "onSaveGame");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        lua_pushinteger(LUA_STATE, id);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 1, 1)) {
+            rpgss::ReportLuaError(LUA_STATE);
         }
+
+        // get data
+        rpgss::core::ByteArray::Ptr data;
+        if (!rpgss::script::core_module::ByteArrayWrapper::Is(LUA_STATE, -1)) {
+            lua_pop(LUA_STATE, 1); // pop result of onSaveGame()
+            rpgss::ReportError("onSaveGame() must return a byte array.");
+            return;
+        }
+        data = rpgss::script::core_module::ByteArrayWrapper::Get(LUA_STATE, -1);
+
+        // save data
+        savePluginData((char*)data->getBuffer(), data->getSize());
+
+        // pop result of onSaveGame()
+        lua_pop(LUA_STATE, 1);
     } else {
-        lua_pop(Interpreter(), 1); // pop result of lua_getglobal()
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
 }
 
@@ -136,14 +164,194 @@ void onSaveGame(int id, void __cdecl (* savePluginData)(char* data, int length))
 // Called every frame, before the screen is refreshed (see details!).
 void onFrame(RPG::Scene scene)
 {
-    lua_getglobal(Interpreter(), "onFrame");
-    if (lua_isfunction(Interpreter(), -1)) {
-        if (!rpgss::script::Call(Interpreter(), 0, 0)) {
-            rpgss::ReportLuaError(Interpreter());
+    lua_getglobal(LUA_STATE, "onFrame");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        std::string scene_str;
+        rpgss::script::game_module::GetSceneConstant(scene, scene_str);
+        lua_pushlstring(LUA_STATE, scene_str.c_str(), scene_str.length());
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 1, 0)) {
+            rpgss::ReportLuaError(LUA_STATE);
         }
     } else {
-        lua_pop(Interpreter(), 1); // pop result of lua_getglobal()
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
+}
+
+//---------------------------------------------------------
+// Called before an event or the hero is drawn.
+bool onDrawEvent(RPG::Character* character, bool isHero)
+{
+    lua_getglobal(LUA_STATE, "onDrawEvent");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        if (isHero) {
+            rpgss::script::game_module::HeroWrapper::Push(LUA_STATE, (RPG::Hero*)character);
+        } else {
+            rpgss::script::game_module::EventWrapper::Push(LUA_STATE, (RPG::Event*)character);
+        }
+
+        // push function argument 2
+        lua_pushboolean(LUA_STATE, isHero);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 2, 1)) {
+            rpgss::ReportLuaError(LUA_STATE);
+            return true;
+        }
+
+        // get return value
+        bool return_value;
+        if (!lua_isboolean(LUA_STATE, -1)) {
+            lua_pop(LUA_STATE, 1); // pop result of onDrawEvent()
+            rpgss::ReportError("onDrawEvent() must return a boolean.");
+            return true;
+        }
+        return_value = lua_toboolean(LUA_STATE, -1);
+
+        // pop result of onDrawEvent()
+        lua_pop(LUA_STATE, 1);
+
+        return return_value;
+    } else {
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
+    }
+
+    return true;
+}
+
+//---------------------------------------------------------
+// Called after an event or the hero was drawn (or was supposed to be drawn).
+bool onEventDrawn(RPG::Character* character, bool isHero)
+{
+    lua_getglobal(LUA_STATE, "onEventDrawn");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        if (isHero) {
+            rpgss::script::game_module::HeroWrapper::Push(LUA_STATE, (RPG::Hero*)character);
+        } else {
+            rpgss::script::game_module::EventWrapper::Push(LUA_STATE, (RPG::Event*)character);
+        }
+
+        // push function argument 2
+        lua_pushboolean(LUA_STATE, isHero);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 2, 1)) {
+            rpgss::ReportLuaError(LUA_STATE);
+            return true;
+        }
+
+        // get return value
+        bool return_value;
+        if (!lua_isboolean(LUA_STATE, -1)) {
+            lua_pop(LUA_STATE, 1); // pop result of onEventDrawn()
+            rpgss::ReportError("onEventDrawn() must return a boolean.");
+            return true;
+        }
+        return_value = lua_toboolean(LUA_STATE, -1);
+
+        // pop result of onEventDrawn()
+        lua_pop(LUA_STATE, 1);
+
+        return return_value;
+    } else {
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
+    }
+
+    return true;
+}
+
+//---------------------------------------------------------
+// Called before a battler is drawn.
+bool onDrawBattler(RPG::Battler* battler, bool isMonster, int id)
+{
+    lua_getglobal(LUA_STATE, "onDrawBattler");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        if (isMonster) {
+            rpgss::script::game_module::MonsterWrapper::Push(LUA_STATE, (RPG::Monster*)battler);
+        } else {
+            rpgss::script::game_module::ActorWrapper::Push(LUA_STATE, (RPG::Actor*)battler);
+        }
+
+        // push function argument 2
+        lua_pushboolean(LUA_STATE, isMonster);
+
+        // push function argument 3
+        lua_pushinteger(LUA_STATE, id);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 3, 1)) {
+            rpgss::ReportLuaError(LUA_STATE);
+            return true;
+        }
+
+        // get return value
+        bool return_value;
+        if (!lua_isboolean(LUA_STATE, -1)) {
+            lua_pop(LUA_STATE, 1); // pop result of onDrawBattler()
+            rpgss::ReportError("onDrawBattler() must return a boolean.");
+            return true;
+        }
+        return_value = lua_toboolean(LUA_STATE, -1);
+
+        // pop result of onDrawBattler()
+        lua_pop(LUA_STATE, 1);
+
+        return return_value;
+    } else {
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
+    }
+
+    return true;
+}
+
+//---------------------------------------------------------
+// Called after a battler was drawn (or supposed to be drawn).
+bool onBattlerDrawn(RPG::Battler* battler, bool isMonster, int id)
+{
+    lua_getglobal(LUA_STATE, "onBattlerDrawn");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        if (isMonster) {
+            rpgss::script::game_module::MonsterWrapper::Push(LUA_STATE, (RPG::Monster*)battler);
+        } else {
+            rpgss::script::game_module::ActorWrapper::Push(LUA_STATE, (RPG::Actor*)battler);
+        }
+
+        // push function argument 2
+        lua_pushboolean(LUA_STATE, isMonster);
+
+        // push function argument 3
+        lua_pushinteger(LUA_STATE, id);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 3, 1)) {
+            rpgss::ReportLuaError(LUA_STATE);
+            return true;
+        }
+
+        // get return value
+        bool return_value;
+        if (!lua_isboolean(LUA_STATE, -1)) {
+            lua_pop(LUA_STATE, 1); // pop result of onBattlerDrawn()
+            rpgss::ReportError("onBattlerDrawn() must return a boolean.");
+            return true;
+        }
+        return_value = lua_toboolean(LUA_STATE, -1);
+
+        // pop result of onBattlerDrawn()
+        lua_pop(LUA_STATE, 1);
+
+        return return_value;
+    } else {
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
+    }
+
+    return true;
 }
 
 //---------------------------------------------------------
@@ -167,9 +375,9 @@ bool onComment(const char* text, const RPG::ParsedCommentData* parsedData, RPG::
         const char* func_name = (const char*)parsedData->parameters[0].text;
 
         // prepare function
-        lua_getglobal(Interpreter(), func_name);
-        if (lua_isfunction(Interpreter(), -1) == 0) {
-            lua_pop(Interpreter(), lua_gettop(Interpreter())); // clean up stack
+        lua_getglobal(LUA_STATE, func_name);
+        if (lua_isfunction(LUA_STATE, -1) == 0) {
+            lua_pop(LUA_STATE, lua_gettop(LUA_STATE)); // clean up stack
             std::stringstream error_message;
             error_message << "bad argument #1 to 'call' (global '" << func_name << "' not a function or does not exist)";
             rpgss::ReportError(error_message.str(), rpgss::FormatEventInfo(eventId, pageId, lineId));
@@ -182,19 +390,19 @@ bool onComment(const char* text, const RPG::ParsedCommentData* parsedData, RPG::
             {
                 case RPG::PARAM_NUMBER: // easy!
                 {
-                    lua_pushnumber(Interpreter(), parsedData->parameters[i].number);
+                    lua_pushnumber(LUA_STATE, parsedData->parameters[i].number);
                     break;
                 }
                 case RPG::PARAM_STRING: // easy!
                 {
-                    lua_pushstring(Interpreter(), (const char*)parsedData->parameters[i].text);
+                    lua_pushstring(LUA_STATE, (const char*)parsedData->parameters[i].text);
                     break;
                 }
                 case RPG::PARAM_TOKEN: // still doable!
                 {
                     rpgss::TokenParser tokenParser;
                     if (!tokenParser.parse((const char*)parsedData->parameters[i].text)) {
-                        lua_pop(Interpreter(), lua_gettop(Interpreter())); // clean up stack
+                        lua_pop(LUA_STATE, lua_gettop(LUA_STATE)); // clean up stack
                         std::stringstream error_message;
                         error_message << "bad argument #" << i << " to 'call' (token parse error)";
                         rpgss::ReportError(error_message.str(), rpgss::FormatEventInfo(eventId, pageId, lineId));
@@ -202,16 +410,16 @@ bool onComment(const char* text, const RPG::ParsedCommentData* parsedData, RPG::
                     }
                     switch (tokenParser.ParsedType) {
                     case rpgss::TokenParser::ParsedBoolean:
-                        lua_pushboolean(Interpreter(), tokenParser.Boolean);
+                        lua_pushboolean(LUA_STATE, tokenParser.Boolean);
                         break;
                     case rpgss::TokenParser::ParsedNumber:
-                        lua_pushnumber(Interpreter(), tokenParser.Number);
+                        lua_pushnumber(LUA_STATE, tokenParser.Number);
                         break;
                     case rpgss::TokenParser::ParsedString:
-                        lua_pushstring(Interpreter(), tokenParser.String.c_str());
+                        lua_pushstring(LUA_STATE, tokenParser.String.c_str());
                         break;
                     case rpgss::TokenParser::ParsedColor:
-                        lua_pushunsigned(Interpreter(), tokenParser.Color);
+                        lua_pushinteger(LUA_STATE, (rpgss::i32)tokenParser.Color);
                         break;
                     default:
                         break; // shut up compiler
@@ -220,7 +428,7 @@ bool onComment(const char* text, const RPG::ParsedCommentData* parsedData, RPG::
                 }
                 default: // shouldn't happen
                 {
-                    lua_pop(Interpreter(), lua_gettop(Interpreter())); // clean up stack
+                    lua_pop(LUA_STATE, lua_gettop(LUA_STATE)); // clean up stack
                     std::stringstream error_message;
                     error_message << "bad argument #" << i << " to 'call' (unrecognized type)";
                     rpgss::ReportError(error_message.str(), rpgss::FormatEventInfo(eventId, pageId, lineId));
@@ -230,8 +438,8 @@ bool onComment(const char* text, const RPG::ParsedCommentData* parsedData, RPG::
         }
 
         // call function
-        if (!rpgss::script::Call(Interpreter(), parsedData->parametersCount - 1, 0)) {
-            rpgss::ReportLuaError(Interpreter(), rpgss::FormatEventInfo(eventId, pageId, lineId));
+        if (!rpgss::script::Call(LUA_STATE, parsedData->parametersCount - 1, 0)) {
+            rpgss::ReportLuaError(LUA_STATE, rpgss::FormatEventInfo(eventId, pageId, lineId));
             return true;
         }
     }

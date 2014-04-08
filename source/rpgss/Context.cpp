@@ -120,7 +120,7 @@ namespace rpgss {
         luabridge::setGlobal(_L, RPGSS_VERSION,     "_RPGSS_VERSION"    );
         luabridge::setGlobal(_L, RPGSS_VERSION_NUM, "_RPGSS_VERSION_NUM");
 
-        script::RegisterRpgModule(_L);
+        script::RegisterModules(_L);
 
         return true;
     }

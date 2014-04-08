@@ -10,15 +10,15 @@ namespace rpgss {
     namespace io {
 
         //--------------------------------------------------------------
-        class FileStreamImpl : public FileStream {
+        class FileImpl : public File {
         public:
-            explicit FileStreamImpl(PHYSFS_File* pf)
+            explicit FileImpl(PHYSFS_File* pf)
                 : _pf(pf)
                 , _error(false)
             {
             }
 
-            ~FileStreamImpl() {
+            ~FileImpl() {
                 close();
             }
 
@@ -236,17 +236,20 @@ namespace rpgss {
         }
 
         //--------------------------------------------------------------
-        FileStream::Ptr OpenFile(const std::string& filename, Stream::OpenMode mode)
+        File::Ptr OpenFile(const std::string& filename, File::OpenMode mode)
         {
             PHYSFS_File* pf = 0;
+
             switch (mode) {
-            case Stream::In:     pf = PHYSFS_openRead(filename.c_str());   break;
-            case Stream::Out:    pf = PHYSFS_openWrite(filename.c_str());  break;
-            case Stream::Append: pf = PHYSFS_openAppend(filename.c_str()); break;
+            case File::In:     pf = PHYSFS_openRead(filename.c_str());   break;
+            case File::Out:    pf = PHYSFS_openWrite(filename.c_str());  break;
+            case File::Append: pf = PHYSFS_openAppend(filename.c_str()); break;
             }
+
             if (pf) {
-                return new FileStreamImpl(pf);
+                return new FileImpl(pf);
             }
+
             return 0;
         }
 
@@ -310,20 +313,6 @@ namespace rpgss {
         bool Unmount(const std::string& filename)
         {
             return PHYSFS_removeFromSearchPath(filename.c_str()) != 0;
-        }
-
-        //--------------------------------------------------------------
-        bool Compress(const u8* buffer, int size, Stream* ostream)
-        {
-            Compressor compr;
-            return compr.compress(buffer, size, ostream) && compr.finish(ostream);
-        }
-
-        //--------------------------------------------------------------
-        bool Decompress(const u8* buffer, int size, Stream* ostream)
-        {
-            Decompressor decompr;
-            return decompr.decompress(buffer, size, ostream) && decompr.finish(ostream);
         }
 
     } // namespace io

@@ -3,12 +3,10 @@
 
 #include <vector>
 #include <string>
-#include "FileStream.hpp"
-#include "MemoryStream.hpp"
-#include "BinaryReader.hpp"
-#include "BinaryWriter.hpp"
-#include "Compressor.hpp"
-#include "Decompressor.hpp"
+#include "File.hpp"
+#include "MemoryFile.hpp"
+#include "Reader.hpp"
+#include "Writer.hpp"
 
 
 namespace rpgss {
@@ -17,7 +15,7 @@ namespace rpgss {
         bool InitIoSubsystem();
         void DeinitIoSubsystem();
 
-        FileStream::Ptr OpenFile(const std::string& filename, Stream::OpenMode mode = Stream::In);
+        File::Ptr OpenFile(const std::string& filename, File::OpenMode mode = File::In);
         bool MakeDirectory(const std::string& dirname);
         bool Remove(const std::string& filename);
         bool Enumerate(const std::string& dirname, std::vector<std::string>& filelist);
@@ -27,9 +25,6 @@ namespace rpgss {
         bool IsFile(const std::string& filename);
         bool Mount(const std::string& filename);
         bool Unmount(const std::string& filename);
-
-        bool Compress(const u8* buffer, int size, Stream* ostream);
-        bool Decompress(const u8* buffer, int size, Stream* ostream);
 
     } // namespace io
 } // namespace rpgss

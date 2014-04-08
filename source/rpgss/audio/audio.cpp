@@ -17,7 +17,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         class AudiereFileAdapter : public audiere::RefImplementation<audiere::File> {
         public:
-            explicit AudiereFileAdapter(io::Stream* istream) : _istream(istream) {
+            explicit AudiereFileAdapter(io::File* istream) : _istream(istream) {
             }
 
             ~AudiereFileAdapter() {
@@ -29,9 +29,9 @@ namespace rpgss {
 
             ADR_METHOD(bool) seek(int pos, audiere::File::SeekMode mode) {
                 switch (mode) {
-                case audiere::File::BEGIN:   return _istream->seek(pos, io::Stream::Begin);
-                case audiere::File::CURRENT: return _istream->seek(pos, io::Stream::Current);
-                case audiere::File::END:     return _istream->seek(pos, io::Stream::End);
+                case audiere::File::BEGIN:   return _istream->seek(pos, io::File::Begin);
+                case audiere::File::CURRENT: return _istream->seek(pos, io::File::Current);
+                case audiere::File::END:     return _istream->seek(pos, io::File::End);
                 default:
                     return false;
                 }
@@ -42,7 +42,7 @@ namespace rpgss {
             }
 
         private:
-            io::Stream::Ptr _istream;
+            io::File::Ptr _istream;
         };
 
         //-----------------------------------------------------------------
@@ -215,7 +215,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         Sound::Ptr OpenSound(const std::string& filename)
         {
-            io::FileStream::Ptr file = io::OpenFile(filename);
+            io::File::Ptr file = io::OpenFile(filename);
 
             if (!file) {
                 return 0;
@@ -225,7 +225,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        Sound::Ptr OpenSound(io::Stream* istream)
+        Sound::Ptr OpenSound(io::File* istream)
         {
             audiere::FilePtr audiereFile(new AudiereFileAdapter(istream));
             audiere::OutputStream* as = audiere::OpenSound(g_AudiereAudioDevice, audiereFile, true);
@@ -240,7 +240,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         SoundEffect::Ptr OpenSoundEffect(const std::string& filename)
         {
-            io::FileStream::Ptr file = io::OpenFile(filename);
+            io::File::Ptr file = io::OpenFile(filename);
 
             if (!file) {
                 return 0;
@@ -250,7 +250,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        SoundEffect::Ptr OpenSoundEffect(io::Stream* istream)
+        SoundEffect::Ptr OpenSoundEffect(io::File* istream)
         {
             audiere::FilePtr audiereFile(new AudiereFileAdapter(istream));
             audiere::SoundEffect* ase = audiere::OpenSoundEffect(g_AudiereAudioDevice, audiereFile, audiere::MULTIPLE);

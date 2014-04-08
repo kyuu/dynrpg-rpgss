@@ -90,7 +90,7 @@ namespace rpgss {
                     }
 
                     // extract char image
-                    Recti image_rect = Recti(char_x, char_y, char_width, char_height);
+                    core::Recti image_rect = core::Recti(char_x, char_y, char_width, char_height);
                     _chars[char_index] = fontImage->copyRect(image_rect);
                 }
             }

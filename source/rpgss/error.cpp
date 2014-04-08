@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "debug/debug.hpp"
-#include "util/util.hpp"
+#include "common/stringutil.hpp"
 #include "script/script.hpp"
 #include "error.hpp"
 
@@ -84,7 +84,7 @@ namespace rpgss {
         std::string stack_traceback("stack traceback:\n\t(N/A)");
 
         if (error_message.find(RPGSS_STACK_TRACE_MAGIC) != std::string::npos) { // there is a stack trace appended
-            std::vector<std::string> error_info = util::SplitString(error_message, RPGSS_STACK_TRACE_MAGIC);
+            std::vector<std::string> error_info = SplitString(error_message, RPGSS_STACK_TRACE_MAGIC);
             error_message = error_info[0];
             stack_traceback = error_info[1];
         }
