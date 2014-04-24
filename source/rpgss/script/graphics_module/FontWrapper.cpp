@@ -109,17 +109,17 @@ namespace rpgss {
 
             //---------------------------------------------------------
             int
-            FontWrapper::getStringWidth(lua_State* L)
+            FontWrapper::getTextWidth(lua_State* L)
             {
                 size_t len;
                 const char* str = luaL_checklstring(L, 2, &len);
-                lua_pushnumber(L, This->getStringWidth(str, len));
+                lua_pushnumber(L, This->getTextWidth(str, len));
                 return 1;
             }
 
             //---------------------------------------------------------
             int
-            FontWrapper::wordWrapString(lua_State* L)
+            FontWrapper::wordWrapText(lua_State* L)
             {
                 size_t len;
                 const char* str = luaL_checklstring(L, 2, &len);
@@ -127,7 +127,7 @@ namespace rpgss {
 
                 std::string text(str, len);
                 std::vector<std::pair<int, int> > lines;
-                This->wordWrapString(str, len, max_line_width, lines);
+                This->wordWrapText(str, len, max_line_width, lines);
 
                 luabridge::LuaRef t = luabridge::newTable(L);
                 for (size_t i = 0; i < lines.size(); i++) {

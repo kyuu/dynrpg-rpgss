@@ -89,7 +89,7 @@ namespace rpgss {
 
             //---------------------------------------------------------
             int
-            ReaderWrapper::skip(lua_State* L)
+            ReaderWrapper::skipBytes(lua_State* L)
             {
                 int count = luaL_checkint(L, 2);
                 if (count < 0) {

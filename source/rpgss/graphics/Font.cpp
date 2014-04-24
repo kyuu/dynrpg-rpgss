@@ -100,7 +100,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         int
-        Font::getStringWidth(const char* str, int len)
+        Font::getTextWidth(const char* str, int len)
         {
             assert(str);
 
@@ -123,7 +123,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Font::wordWrapString(const char* str, int len, int max_line_width, std::vector<std::pair<int, int> >& lines)
+        Font::wordWrapText(const char* str, int len, int max_line_width, std::vector<std::pair<int, int> >& lines)
         {
             if (len < 0) {
                 len = std::strlen(str);

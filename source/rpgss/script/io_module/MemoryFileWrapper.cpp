@@ -82,10 +82,11 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            bool
-            MemoryFileWrapper::get_size() const
+            int
+            MemoryFileWrapper::__len(lua_State* L)
             {
-                return This->getSize();
+                lua_pushnumber(L, This->getSize());
+                return 1;
             }
 
             //---------------------------------------------------------
@@ -93,14 +94,6 @@ namespace rpgss {
             MemoryFileWrapper::get_capacity() const
             {
                 return This->getCapacity();
-            }
-
-            //---------------------------------------------------------
-            int
-            MemoryFileWrapper::__len(lua_State* L)
-            {
-                lua_pushnumber(L, This->getSize());
-                return 1;
             }
 
             //---------------------------------------------------------

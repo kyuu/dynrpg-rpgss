@@ -2114,7 +2114,7 @@ namespace rpgss {
                         .addProperty("variables",           &game_get_variables)
                         .addProperty("switches",            &game_get_switches)
                         .addProperty("actors",              &game_get_actors)
-                        .addProperty("actorParty",          &game_get_actorParty)
+                        .addProperty("party",               &game_get_actorParty)
 
                         .beginNamespace("map")
                             .addProperty("hero",                    &map_get_hero)
@@ -2136,7 +2136,7 @@ namespace rpgss {
                         .endNamespace()
 
                         .beginNamespace("battle")
-                            .addProperty("monsterParty", &battle_get_monsterParty)
+                            .addProperty("enemies", &battle_get_monsterParty)
                         .endNamespace()
 
                         .beginNamespace("input")

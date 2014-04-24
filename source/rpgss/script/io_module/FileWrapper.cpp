@@ -82,6 +82,14 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            int
+            FileWrapper::__len(lua_State* L)
+            {
+                lua_pushnumber(L, This->getSize());
+                return 1;
+            }
+
+            //---------------------------------------------------------
             bool
             FileWrapper::get_isOpen() const
             {
@@ -96,22 +104,6 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int
-            FileWrapper::__len(lua_State* L)
-            {
-                lua_pushnumber(L, This->getSize());
-                return 1;
-            }
-
-            //---------------------------------------------------------
-            int
-            FileWrapper::close(lua_State* L)
-            {
-                This->close();
-                return 0;
-            }
-
-            //---------------------------------------------------------
             bool
             FileWrapper::get_eof() const
             {
@@ -119,24 +111,10 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            bool
-            FileWrapper::get_error() const
-            {
-                return This->error();
-            }
-
-            //---------------------------------------------------------
-            bool
-            FileWrapper::get_good() const
-            {
-                return This->good();
-            }
-
-            //---------------------------------------------------------
             int
-            FileWrapper::clearError(lua_State* L)
+            FileWrapper::close(lua_State* L)
             {
-                This->clearerr();
+                This->close();
                 return 0;
             }
 

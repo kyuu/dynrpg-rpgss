@@ -28,8 +28,8 @@ namespace rpgss {
 
             const Image* getCharImage(char c) const;
 
-            int getStringWidth(const char* str, int len);
-            void wordWrapString(const char* str, int len, int max_line_width, std::vector<std::pair<int, int> >& lines);
+            int getTextWidth(const char* str, int len);
+            void wordWrapText(const char* str, int len, int max_line_width, std::vector<std::pair<int, int> >& lines);
 
         private:
             // use New()

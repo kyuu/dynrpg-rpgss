@@ -22,8 +22,8 @@ namespace rpgss {
                 int get_maxCharHeight() const;
                 int get_tabWidth() const;
                 void set_tabWidth(int tabWidth);
-                int getStringWidth(lua_State* L);
-                int wordWrapString(lua_State* L);
+                int getTextWidth(lua_State* L);
+                int wordWrapText(lua_State* L);
 
             private:
                 graphics::Font::Ptr This;

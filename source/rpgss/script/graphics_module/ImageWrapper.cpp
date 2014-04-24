@@ -250,9 +250,6 @@ namespace rpgss {
                     This->flipVertical();
                 } else if (std::strcmp(axis_str, "y-axis") == 0) {
                     This->flipHorizontal();
-                } else if (std::strcmp(axis_str, "both axes") == 0) {
-                    This->flipVertical();
-                    This->flipHorizontal();
                 } else {
                     return luaL_argerror(L, 2, "invalid axis constant");
                 }

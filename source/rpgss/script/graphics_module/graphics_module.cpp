@@ -198,8 +198,8 @@ namespace rpgss {
                             .addProperty("maxCharWidth",        &FontWrapper::get_maxCharWidth)
                             .addProperty("maxCharHeight",       &FontWrapper::get_maxCharHeight)
                             .addProperty("tabWidth",            &FontWrapper::get_tabWidth,          &FontWrapper::set_tabWidth)
-                            .addCFunction("getStringWidth",     &FontWrapper::getStringWidth)
-                            .addCFunction("wordWrapString",     &FontWrapper::wordWrapString)
+                            .addCFunction("getTextWidth",       &FontWrapper::getTextWidth)
+                            .addCFunction("wordWrapText",       &FontWrapper::wordWrapText)
                         .endClass()
 
                         .addCFunction("newFont", &graphics_newFont)

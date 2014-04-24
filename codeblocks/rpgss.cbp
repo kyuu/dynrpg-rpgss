@@ -216,6 +216,9 @@
 		<Unit filename="../source/rpgss/util/util.cpp" />
 		<Unit filename="../source/rpgss/util/util.hpp" />
 		<Unit filename="../source/rpgss/version.hpp" />
+		<Unit filename="rpgss.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />

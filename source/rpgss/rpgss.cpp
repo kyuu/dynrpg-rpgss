@@ -164,7 +164,7 @@ void onSaveGame(int id, void __cdecl (* savePluginData)(char* data, int length))
 // Called every frame, before the screen is refreshed (see details!).
 void onFrame(RPG::Scene scene)
 {
-    lua_getglobal(LUA_STATE, "onFrame");
+    lua_getglobal(LUA_STATE, "onSceneDrawn");
     if (lua_isfunction(LUA_STATE, -1)) {
         // push function argument 1
         std::string scene_str;
@@ -178,13 +178,17 @@ void onFrame(RPG::Scene scene)
     } else {
         lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
+
+    // allow Lua to perform a small incremental GC step
+    // the overhead of this step should be negligible
+    lua_gc(LUA_STATE, LUA_GCSTEP, 0);
 }
 
 //---------------------------------------------------------
 // Called before an event or the hero is drawn.
 bool onDrawEvent(RPG::Character* character, bool isHero)
 {
-    lua_getglobal(LUA_STATE, "onDrawEvent");
+    lua_getglobal(LUA_STATE, "onDrawCharacter");
     if (lua_isfunction(LUA_STATE, -1)) {
         // push function argument 1
         if (isHero) {
@@ -205,13 +209,13 @@ bool onDrawEvent(RPG::Character* character, bool isHero)
         // get return value
         bool return_value;
         if (!lua_isboolean(LUA_STATE, -1)) {
-            lua_pop(LUA_STATE, 1); // pop result of onDrawEvent()
-            rpgss::ReportError("onDrawEvent() must return a boolean.");
+            lua_pop(LUA_STATE, 1); // pop result of onDrawCharacter()
+            rpgss::ReportError("onDrawCharacter() must return a boolean.");
             return true;
         }
         return_value = lua_toboolean(LUA_STATE, -1);
 
-        // pop result of onDrawEvent()
+        // pop result of onDrawCharacter()
         lua_pop(LUA_STATE, 1);
 
         return return_value;
@@ -226,7 +230,7 @@ bool onDrawEvent(RPG::Character* character, bool isHero)
 // Called after an event or the hero was drawn (or was supposed to be drawn).
 bool onEventDrawn(RPG::Character* character, bool isHero)
 {
-    lua_getglobal(LUA_STATE, "onEventDrawn");
+    lua_getglobal(LUA_STATE, "onCharacterDrawn");
     if (lua_isfunction(LUA_STATE, -1)) {
         // push function argument 1
         if (isHero) {
@@ -239,24 +243,10 @@ bool onEventDrawn(RPG::Character* character, bool isHero)
         lua_pushboolean(LUA_STATE, isHero);
 
         // call function
-        if (!rpgss::script::Call(LUA_STATE, 2, 1)) {
+        if (!rpgss::script::Call(LUA_STATE, 2, 0)) {
             rpgss::ReportLuaError(LUA_STATE);
             return true;
         }
-
-        // get return value
-        bool return_value;
-        if (!lua_isboolean(LUA_STATE, -1)) {
-            lua_pop(LUA_STATE, 1); // pop result of onEventDrawn()
-            rpgss::ReportError("onEventDrawn() must return a boolean.");
-            return true;
-        }
-        return_value = lua_toboolean(LUA_STATE, -1);
-
-        // pop result of onEventDrawn()
-        lua_pop(LUA_STATE, 1);
-
-        return return_value;
     } else {
         lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }
@@ -281,7 +271,7 @@ bool onDrawBattler(RPG::Battler* battler, bool isMonster, int id)
         lua_pushboolean(LUA_STATE, isMonster);
 
         // push function argument 3
-        lua_pushinteger(LUA_STATE, id);
+        lua_pushinteger(LUA_STATE, id + 1 /* id is zero-based */);
 
         // call function
         if (!rpgss::script::Call(LUA_STATE, 3, 1)) {
@@ -326,27 +316,13 @@ bool onBattlerDrawn(RPG::Battler* battler, bool isMonster, int id)
         lua_pushboolean(LUA_STATE, isMonster);
 
         // push function argument 3
-        lua_pushinteger(LUA_STATE, id);
+        lua_pushinteger(LUA_STATE, id + 1 /* id is zero-based */);
 
         // call function
-        if (!rpgss::script::Call(LUA_STATE, 3, 1)) {
+        if (!rpgss::script::Call(LUA_STATE, 3, 0)) {
             rpgss::ReportLuaError(LUA_STATE);
             return true;
         }
-
-        // get return value
-        bool return_value;
-        if (!lua_isboolean(LUA_STATE, -1)) {
-            lua_pop(LUA_STATE, 1); // pop result of onBattlerDrawn()
-            rpgss::ReportError("onBattlerDrawn() must return a boolean.");
-            return true;
-        }
-        return_value = lua_toboolean(LUA_STATE, -1);
-
-        // pop result of onBattlerDrawn()
-        lua_pop(LUA_STATE, 1);
-
-        return return_value;
     } else {
         lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
     }

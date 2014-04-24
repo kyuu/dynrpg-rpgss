@@ -1,0 +1,26 @@
+#define IDR_VERSION1 1
+
+IDR_VERSION1 VERSIONINFO
+FILEVERSION 0,5,0,0
+PRODUCTVERSION 0,5,0,0
+FILEOS 0x00000004
+FILETYPE 0x00000000
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "FFFF0000"
+    BEGIN
+      VALUE "FileVersion", "0.5.0\0"
+      VALUE "ProductVersion", "0.5.0\0"
+      VALUE "FileDescription", "RPGSS\0"
+      VALUE "LegalCopyright", "Anatoli Steinmark\0"
+      VALUE "OriginalFilename", "rpgss.dll\0"
+      VALUE "ProductName", "RPGSS\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0xFFFF, 0x0000
+  END
+END
+

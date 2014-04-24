@@ -20,7 +20,7 @@ namespace rpgss {
                 explicit ReaderWrapper(io::Reader* ptr);
 
                 FileWrapper get_inputStream() const;
-                int skip(lua_State* L);
+                int skipBytes(lua_State* L);
                 int readByte(lua_State* L);
                 int readBytes(lua_State* L);
                 int readString(lua_State* L);
