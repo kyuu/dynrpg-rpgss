@@ -980,9 +980,9 @@ namespace rpgss {
             //---------------------------------------------------------
             int screen_drawPoint(lua_State* L)
             {
-                int x = luaL_checkint(L, 2);
-                int y = luaL_checkint(L, 3);
-                u32 c = (u32)luaL_checkint(L, 4);
+                int x = luaL_checkint(L, 1);
+                int y = luaL_checkint(L, 2);
+                u32 c = (u32)luaL_checkint(L, 3);
 
                 switch (Screen::BlendMode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_set()); break;
