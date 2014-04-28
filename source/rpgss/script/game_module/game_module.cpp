@@ -863,7 +863,26 @@ namespace rpgss {
             {
                 void operator()(u16& dst, const graphics::RGBA& src)
                 {
-                    dst = ((src.red & 0xF8) << 8) | ((src.green & 0xFC) << 3) | (src.blue >> 3);
+                    asm (
+                        "leal           %1,   %%edx   \n\t"
+                        "movzbl    (%%edx),   %%eax   \n\t"
+                        "movzbl   1(%%edx),   %%ecx   \n\t"
+                        "movzbl   2(%%edx),   %%edx   \n\t"
+                        "andl         $248,   %%eax   \n\t"
+                        "sall           $8,   %%eax   \n\t"
+                        "sarl           $3,   %%edx   \n\t"
+                        "andl         $252,   %%ecx   \n\t"
+                        "sall           $3,   %%ecx   \n\t"
+                        "orl         %%ecx,   %%eax   \n\t"
+                        "orl         %%edx,   %%eax   \n\t"
+                        "leal           %0,   %%edx   \n\t"
+                        "movw         %%ax, (%%edx)"
+                        :
+                        : "m"(dst), "m"(src)
+                        : "eax", "ecx", "edx"
+                    );
+                    // C++ version:
+                    //dst = ((src.red & 0xF8) << 8) | ((src.green & 0xFC) << 3) | (src.blue >> 3);
                 }
 
                 void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)

@@ -35,6 +35,7 @@
 				<Option host_application="C:/dev/rpg2003/Project/RPGSS/RPG_RT.exe" />
 				<Option run_host_application_in_terminal="0" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-O2" />
 					<Add option="-Wall" />
 					<Add option="-DNDEBUG" />
