@@ -281,8 +281,8 @@ namespace rpgss {
                 int x = luaL_checkint(L, 2);
                 int y = luaL_checkint(L, 3);
 
-                luaL_argcheck(L, x >= 0 && x < This->getWidth(),  1, "invalid x");
-                luaL_argcheck(L, y >= 0 && y < This->getHeight(), 2, "invalid y");
+                luaL_argcheck(L, x >= 0 && x < This->getWidth(),  2, "invalid x");
+                luaL_argcheck(L, y >= 0 && y < This->getHeight(), 3, "invalid y");
 
                 lua_pushinteger(L, graphics::RGBAToRGBA8888(This->getPixel(x, y)));
 
@@ -297,8 +297,8 @@ namespace rpgss {
                 int y = luaL_checkint(L, 3);
                 u32 c = luaL_checkint(L, 4);
 
-                luaL_argcheck(L, x >= 0 && x < This->getWidth(),  1, "invalid x");
-                luaL_argcheck(L, y >= 0 && y < This->getHeight(), 2, "invalid y");
+                luaL_argcheck(L, x >= 0 && x < This->getWidth(),  2, "invalid x");
+                luaL_argcheck(L, y >= 0 && y < This->getHeight(), 3, "invalid y");
 
                 This->setPixel(x, y, graphics::RGBA8888ToRGBA(c));
 
