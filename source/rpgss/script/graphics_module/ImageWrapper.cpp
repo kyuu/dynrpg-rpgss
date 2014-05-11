@@ -263,9 +263,9 @@ namespace rpgss {
             {
                 const char* direction_str = luaL_checkstring(L, 2);
 
-                if (std::strcmp(direction_str, "clockwise") == 0) {
+                if (std::strcmp(direction_str, "cw") == 0) {
                     This->rotateClockwise();
-                } else if (std::strcmp(direction_str, "counter-clockwise") == 0) {
+                } else if (std::strcmp(direction_str, "ccw") == 0) {
                     This->rotateCounterClockwise();
                 } else {
                     return luaL_error(L, "invalid direction constant");
