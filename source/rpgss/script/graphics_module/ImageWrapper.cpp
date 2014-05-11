@@ -419,7 +419,7 @@ namespace rpgss {
                 graphics::Image* that = 0;
                 int sx, sy, sw, sh;
                 int x, y;
-                float rotate;
+                float angle;
                 float scale;
                 u32   color;
 
@@ -433,18 +433,18 @@ namespace rpgss {
                     sh   = luaL_checkint(L, 6);
                     x    = luaL_checkint(L, 7);
                     y    = luaL_checkint(L, 8);
-                    rotate = luaL_optnumber(L, 9, 0.0);
-                    scale  = luaL_optnumber(L, 10, 1.0);
-                    color  = luaL_optint(L, 11, 0xFFFFFFFF);
+                    angle = luaL_optnumber(L, 9, 0.0);
+                    scale = luaL_optnumber(L, 10, 1.0);
+                    color = luaL_optint(L, 11, 0xFFFFFFFF);
                 }
                 else
                 {
                     that = ImageWrapper::Get(L, 2);
                     x    = luaL_checkint(L, 3);
                     y    = luaL_checkint(L, 4);
-                    rotate = luaL_optnumber(L, 5, 0.0);
-                    scale  = luaL_optnumber(L, 6, 1.0);
-                    color  = luaL_optint(L, 7, 0xFFFFFFFF);
+                    angle = luaL_optnumber(L, 5, 0.0);
+                    scale = luaL_optnumber(L, 6, 1.0);
+                    color = luaL_optint(L, 7, 0xFFFFFFFF);
 
                     sx = 0;
                     sy = 0;
@@ -456,7 +456,7 @@ namespace rpgss {
                     that,
                     core::Recti(sx, sy, sw, sh),
                     core::Vec2i(x, y),
-                    rotate,
+                    angle,
                     scale,
                     graphics::RGBA8888ToRGBA(color)
                 );

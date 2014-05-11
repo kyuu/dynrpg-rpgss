@@ -1270,17 +1270,17 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw(const Image* image, const core::Vec2i& pos, float rotate, float scale, RGBA color)
+        Image::draw(const Image* image, const core::Vec2i& pos, float angle, float scale, RGBA color)
         {
             core::Recti image_rect = core::Recti(image->getDimensions());
-            draw(image, image_rect, pos, rotate, scale, color);
+            draw(image, image_rect, pos, angle, scale, color);
         }
 
         //-----------------------------------------------------------------
         void
-        Image::draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float rotate, float scale, RGBA color)
+        Image::draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle, float scale, RGBA color)
         {
-            if (CpuSupportsSse2() && (rotate == 0.0 && scale == 1.0))
+            if (CpuSupportsSse2() && (angle == 0.0 && scale == 1.0))
             {
                 if (color == RGBA(255, 255, 255, 255))
                 {
@@ -1325,7 +1325,7 @@ namespace rpgss {
                     }
                 }
             }
-            else if (rotate == 0.0)
+            else if (angle == 0.0)
             {
                 core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
 
@@ -1355,10 +1355,10 @@ namespace rpgss {
                 core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
                 core::Vec2i center_of_rotation = rect.getCenter();
 
-                core::Vec2i ul = rect.getUpperLeft().rotateBy(rotate, center_of_rotation);
-                core::Vec2i ur = rect.getUpperRight().rotateBy(rotate, center_of_rotation);
-                core::Vec2i lr = rect.getLowerRight().rotateBy(rotate, center_of_rotation);
-                core::Vec2i ll = rect.getLowerLeft().rotateBy(rotate, center_of_rotation);
+                core::Vec2i ul = rect.getUpperLeft().rotateBy(angle, center_of_rotation);
+                core::Vec2i ur = rect.getUpperRight().rotateBy(angle, center_of_rotation);
+                core::Vec2i lr = rect.getLowerRight().rotateBy(angle, center_of_rotation);
+                core::Vec2i ll = rect.getLowerLeft().rotateBy(angle, center_of_rotation);
 
                 drawq(image, image_rect, ul, ur, lr, ll, color);
             }

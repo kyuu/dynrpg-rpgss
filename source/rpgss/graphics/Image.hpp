@@ -84,8 +84,8 @@ namespace rpgss {
             void drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA color);
             void drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA c1, RGBA c2, RGBA c3);
 
-            void draw(const Image* image, const core::Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
-            void draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float rotate = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
+            void draw(const Image* image, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
+            void draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
 
             void drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
             void drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));

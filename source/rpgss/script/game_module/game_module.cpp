@@ -1200,7 +1200,7 @@ namespace rpgss {
                 graphics::Image* that = 0;
                 int   sx, sy, sw, sh;
                 int   x, y;
-                float rotate;
+                float angle;
                 float scale;
                 u32   color;
 
@@ -1214,18 +1214,18 @@ namespace rpgss {
                     sh   = luaL_checkint(L, 5);
                     x    = luaL_checkint(L, 6);
                     y    = luaL_checkint(L, 7);
-                    rotate = luaL_optnumber(L, 8, 0.0);
-                    scale  = luaL_optnumber(L, 9, 1.0);
-                    color  = luaL_optint(L, 10, 0xFFFFFFFF);
+                    angle = luaL_optnumber(L, 8, 0.0);
+                    scale = luaL_optnumber(L, 9, 1.0);
+                    color = luaL_optint(L, 10, 0xFFFFFFFF);
                 }
                 else
                 {
                     that = graphics_module::ImageWrapper::Get(L, 1);
                     x    = luaL_checkint(L, 2);
                     y    = luaL_checkint(L, 3);
-                    rotate = luaL_optnumber(L, 4, 0.0);
-                    scale  = luaL_optnumber(L, 5, 1.0);
-                    color  = luaL_optint(L, 6, 0xFFFFFFFF);
+                    angle = luaL_optnumber(L, 4, 0.0);
+                    scale = luaL_optnumber(L, 5, 1.0);
+                    color = luaL_optint(L, 6, 0xFFFFFFFF);
 
                     sx = 0;
                     sy = 0;
@@ -1233,7 +1233,7 @@ namespace rpgss {
                     sh = that->getHeight();
                 }
 
-                if (rotate == 0.0)
+                if (angle == 0.0)
                 {
                     if (color == 0xFFFFFFFF)
                     {
@@ -1262,10 +1262,10 @@ namespace rpgss {
                     core::Vec2i center_of_rotation = rect.getCenter();
 
                     core::Vec2i vertices[4] = {
-                        rect.getUpperLeft().rotateBy(rotate, center_of_rotation),
-                        rect.getUpperRight().rotateBy(rotate, center_of_rotation),
-                        rect.getLowerRight().rotateBy(rotate, center_of_rotation),
-                        rect.getLowerLeft().rotateBy(rotate, center_of_rotation)
+                        rect.getUpperLeft().rotateBy(angle, center_of_rotation),
+                        rect.getUpperRight().rotateBy(angle, center_of_rotation),
+                        rect.getLowerRight().rotateBy(angle, center_of_rotation),
+                        rect.getLowerLeft().rotateBy(angle, center_of_rotation)
                     };
 
                     if (color == 0xFFFFFFFF)
