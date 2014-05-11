@@ -62,6 +62,7 @@ namespace rpgss {
             MemoryFile::Ptr o = new MemoryFile();
             if (bufferSize > 0) {
                 o->write(buffer, bufferSize);
+                o->seek(0);
             }
             return o;
         }
@@ -74,6 +75,7 @@ namespace rpgss {
             MemoryFile::Ptr o = new MemoryFile();
             if (byteArray->getSize() > 0) {
                 o->write(byteArray->getBuffer(), byteArray->getSize());
+                o->seek(0);
             }
             return o;
         }
