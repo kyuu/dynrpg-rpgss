@@ -3,12 +3,14 @@ Changes between 0.6.0 and 0.5.2
 -------------------------------
 
   * Changed license to the MIT license.
-  * Removed unused field in Image class.
+  * Removed unused field in graphics::Image.
   * Made blend mode a function argument instead of a state.
   * Renamed rotation constants to "cw" and "ccw" for consistency.
-  * Fixed wrong argument indices in graphics.Image.getPixel and
-    graphics.Image.setPixel.
-  * Made rotation code respect that our y-axis goes down.
+  * Fixed wrong argument indices in Image:getPixel and Image:setPixel.
+  * Vec2::rotateBy now respects that our y-axis goes down and not up.
+  * Memory file constructors that take a buffer now behave as expected.
+  * Added initial set of assets.
+  * Added CHANGELOG.
  
 Changes between 0.5.2 and 0.5.1
 -------------------------------
