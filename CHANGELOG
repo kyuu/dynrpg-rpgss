@@ -1,0 +1,23 @@
+
+Changes between 0.6.0 and 0.5.2
+-------------------------------
+
+  * Changed license to the MIT license.
+  * Removed unused field in Image class.
+  * Made blend mode a function argument instead of a state.
+  * Renamed rotation constants to "cw" and "ccw" for consistency.
+  * Fixed wrong argument indices in graphics.Image.getPixel and
+    graphics.Image.setPixel.
+  * Made rotation code respect that our y-axis goes down.
+ 
+Changes between 0.5.2 and 0.5.1
+-------------------------------
+
+  * Fixed wrong argument indices in game.screen.drawPoint.
+  * Fixed performance problem in "set" blend mode due to an
+    optimization bug in GCC.
+
+Changes between 0.5.1 and 0.5.0
+-------------------------------
+
+  * Refactored code.
