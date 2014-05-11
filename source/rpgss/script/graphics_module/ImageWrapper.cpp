@@ -117,31 +117,6 @@ namespace rpgss {
 
             //---------------------------------------------------------
             int
-            ImageWrapper::getBlendMode(lua_State* L)
-            {
-                std::string blend_mode_str;
-                if (!GetBlendModeConstant(This->getBlendMode(), blend_mode_str)) {
-                    return luaL_error(L, "unexpected internal value");
-                }
-                lua_pushstring(L, blend_mode_str.c_str());
-                return 1;
-            }
-
-            //---------------------------------------------------------
-            int
-            ImageWrapper::setBlendMode(lua_State* L)
-            {
-                const char* blend_mode_str = luaL_checkstring(L, 2);
-                int blend_mode;
-                if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
-                    return luaL_argerror(L, 2, "invalid blend mode constant");
-                }
-                This->setBlendMode(blend_mode);
-                return 0;
-            }
-
-            //---------------------------------------------------------
-            int
             ImageWrapper::getClipRect(lua_State* L)
             {
                 core::Recti clip_rect = This->getClipRect();
@@ -313,9 +288,16 @@ namespace rpgss {
                 int y = luaL_checkint(L, 3);
                 u32 c = luaL_checkint(L, 4);
 
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 5, "mix");
+                if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 5, "invalid blend mode constant");
+                }
+
                 This->drawPoint(
                     core::Vec2i(x, y),
-                    graphics::RGBA8888ToRGBA(c)
+                    graphics::RGBA8888ToRGBA(c),
+                    blend_mode
                 );
 
                 return 0;
@@ -332,11 +314,18 @@ namespace rpgss {
                 u32 c1 = luaL_checkint(L, 6);
                 u32 c2 = luaL_optint(L, 7, c1);
 
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 8, "mix");
+                if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 8, "invalid blend mode constant");
+                }
+
                 This->drawLine(
                     core::Vec2i(x1, y1),
                     core::Vec2i(x2, y2),
                     graphics::RGBA8888ToRGBA(c1),
-                    graphics::RGBA8888ToRGBA(c2)
+                    graphics::RGBA8888ToRGBA(c2),
+                    blend_mode
                 );
 
                 return 0;
@@ -356,13 +345,20 @@ namespace rpgss {
                 u32    c3 = luaL_optint(L, 9, c1);
                 u32    c4 = luaL_optint(L, 10, c1);
 
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 11, "mix");
+                if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 11, "invalid blend mode constant");
+                }
+
                 This->drawRectangle(
                     fill,
                     core::Recti(x, y, w, h),
                     graphics::RGBA8888ToRGBA(c1),
                     graphics::RGBA8888ToRGBA(c2),
                     graphics::RGBA8888ToRGBA(c3),
-                    graphics::RGBA8888ToRGBA(c4)
+                    graphics::RGBA8888ToRGBA(c4),
+                    blend_mode
                 );
 
                 return 0;
@@ -379,12 +375,19 @@ namespace rpgss {
                 u32    c1 = luaL_checkint(L, 6);
                 u32    c2 = luaL_optint(L, 7, c1);
 
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 8, "mix");
+                if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 8, "invalid blend mode constant");
+                }
+
                 This->drawCircle(
                     fill,
                     core::Vec2i(x, y),
                     r,
                     graphics::RGBA8888ToRGBA(c1),
-                    graphics::RGBA8888ToRGBA(c2)
+                    graphics::RGBA8888ToRGBA(c2),
+                    blend_mode
                 );
 
                 return 0;
@@ -405,6 +408,12 @@ namespace rpgss {
                 u32    c1 = luaL_checkunsigned(L, 9);
                 u32    c2 = luaL_optunsigned(L, 10, c1);
                 u32    c3 = luaL_optunsigned(L, 11, c1);
+
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 12, "mix");
+                if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 12, "invalid blend mode constant");
+                }
                 */
 
                 // TODO
@@ -422,9 +431,10 @@ namespace rpgss {
                 float angle;
                 float scale;
                 u32   color;
+                int blend_mode;
 
                 int nargs = lua_gettop(L);
-                if (nargs >= 8)
+                if (nargs >= 8 && lua_type(L, 8) == LUA_TNUMBER)
                 {
                     that = ImageWrapper::Get(L, 2);
                     sx   = luaL_checkint(L, 3);
@@ -436,6 +446,11 @@ namespace rpgss {
                     angle = luaL_optnumber(L, 9, 0.0);
                     scale = luaL_optnumber(L, 10, 1.0);
                     color = luaL_optint(L, 11, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 12, "mix");
+                    if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 12, "invalid blend mode constant");
+                    }
                 }
                 else
                 {
@@ -445,6 +460,11 @@ namespace rpgss {
                     angle = luaL_optnumber(L, 5, 0.0);
                     scale = luaL_optnumber(L, 6, 1.0);
                     color = luaL_optint(L, 7, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 8, "mix");
+                    if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 8, "invalid blend mode constant");
+                    }
 
                     sx = 0;
                     sy = 0;
@@ -458,7 +478,8 @@ namespace rpgss {
                     core::Vec2i(x, y),
                     angle,
                     scale,
-                    graphics::RGBA8888ToRGBA(color)
+                    graphics::RGBA8888ToRGBA(color),
+                    blend_mode
                 );
 
                 return 0;
@@ -475,6 +496,7 @@ namespace rpgss {
                 int x3, y3;
                 int x4, y4;
                 u32 color;
+                int blend_mode;
 
                 int nargs = lua_gettop(L);
                 if (nargs >= 14)
@@ -493,6 +515,11 @@ namespace rpgss {
                     x4   = luaL_checkint(L, 13);
                     y4   = luaL_checkint(L, 14);
                     color = luaL_optint(L, 15, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 16, "mix");
+                    if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 16, "invalid blend mode constant");
+                    }
                 }
                 else
                 {
@@ -507,6 +534,11 @@ namespace rpgss {
                     y4   = luaL_checkint(L, 10);
                     color = luaL_optint(L, 11, 0xFFFFFFFF);
 
+                    const char* blend_mode_str = luaL_optstring(L, 12, "mix");
+                    if (!GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 12, "invalid blend mode constant");
+                    }
+
                     sx = 0;
                     sy = 0;
                     sw = that->getWidth();
@@ -520,7 +552,8 @@ namespace rpgss {
                     core::Vec2i(x2, y2),
                     core::Vec2i(x3, y3),
                     core::Vec2i(x4, y4),
-                    graphics::RGBA8888ToRGBA(color)
+                    graphics::RGBA8888ToRGBA(color),
+                    blend_mode
                 );
 
                 return 0;

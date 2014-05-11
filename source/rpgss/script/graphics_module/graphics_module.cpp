@@ -218,8 +218,6 @@ namespace rpgss {
                             .addProperty("height",              &ImageWrapper::get_height)
                             .addCFunction("__len",              &ImageWrapper::__len)
                             .addCFunction("getDimensions",      &ImageWrapper::getDimensions)
-                            .addCFunction("getBlendMode",       &ImageWrapper::getBlendMode)
-                            .addCFunction("setBlendMode",       &ImageWrapper::setBlendMode)
                             .addCFunction("getClipRect",        &ImageWrapper::getClipRect)
                             .addCFunction("setClipRect",        &ImageWrapper::setClipRect)
                             .addCFunction("copyPixels",         &ImageWrapper::copyPixels)

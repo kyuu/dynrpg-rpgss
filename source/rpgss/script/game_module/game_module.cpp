@@ -609,12 +609,10 @@ namespace rpgss {
                     return RPG::screen->canvas->lineSize / 2;
                 }
 
-                static int BlendMode;
                 static core::Recti ClipRect;
             };
 
             //---------------------------------------------------------
-            int Screen::BlendMode = graphics::BlendMode::Mix;
             core::Recti Screen::ClipRect = core::Recti(0, 0, 320, 240);
 
             //---------------------------------------------------------
@@ -647,29 +645,6 @@ namespace rpgss {
                 lua_pushnumber(L, RPG::screen->canvas->width());
                 lua_pushnumber(L, RPG::screen->canvas->height());
                 return 2;
-            }
-
-            //---------------------------------------------------------
-            int screen_getBlendMode(lua_State* L)
-            {
-                std::string blend_mode_str;
-                if (!graphics_module::GetBlendModeConstant(Screen::BlendMode, blend_mode_str)) {
-                    return luaL_error(L, "unexpected internal value");
-                }
-                lua_pushstring(L, blend_mode_str.c_str());
-                return 1;
-            }
-
-            //---------------------------------------------------------
-            int screen_setBlendMode(lua_State* L)
-            {
-                const char* blend_mode_str = luaL_checkstring(L, 1);
-                int blend_mode;
-                if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
-                    return luaL_argerror(L, 1, "invalid blend mode constant");
-                }
-                Screen::BlendMode = blend_mode;
-                return 0;
             }
 
             //---------------------------------------------------------
@@ -984,7 +959,13 @@ namespace rpgss {
                 int y = luaL_checkint(L, 2);
                 u32 c = (u32)luaL_checkint(L, 3);
 
-                switch (Screen::BlendMode) {
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 4, "mix");
+                if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 4, "invalid blend mode constant");
+                }
+
+                switch (blend_mode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_mix()); break;
                 case graphics::BlendMode::Add:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_add()); break;
@@ -1005,7 +986,13 @@ namespace rpgss {
                 u32 c1 = luaL_checkint(L, 5);
                 u32 c2 = luaL_optint(L, 6, c1);
 
-                switch (Screen::BlendMode) {
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 7, "mix");
+                if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 7, "invalid blend mode constant");
+                }
+
+                switch (blend_mode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_mix()); break;
                 case graphics::BlendMode::Add:      graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_add()); break;
@@ -1029,7 +1016,13 @@ namespace rpgss {
                 u32    c3 = luaL_optint(L, 8, c1);
                 u32    c4 = luaL_optint(L, 9, c1);
 
-                switch (Screen::BlendMode) {
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 10, "mix");
+                if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 10, "invalid blend mode constant");
+                }
+
+                switch (blend_mode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_mix()); break;
                 case graphics::BlendMode::Add:      graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_add()); break;
@@ -1050,7 +1043,13 @@ namespace rpgss {
                 u32    c1 = luaL_checkint(L, 5);
                 u32    c2 = luaL_optint(L, 6, c1);
 
-                switch (Screen::BlendMode) {
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 7, "mix");
+                if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 7, "invalid blend mode constant");
+                }
+
+                switch (blend_mode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_mix()); break;
                 case graphics::BlendMode::Add:      graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_add()); break;
@@ -1075,6 +1074,12 @@ namespace rpgss {
                 u32    c1 = luaL_checkunsigned(L, 8);
                 u32    c2 = luaL_optunsigned(L, 9, c1);
                 u32    c3 = luaL_optunsigned(L, 10, c1);
+
+                int blend_mode;
+                const char* blend_mode_str = luaL_optstring(L, 11, "mix");
+                if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                    return luaL_argerror(L, 11, "invalid blend mode constant");
+                }
                 */
 
                 // TODO
@@ -1203,9 +1208,10 @@ namespace rpgss {
                 float angle;
                 float scale;
                 u32   color;
+                int blend_mode;
 
                 int nargs = lua_gettop(L);
-                if (nargs >= 7)
+                if (nargs >= 7 && lua_type(L, 7) == LUA_TNUMBER)
                 {
                     that = graphics_module::ImageWrapper::Get(L, 1);
                     sx   = luaL_checkint(L, 2);
@@ -1217,6 +1223,11 @@ namespace rpgss {
                     angle = luaL_optnumber(L, 8, 0.0);
                     scale = luaL_optnumber(L, 9, 1.0);
                     color = luaL_optint(L, 10, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 11, "mix");
+                    if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 11, "invalid blend mode constant");
+                    }
                 }
                 else
                 {
@@ -1226,6 +1237,11 @@ namespace rpgss {
                     angle = luaL_optnumber(L, 4, 0.0);
                     scale = luaL_optnumber(L, 5, 1.0);
                     color = luaL_optint(L, 6, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 7, "mix");
+                    if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 7, "invalid blend mode constant");
+                    }
 
                     sx = 0;
                     sy = 0;
@@ -1237,7 +1253,7 @@ namespace rpgss {
                 {
                     if (color == 0xFFFFFFFF)
                     {
-                        switch (Screen::BlendMode) {
+                        switch (blend_mode) {
                         case graphics::BlendMode::Set:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set()); break;
                         case graphics::BlendMode::Mix:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix()); break;
                         case graphics::BlendMode::Add:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add()); break;
@@ -1247,7 +1263,7 @@ namespace rpgss {
                     }
                     else
                     {
-                        switch (Screen::BlendMode) {
+                        switch (blend_mode) {
                         case graphics::BlendMode::Set:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set_col(graphics::RGBA8888ToRGBA(color))); break;
                         case graphics::BlendMode::Mix:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix_col(graphics::RGBA8888ToRGBA(color))); break;
                         case graphics::BlendMode::Add:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add_col(graphics::RGBA8888ToRGBA(color))); break;
@@ -1270,7 +1286,7 @@ namespace rpgss {
 
                     if (color == 0xFFFFFFFF)
                     {
-                        switch (Screen::BlendMode) {
+                        switch (blend_mode) {
                         case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set()); break;
                         case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix()); break;
                         case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add()); break;
@@ -1280,7 +1296,7 @@ namespace rpgss {
                     }
                     else
                     {
-                        switch (Screen::BlendMode) {
+                        switch (blend_mode) {
                         case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set_col(graphics::RGBA8888ToRGBA(color))); break;
                         case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix_col(graphics::RGBA8888ToRGBA(color))); break;
                         case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add_col(graphics::RGBA8888ToRGBA(color))); break;
@@ -1303,6 +1319,7 @@ namespace rpgss {
                 int x3, y3;
                 int x4, y4;
                 u32 color;
+                int blend_mode;
 
                 int nargs = lua_gettop(L);
                 if (nargs >= 13)
@@ -1321,6 +1338,11 @@ namespace rpgss {
                     x4   = luaL_checkint(L, 12);
                     y4   = luaL_checkint(L, 13);
                     color = luaL_optint(L, 14, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 15, "mix");
+                    if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 15, "invalid blend mode constant");
+                    }
                 }
                 else
                 {
@@ -1334,6 +1356,11 @@ namespace rpgss {
                     x4   = luaL_checkint(L, 8);
                     y4   = luaL_checkint(L, 9);
                     color = luaL_optint(L, 10, 0xFFFFFFFF);
+
+                    const char* blend_mode_str = luaL_optstring(L, 11, "mix");
+                    if (!graphics_module::GetBlendModeConstant(blend_mode_str, blend_mode)) {
+                        return luaL_argerror(L, 11, "invalid blend mode constant");
+                    }
 
                     sx = 0;
                     sy = 0;
@@ -1350,7 +1377,7 @@ namespace rpgss {
 
                 if (color == 0xFFFFFFFF)
                 {
-                    switch (Screen::BlendMode) {
+                    switch (blend_mode) {
                     case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set()); break;
                     case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix()); break;
                     case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add()); break;
@@ -1360,7 +1387,7 @@ namespace rpgss {
                 }
                 else
                 {
-                    switch (Screen::BlendMode) {
+                    switch (blend_mode) {
                     case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set_col(graphics::RGBA8888ToRGBA(color))); break;
                     case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix_col(graphics::RGBA8888ToRGBA(color))); break;
                     case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add_col(graphics::RGBA8888ToRGBA(color))); break;
@@ -2179,8 +2206,6 @@ namespace rpgss {
                             .addProperty("height",                  &screen_get_height)
                             .addProperty("brightness",              &screen_get_brightness, &screen_set_brightness)
                             .addCFunction("getDimensions",          &screen_getDimensions)
-                            .addCFunction("getBlendMode",           &screen_getBlendMode)
-                            .addCFunction("setBlendMode",           &screen_setBlendMode)
                             .addCFunction("getClipRect",            &screen_getClipRect)
                             .addCFunction("setClipRect",            &screen_setClipRect)
                             .addCFunction("copyRect",               &screen_copyRect)

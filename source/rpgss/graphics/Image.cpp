@@ -51,7 +51,6 @@ namespace rpgss {
             , _height(height)
             , _pixels(0)
             , _clipRect(width, height)
-            , _blendMode(BlendMode::Mix)
         {
             _pixels = allocatePixels(width, height);
         }
@@ -62,7 +61,6 @@ namespace rpgss {
             , _height(height)
             , _pixels(0)
             , _clipRect(width, height)
-            , _blendMode(BlendMode::Mix)
         {
             _pixels = allocatePixels(width, height);
             clear(color);
@@ -74,7 +72,6 @@ namespace rpgss {
             , _height(height)
             , _pixels(0)
             , _clipRect(width, height)
-            , _blendMode(BlendMode::Mix)
         {
             _pixels = allocatePixels(width, height);
             std::memcpy(_pixels, pixels, getSizeInBytes());
@@ -117,23 +114,6 @@ namespace rpgss {
         {
             if (clipRect.isValid() && clipRect.isInside(0, 0, _width, _height)) {
                 _clipRect = clipRect;
-            }
-        }
-
-        //-----------------------------------------------------------------
-        void
-        Image::setBlendMode(int blendMode)
-        {
-            switch (blendMode) {
-            case BlendMode::Set:
-            case BlendMode::Mix:
-            case BlendMode::Add:
-            case BlendMode::Subtract:
-            case BlendMode::Multiply:
-                _blendMode = blendMode;
-                break;
-            default:
-                break;
             }
         }
 
@@ -502,9 +482,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawPoint(const core::Vec2i& pos, RGBA color)
+        Image::drawPoint(const core::Vec2i& pos, RGBA color, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Point(_pixels, _width, _clipRect, pos, color, rgba_set()); break;
             case BlendMode::Mix:      primitives::Point(_pixels, _width, _clipRect, pos, color, rgba_mix()); break;
             case BlendMode::Add:      primitives::Point(_pixels, _width, _clipRect, pos, color, rgba_add()); break;
@@ -515,9 +495,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA color)
+        Image::drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA color, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, color, rgba_set()); break;
             case BlendMode::Mix:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, color, rgba_mix()); break;
             case BlendMode::Add:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, color, rgba_add()); break;
@@ -528,9 +508,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA startColor, RGBA endColor)
+        Image::drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA startColor, RGBA endColor, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, startColor, endColor, rgba_set()); break;
             case BlendMode::Mix:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, startColor, endColor, rgba_mix()); break;
             case BlendMode::Add:      primitives::Line(_pixels, _width, _clipRect, startPos, endPos, startColor, endColor, rgba_add()); break;
@@ -541,9 +521,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawRectangle(bool fill, const core::Recti& rect, RGBA color)
+        Image::drawRectangle(bool fill, const core::Recti& rect, RGBA color, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, color, rgba_set()); break;
             case BlendMode::Mix:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, color, rgba_mix()); break;
             case BlendMode::Add:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, color, rgba_add()); break;
@@ -554,9 +534,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawRectangle(bool fill, const core::Recti& rect, RGBA ulColor, RGBA urColor, RGBA lrColor, RGBA llColor)
+        Image::drawRectangle(bool fill, const core::Recti& rect, RGBA ulColor, RGBA urColor, RGBA lrColor, RGBA llColor, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, ulColor, urColor, lrColor, llColor, rgba_set()); break;
             case BlendMode::Mix:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, ulColor, urColor, lrColor, llColor, rgba_mix()); break;
             case BlendMode::Add:      primitives::Rectangle(_pixels, _width, _clipRect, fill, rect, ulColor, urColor, lrColor, llColor, rgba_add()); break;
@@ -567,9 +547,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA color)
+        Image::drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA color, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, color, rgba_set()); break;
             case BlendMode::Mix:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, color, rgba_mix()); break;
             case BlendMode::Add:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, color, rgba_add()); break;
@@ -580,9 +560,9 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA innerColor, RGBA outerColor)
+        Image::drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA innerColor, RGBA outerColor, int blendMode)
         {
-            switch (_blendMode) {
+            switch (blendMode) {
             case BlendMode::Set:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, innerColor, outerColor, rgba_set()); break;
             case BlendMode::Mix:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, innerColor, outerColor, rgba_mix()); break;
             case BlendMode::Add:      primitives::Circle(_pixels, _width, _clipRect, fill, center, radius, innerColor, outerColor, rgba_add()); break;
@@ -593,14 +573,14 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA color)
+        Image::drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA color, int blendMode)
         {
             // TODO
         }
 
         //-----------------------------------------------------------------
         void
-        Image::drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA c1, RGBA c2, RGBA c3)
+        Image::drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA c1, RGBA c2, RGBA c3, int blendMode)
         {
             // TODO
         }
@@ -1270,7 +1250,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw(const Image* image, const core::Vec2i& pos, float angle, float scale, RGBA color)
+        Image::draw(const Image* image, const core::Vec2i& pos, float angle, float scale, RGBA color, int blendMode)
         {
             core::Recti image_rect = core::Recti(image->getDimensions());
             draw(image, image_rect, pos, angle, scale, color);
@@ -1278,13 +1258,13 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle, float scale, RGBA color)
+        Image::draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle, float scale, RGBA color, int blendMode)
         {
             if (CpuSupportsSse2() && (angle == 0.0 && scale == 1.0))
             {
                 if (color == RGBA(255, 255, 255, 255))
                 {
-                    switch (_blendMode) {
+                    switch (blendMode) {
                     case BlendMode::Set:
                         draw_sse2_set(image, image_rect, pos);
                         break;
@@ -1305,7 +1285,7 @@ namespace rpgss {
                 }
                 else
                 {
-                    switch (_blendMode) {
+                    switch (blendMode) {
                     case BlendMode::Set:
                         draw_sse2_set(image, image_rect, pos, color);
                         break;
@@ -1331,7 +1311,7 @@ namespace rpgss {
 
                 if (color == RGBA(255, 255, 255, 255))
                 {
-                    switch (_blendMode) {
+                    switch (blendMode) {
                     case BlendMode::Set:      primitives::TexturedRectangle(_pixels, _width, _clipRect, rect, image->getPixels(), image->getWidth(), image_rect, rgba_set()); break;
                     case BlendMode::Mix:      primitives::TexturedRectangle(_pixels, _width, _clipRect, rect, image->getPixels(), image->getWidth(), image_rect, rgba_mix()); break;
                     case BlendMode::Add:      primitives::TexturedRectangle(_pixels, _width, _clipRect, rect, image->getPixels(), image->getWidth(), image_rect, rgba_add()); break;
@@ -1341,7 +1321,7 @@ namespace rpgss {
                 }
                 else
                 {
-                    switch (_blendMode) {
+                    switch (blendMode) {
                     case BlendMode::Set:      primitives::TexturedRectangle(_pixels, _width, _clipRect, rect, image->getPixels(), image->getWidth(), image_rect, rgba_set_col(color)); break;
                     case BlendMode::Mix:      primitives::TexturedRectangle(_pixels, _width, _clipRect, rect, image->getPixels(), image->getWidth(), image_rect, rgba_mix_col(color)); break;
                     case BlendMode::Add:      primitives::TexturedRectangle(_pixels, _width, _clipRect, rect, image->getPixels(), image->getWidth(), image_rect, rgba_add_col(color)); break;
@@ -1366,7 +1346,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color)
+        Image::drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color, int blendMode)
         {
             core::Recti image_rect = core::Recti(image->getDimensions());
             drawq(image, image_rect, ul, ur, lr, ll, color);
@@ -1374,13 +1354,13 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color)
+        Image::drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color, int blendMode)
         {
             core::Vec2i pos[4] = { ul, ur, lr, ll };
 
             if (color == RGBA(255, 255, 255, 255))
             {
-                switch (_blendMode) {
+                switch (blendMode) {
                 case BlendMode::Set:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_set()); break;
                 case BlendMode::Mix:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_mix()); break;
                 case BlendMode::Add:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_add()); break;
@@ -1390,7 +1370,7 @@ namespace rpgss {
             }
             else
             {
-                switch (_blendMode) {
+                switch (blendMode) {
                 case BlendMode::Set:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_set_col(color)); break;
                 case BlendMode::Mix:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_mix_col(color)); break;
                 case BlendMode::Add:      primitives::TexturedQuad(_pixels, _width, _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgba_add_col(color)); break;

@@ -55,9 +55,6 @@ namespace rpgss {
             const core::Recti& getClipRect() const;
             void  setClipRect(const core::Recti& clipRect);
 
-            int  getBlendMode() const;
-            void setBlendMode(int blendMode);
-
             Image::Ptr copyRect(const core::Recti& rect, Image* destination = 0);
             void resize(int new_width, int new_height);
             void setAlpha(u8 alpha);
@@ -70,25 +67,25 @@ namespace rpgss {
             void rotateClockwise();
             void rotateCounterClockwise();
 
-            void drawPoint(const core::Vec2i& pos, RGBA color);
+            void drawPoint(const core::Vec2i& pos, RGBA color, int blendMode = BlendMode::Mix);
 
-            void drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA color);
-            void drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA startColor, RGBA endColor);
+            void drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA color, int blendMode = BlendMode::Mix);
+            void drawLine(const core::Vec2i& startPos, const core::Vec2i& endPos, RGBA startColor, RGBA endColor, int blendMode = BlendMode::Mix);
 
-            void drawRectangle(bool fill, const core::Recti& rect, RGBA color);
-            void drawRectangle(bool fill, const core::Recti& rect, RGBA ulColor, RGBA urColor, RGBA lrColor, RGBA llColor);
+            void drawRectangle(bool fill, const core::Recti& rect, RGBA color, int blendMode = BlendMode::Mix);
+            void drawRectangle(bool fill, const core::Recti& rect, RGBA ulColor, RGBA urColor, RGBA lrColor, RGBA llColor, int blendMode = BlendMode::Mix);
 
-            void drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA color);
-            void drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA innerColor, RGBA outerColor);
+            void drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA color, int blendMode = BlendMode::Mix);
+            void drawCircle(bool fill, const core::Vec2i& center, int radius, RGBA innerColor, RGBA outerColor, int blendMode = BlendMode::Mix);
 
-            void drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA color);
-            void drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA c1, RGBA c2, RGBA c3);
+            void drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA color, int blendMode = BlendMode::Mix);
+            void drawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, RGBA c1, RGBA c2, RGBA c3, int blendMode = BlendMode::Mix);
 
-            void draw(const Image* image, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
-            void draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
+            void draw(const Image* image, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255), int blendMode = BlendMode::Mix);
+            void draw(const Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255), int blendMode = BlendMode::Mix);
 
-            void drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
-            void drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255));
+            void drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255), int blendMode = BlendMode::Mix);
+            void drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255), int blendMode = BlendMode::Mix);
 
             void drawWindow(const WindowSkin* windowSkin, core::Recti windowRect, int opacity = 255);
 
@@ -127,7 +124,6 @@ namespace rpgss {
             RGBA* _pixels;
             core::Recti _bbox;
             core::Recti _clipRect;
-            int   _blendMode;
         };
 
         //-----------------------------------------------------------------
@@ -191,13 +187,6 @@ namespace rpgss {
         Image::getClipRect() const
         {
             return _clipRect;
-        }
-
-        //-----------------------------------------------------------------
-        inline int
-        Image::getBlendMode() const
-        {
-            return _blendMode;
         }
 
         //-----------------------------------------------------------------
