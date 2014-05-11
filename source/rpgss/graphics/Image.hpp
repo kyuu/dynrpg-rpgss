@@ -122,7 +122,6 @@ namespace rpgss {
             int   _width;
             int   _height;
             RGBA* _pixels;
-            core::Recti _bbox;
             core::Recti _clipRect;
         };
 
