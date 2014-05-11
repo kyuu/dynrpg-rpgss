@@ -105,12 +105,19 @@ namespace rpgss {
 
             Vec2& rotateBy(float degrees, const Vec2& center = Vec2()) {
                 degrees *= 3.14159f / 180.0f;
+
                 float cs = std::cos(degrees);
                 float sn = std::sin(degrees);
+
                 T tx = x - center.x;
                 T ty = y - center.y;
-                x = (T)(tx * cs - ty * sn) + center.x;
-                y = (T)(tx * sn + ty * cs) + center.y;
+
+                // this code respects that our y-axis goes down
+                // to make it work the other way (y-axis goes up),
+                // simply swap the signs inside the parentheses
+                x = (T)(tx * cs + ty * sn) + center.x;
+                y = (T)(ty * cs - tx * sn) + center.y;
+
                 return *this;
             }
 
