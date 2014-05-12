@@ -3,7 +3,7 @@ require "std.sprite"
 
 
 function spritelib_add(name, filename, blend_mode, visible, z, x, y, scale, angle)
-    local sprite = Sprite.new(filename, blend_mode, visible, z, x, y, scale, angle)
+    local sprite = Sprite.new(filename, blend_mode, visible, z, x, y, scale / 100, angle)
     world:addObject(name, sprite)
 end
 
