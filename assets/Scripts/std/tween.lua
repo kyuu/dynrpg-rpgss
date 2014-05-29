@@ -1,6 +1,54 @@
 
+
 Tween = {
     __classname = "Tween",
+
+    __serialize = function(obj)
+        local mfile = io.newMemoryFile()
+        local writer = io.newWriter(mfile)
+        
+        -- write value
+        writer:writeDouble(obj._value)
+        
+        -- write t, b, c, d
+        writer:writeDouble(obj._t)
+        writer:writeDouble(obj._b)
+        writer:writeDouble(obj._c)
+        writer:writeDouble(obj._d)
+        
+        -- write easing
+        writer:writeUint32(#obj._easing)
+        writer:writeString(obj._easing)
+        
+        return mfile:copyBuffer()
+    end,
+    
+    __deserialize = function(data)
+        local mfile = io.newMemoryFile(data)
+        local reader = io.newReader(mfile)
+        
+        -- create instance
+        local obj = setmetatable({}, Tween)
+
+        -- read value
+        obj._value = reader:readDouble()
+        
+        -- read t, b, c, d
+        obj._t = reader:readDouble()
+        obj._b = reader:readDouble()
+        obj._c = reader:readDouble()
+        obj._d = reader:readDouble()
+        
+        -- read easing
+        obj._easing = reader:readString(reader:readUint32())
+
+        -- check for EOF
+        if mfile.eof then
+            error("EOF")
+        end
+        
+        return obj
+    end,
 
     ease = {
         -- http://www.gizma.com/easing/
@@ -107,24 +155,30 @@ function Tween.new(value)
     local self = setmetatable({}, Tween)
     
     self._value = value
-    self._working = false
+    
+    self._t = 0
+    self._b = 0
+    self._c = 0
+    self._d = 0
+    
+    self._easing = ""
     
     return self
 end
 
 function Tween.update(self, ms)
-    if self._working then
+    if self._d > 0 then
         self._t = self._t + ms
         if self._t < self._d then
-            self._value = self._ease(self._t, self._b, self._c, self._d)
+            self._value = Tween.ease[self._easing](self._t, self._b, self._c, self._d)
         else
             self._value = self._b + self._c
-            self._working = false
-            -- we just finished working
+            self._d = 0
+            -- we just finished tweening
             return true
         end
     end
-    -- either not working or we are not finished yet
+    -- either no tweening in progress or we are not finished yet
     return false
 end
 
@@ -134,21 +188,24 @@ end
 
 function Tween.set(self, value)
     self._value = value
-    -- stop any ongoing work
-    self._working = false
+    -- stop any ongoing tweening
+    self._d = 0
 end
 
-function Tween.tween_to(self, value, duration, easing)
-    if value ~= self._value and duration > 0 then
+function Tween.tween_to(self, value, ms, easing)
+    if value ~= self._value and ms > 0 then
         self._t = 0
         self._b = self._value
         self._c = value - self._value
-        self._d = duration
-        self._ease = easing and Tween.ease[easing] or Tween.ease["linear"]
-        self._working = true
+        self._d = ms
+        self._easing = easing or "linear"
     else
-        -- either we are already there or duration is <= 0
+        -- either we are already there or ms <= 0
         self._value = value
-        self._working = false
+        self._d = 0
     end
+end
+
+function Tween.stop_tween(self)
+    self._d = 0
 end

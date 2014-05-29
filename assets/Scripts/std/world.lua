@@ -1,101 +1,74 @@
-require "std.system"
+require "std.base"
 
 
 World = {
-    __classname = "World"
+    __classname = "World",
+    
+    _objects = {}
 }
-World.__index = World
 
-function World.new()
-    local self = setmetatable({}, World)
-    
+function World.reset(self)
     self._objects = {}
-    
-    return self
 end
 
-function World.saveState(self)
+function World.save(self)
     local mfile = io.newMemoryFile()
     local writer = io.newWriter(mfile)
     
+    -- write number of objects
+    local nobjects = 0
     for name, obj in pairs(self._objects) do
-        local classname = typeof(obj)
-        local class = _G[classname]
-        
-        if class ~= nil and class.__serialize ~= nil then
-            -- write object's name
-            writer:writeUint32(#name)
-            writer:writeString(name)
-
-            -- write object's class name
-            writer:writeUint32(#classname)
-            writer:writeString(classname)
-            
-            -- serialize object
-            local obj_data = class.__serialize(obj)
-            
-            -- write object data
-            writer:writeUint32(#obj_data)
-            writer:writeBytes(obj_data)
-        else
-            -- object not serializable, treat as fatal error
-            error("Object '"..name.."' not serializable.")
-        end
+        nobjects = nobjects + 1
     end
+    writer:writeUint32(nobjects)
     
+    -- write objects
+    for name, obj in pairs(self._objects) do
+        -- write object name
+        writer:writeUint32(#name)
+        writer:writeString(name)
+
+        -- write object data
+        local objdata = serialize(obj)
+        writer:writeUint32(#objdata)
+        writer:writeBytes(objdata)
+    end
+
     return mfile:copyBuffer()
 end
 
-function World.loadState(self, data)
-    -- clear current state
-    self._objects = {}
-    
+function World.load(self, data)
     local mfile = io.newMemoryFile(data)
     local reader = io.newReader(mfile)
-    
-    while mfile:tell() ~= #mfile do
-        -- read name
+
+    -- read number of objects
+    local nobjects = reader:readUint32()
+
+    -- read objects
+    for i = 1, nobjects do
+        -- read object name
         local name = reader:readString(reader:readUint32())
-        
-        -- read class name
-        local classname = reader:readString(reader:readUint32())
-        
-        -- get class
-        local class = _G[classname]
-        
-        if class ~= nil and class.__deserialize ~= nil then
-            -- read object data
-            local obj_data = reader:readBytes(reader:readUint32())
-            
-            -- make sure we didn't try to read past the end of file
-            if mfile.eof then
-                error("EOF while reading object '"..name.."'.")
-            end
-            
-            -- deserialize object
-            local obj = class.__deserialize(obj_data)
-            
-            if obj == nil then
-                error("Error deserializing object '"..name.."'.")
-            end
-            
-            -- add object
-            self._objects[name] = obj
-        else
-            -- object not deserializable, treat as fatal error
-            error("Object '"..name.."' not deserializable.")
+
+        -- read object data
+        local objdata = reader:readBytes(reader:readUint32())
+
+        -- check for EOF
+        if mfile.eof then
+            error("EOF")
         end
+
+        self._objects[name] = deserialize(objdata)
     end
 end
 
-function World.update(self)
+function World.update(self, scene)
     -- TODO: Expose RPG::Screen::millisecondsPerFrame and use it here,
     --       because it's possible to change the frame rate in DynRPG.
     local ms = 1000 / 60
 
     for name, obj in pairs(self._objects) do
         if obj.update ~= nil then
-            if obj:update(ms) then
+            if obj:update(scene, ms) then
                 -- Object told us to remove it from the world.
                 self._objects[name] = nil
             end
@@ -103,7 +76,7 @@ function World.update(self)
     end
 end
 
-function World.render(self)
+function World.render(self, scene)
     local render_list = {}
     
     -- Find all drawable objects.
@@ -113,23 +86,24 @@ function World.render(self)
         end
     end
     
-    -- Sort them with respect to their z value.
-    table.sort(render_list, function(a, b) return a.z < b.z end)
+    -- Sort them by their z value in descending order, i.e.
+    -- objects with a greater z value will be drawn first.
+    table.sort(render_list, function(a, b) return a:get_z() > b:get_z() end)
     
     -- Render them.
     for _, obj in ipairs(render_list) do
-        obj:render()
+        obj:render(scene)
     end
 end
 
-function World.addObject(self, name, obj)
+function World.add_object(self, name, obj)
     self._objects[name] = obj
 end
 
-function World.removeObject(self, name)
+function World.remove_object(self, name)
     self._objects[name] = nil
 end
 
-function World.getObject(self, name)
+function World.get_object(self, name)
     return self._objects[name]
 end
