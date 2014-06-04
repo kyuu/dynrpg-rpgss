@@ -204,8 +204,8 @@ function Sprite.new(filename, bmode, visible, z, x, y, scale, angle)
     self._angle = Tween.new(angle or 0.0)
     
     self._rot = {
-        direction = "",
-        degrees = 0,
+        dir = "",
+        deg = 0,
         ms = 0
     }
     
