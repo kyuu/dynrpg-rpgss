@@ -179,40 +179,6 @@ namespace rpgss {
 
                 debug::Log() << "Linked Audiere version is " << audiere::GetVersion();
 
-                // see if there are any audio devices available
-                debug::Log() << "Enumerating supported audio devices...";
-                std::vector<audiere::AudioDeviceDesc> devices;
-                audiere::GetSupportedAudioDevices(devices);
-                if (devices.empty()) {
-                    debug::Log() << "No supported audio devices found";
-                    return false;
-                } else {
-                    for (size_t i = 0; i < devices.size(); i++) {
-                        debug::Log() << "Supported audio device: " << devices[i].name << " (" << devices[i].description << ")";
-                    }
-                }
-
-                // see if audiere supports any audio file format
-                debug::Log() << "Enumerating supported audio file formats...";
-                std::vector<audiere::FileFormatDesc> formats;
-                audiere::GetSupportedFileFormats(formats);
-                if (formats.empty()) {
-                    debug::Log() << "No supported audio file formats found";
-                    return false;
-                } else {
-                    for (size_t i = 0; i < formats.size(); i++) {
-                        std::ostringstream extensions;
-                        for (size_t j = 0; j < formats[i].extensions.size(); j++) {
-                            extensions << formats[i].extensions[j];
-                            if (j != formats[i].extensions.size()-1) {
-                                extensions << ", ";
-                            }
-                        }
-                        debug::Log() << "Supported audio file format: " << extensions.str() << " (" << formats[i].description << ")";
-                    }
-                }
-
-                // open default audio device
                 debug::Log() << "Opening default audio device...";
                 g_AudiereAudioDevice = audiere::OpenDevice(0);
                 if (!g_AudiereAudioDevice) {
