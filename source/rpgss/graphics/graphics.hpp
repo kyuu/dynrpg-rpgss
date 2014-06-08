@@ -40,8 +40,8 @@ namespace rpgss {
         Image::Ptr ReadImage(const std::string& filename);
         Image::Ptr ReadImage(io::File* file);
 
-        bool WriteImage(const Image* image, const std::string& filename);
-        bool WriteImage(const Image* image, io::File* file);
+        bool WriteImage(const Image* image, const std::string& filename, bool palletize = false);
+        bool WriteImage(const Image* image, io::File* file, bool palletize = false);
 
     } // namespace graphics
 } // namespace rpgss

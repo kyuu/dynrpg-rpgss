@@ -140,7 +140,7 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        bool WriteImage(const Image* image, const std::string& filename)
+        bool WriteImage(const Image* image, const std::string& filename, bool palletize)
         {
             io::File::Ptr file = io::OpenFile(filename, io::File::Out);
 
@@ -148,11 +148,11 @@ namespace rpgss {
                 return false;
             }
 
-            return WriteImage(image, file);
+            return WriteImage(image, file, palletize);
         }
 
         //-----------------------------------------------------------------
-        bool WriteImage(const Image* image, io::File* file)
+        bool WriteImage(const Image* image, io::File* file, bool palletize)
         {
             azura::File::Ptr file_adapter = new AzuraFileAdapter(file);
             azura::Image::Ptr azura_image = azura::CreateImage(image->getWidth(), image->getHeight(), azura::PixelFormat::RGBA);
@@ -162,6 +162,13 @@ namespace rpgss {
             }
 
             std::memcpy(azura_image->getPixels(), image->getPixels(), image->getSizeInBytes());
+
+            if (palletize) {
+                azura_image = azura_image->convert(azura::PixelFormat::RGB_P8);
+                if (!azura_image) {
+                    return false;
+                }
+            }
 
             return azura::WriteImage(azura_image, file_adapter, azura::FileFormat::PNG);
         }
