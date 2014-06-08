@@ -1,4 +1,4 @@
-# RPGSS 0.6
+# RPGSS
 
 The Role Playing Game Scripting System ([RPGSS][1]) is a plugin for Cherry's
 [DynRPG][2]. RPGSS is a scripting environment for the [RPG Maker][3] 2003,
@@ -27,9 +27,8 @@ Please read the [RPGSS documentation][7] for more details.
 
 ## Official Repository
 
-RPGSS is published under the terms of the [MIT License][5].
-
-RPGSS is being developed by [Anatoli Steinmark][8].
+RPGSS is published under the terms of the [MIT License][5] and is being
+developed by [Anatoli Steinmark][8].
 
 For questions, comments, or bug reports feel free to open a Github issue
 or contact Anatoli Steinmark directly at the email address indicated below.
