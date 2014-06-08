@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include <corona.h>
+#include <azura.hpp>
 
 #include "../debug/debug.hpp"
 #include "../io/io.hpp"
@@ -38,38 +38,57 @@ namespace rpgss {
     namespace graphics {
 
         //-----------------------------------------------------------------
-        struct CoronaFileAdapter : public corona::DLLImplementation<corona::File>
-        {
-            CoronaFileAdapter(io::File* stream) : _stream(stream) {
+        class AzuraFileAdapter : public azura::File {
+        public:
+            explicit AzuraFileAdapter(io::File* file) : _file(file) {
             }
 
-            ~CoronaFileAdapter() {
+            ~AzuraFileAdapter() {
             }
 
-            int COR_CALL read(void* buffer, int size) {
-                return _stream->read((u8*)buffer, size);
+            bool isOpen() const {
+                return _file->isOpen();
             }
 
-            int COR_CALL write(const void* buffer, int size) {
-                return _stream->write((const u8*)buffer, size);
+            void close() {
+                _file->close();
             }
 
-            bool COR_CALL seek(int pos, corona::File::SeekMode mode) {
+            bool eof() const {
+                return _file->eof();
+            }
+
+            bool seek(int offset, azura::File::SeekMode mode) {
                 switch (mode) {
-                case corona::File::BEGIN:   return _stream->seek(pos, io::File::Begin);
-                case corona::File::CURRENT: return _stream->seek(pos, io::File::Current);
-                case corona::File::END:     return _stream->seek(pos, io::File::End);
-                default:
-                    return false;
+                    case azura::File::Begin:
+                        return _file->seek(offset, io::File::Begin);
+                    case azura::File::Current:
+                        return _file->seek(offset, io::File::Current);
+                    case azura::File::End:
+                        return _file->seek(offset, io::File::End);
+                    default:
+                        return false;
                 }
             }
 
-            int COR_CALL tell() {
-                return _stream->tell();
+            int tell() {
+                return _file->tell();
+            }
+
+            int read(azura::u8* buffer, int size) {
+                return _file->read((u8*)buffer, size);
+            }
+
+            int write(const azura::u8* buffer, int size) {
+                return _file->write((const u8*)buffer, size);
+            }
+
+            bool flush() {
+                return _file->flush();
             }
 
         private:
-            io::File::Ptr _stream;
+            io::File::Ptr _file;
         };
 
         //-----------------------------------------------------------------
@@ -84,33 +103,7 @@ namespace rpgss {
             debug::Log() << "CPU supports SSE2: " << (CpuSupportsSse2() ? "yes" : "no");
             debug::Log() << "CPU supports SSE3: " << (CpuSupportsSse3() ? "yes" : "no");
 
-            debug::Log() << "Linked Corona version is " << corona::GetVersion();
-
-            debug::Log() << "Enumerating supported image read formats...";
-            corona::FileFormatDesc** read_formats = corona::GetSupportedReadFormats();
-            for (int i = 0; read_formats[i] != 0; i++) {
-                std::string extensions;
-                for (size_t j = 0; j < read_formats[i]->getExtensionCount(); j++) {
-                    extensions += read_formats[i]->getExtension(j);
-                    if (j+1 < read_formats[i]->getExtensionCount()) {
-                        extensions += ", ";
-                    }
-                }
-                debug::Log() << "Supported image read format: " << extensions << " (" << read_formats[i]->getDescription() << ")";
-            }
-
-            debug::Log() << "Enumerating supported image write formats...";
-            corona::FileFormatDesc** write_formats = corona::GetSupportedWriteFormats();
-            for (int i = 0; write_formats[i] != 0; i++) {
-                std::string extensions;
-                for (size_t j = 0; j < write_formats[i]->getExtensionCount(); j++) {
-                    extensions += write_formats[i]->getExtension(j);
-                    if (j+1 < write_formats[i]->getExtensionCount()) {
-                        extensions += ", ";
-                    }
-                }
-                debug::Log() << "Supported image write format: " << extensions << " (" << write_formats[i]->getDescription() << ")";
-            }
+            debug::Log() << "Linked Azura version is " << azura::GetVersionString();
 
             return true;
         }
@@ -134,16 +127,16 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        Image::Ptr ReadImage(io::File* istream)
+        Image::Ptr ReadImage(io::File* file)
         {
-            CoronaFileAdapter fileAdapter(istream);
-            std::auto_ptr<corona::Image> img(corona::OpenImage(&fileAdapter, corona::PF_R8G8B8A8));
+            azura::File::Ptr file_adapter = new AzuraFileAdapter(file);
+            azura::Image::Ptr image = azura::ReadImage(file_adapter, azura::FileFormat::AutoDetect, azura::PixelFormat::RGBA);
 
-            if (!img.get()) {
+            if (!image) {
                 return 0;
             }
 
-            return Image::New(img->getWidth(), img->getHeight(), (const RGBA*)img->getPixels());
+            return Image::New(image->getWidth(), image->getHeight(), (const RGBA*)image->getPixels());
         }
 
         //-----------------------------------------------------------------
@@ -159,18 +152,18 @@ namespace rpgss {
         }
 
         //-----------------------------------------------------------------
-        bool WriteImage(const Image* image, io::File* ostream)
+        bool WriteImage(const Image* image, io::File* file)
         {
-            std::auto_ptr<corona::Image> img(corona::CreateImage(image->getWidth(), image->getHeight(), corona::PF_R8G8B8A8));
+            azura::File::Ptr file_adapter = new AzuraFileAdapter(file);
+            azura::Image::Ptr azura_image = azura::CreateImage(image->getWidth(), image->getHeight(), azura::PixelFormat::RGBA);
 
-            if (!img.get()) {
+            if (!azura_image) {
                 return false;
             }
 
-            std::memcpy(img->getPixels(), image->getPixels(), image->getSizeInBytes());
+            std::memcpy(azura_image->getPixels(), image->getPixels(), image->getSizeInBytes());
 
-            CoronaFileAdapter fileAdapter(ostream);
-            return corona::SaveImage(&fileAdapter, corona::FF_PNG, img.get());
+            return azura::WriteImage(azura_image, file_adapter, azura::FileFormat::PNG);
         }
 
     } // namespace graphics

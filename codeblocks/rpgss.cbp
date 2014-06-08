@@ -56,7 +56,7 @@
 			<Add directory="../thirdparty/physfs-2.0.3/include" />
 			<Add directory="../thirdparty/luajit-2.0.3/include" />
 			<Add directory="../thirdparty/audiere-1.9.4/include" />
-			<Add directory="../thirdparty/corona-1.0.2/include" />
+			<Add directory="../thirdparty/azura-1.0.0/include" />
 			<Add directory="../thirdparty/zlib-1.2.8/include" />
 			<Add directory="../thirdparty/boost-1.55.0/include" />
 		</Compiler>
@@ -65,12 +65,12 @@
 			<Add option="-L../thirdparty/physfs-2.0.3/lib" />
 			<Add option="-L../thirdparty/luajit-2.0.3" />
 			<Add option="-L../thirdparty/audiere-1.9.4/lib" />
-			<Add option="-L../thirdparty/corona-1.0.2/lib" />
+			<Add option="-L../thirdparty/azura-1.0.0/lib" />
 			<Add option="-L../thirdparty/zlib-1.2.8/lib" />
 			<Add library="dynrpg" />
 			<Add library="physfs.dll" />
 			<Add library="audiere" />
-			<Add library="corona" />
+			<Add library="azura" />
 			<Add library="lua51" />
 			<Add library="zdll" />
 		</Linker>
