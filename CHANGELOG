@@ -1,3 +1,10 @@
+Changes between 0.7.0 and 0.6.0
+-------------------------------
+
+  * Refactored scripts.
+  * Added generic boot.lua.
+  * Switched to Azura image I/O library.
+  * Added option to write palletized images.
 
 Changes between 0.6.0 and 0.5.2
 -------------------------------
