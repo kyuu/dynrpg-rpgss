@@ -1,26 +1,36 @@
-#define IDR_VERSION1 1
+#include <winver.h>
+#include "../source/rpgss/version.hpp"
 
-IDR_VERSION1 VERSIONINFO
-FILEVERSION 0,6,0,0
-PRODUCTVERSION 0,6,0,0
-FILEOS 0x00000004
-FILETYPE 0x00000000
+VS_VERSION_INFO     VERSIONINFO
+FILEVERSION         RPGSS_VERSION_MAJOR,RPGSS_VERSION_MINOR,RPGSS_VERSION_RELEASE,0
+PRODUCTVERSION      RPGSS_VERSION_MAJOR,RPGSS_VERSION_MINOR,RPGSS_VERSION_RELEASE,0
+FILEFLAGSMASK       VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+FILEFLAGS           1
+#else
+FILEFLAGS           0
+#endif
+FILEOS              VOS__WINDOWS32
+FILETYPE            VFT_DLL
+FILESUBTYPE         0   // not used
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
-    BLOCK "FFFF0000"
+    BLOCK "040904E4"
+    //language ID = U.S. English, char set = Windows, Multilingual
     BEGIN
-      VALUE "FileVersion", "0.6.0\0"
-      VALUE "ProductVersion", "0.6.0\0"
-      VALUE "FileDescription", "RPGSS\0"
-      VALUE "LegalCopyright", "Anatoli Steinmark\0"
+      VALUE "FileDescription",  "RPGSS\0"
+      VALUE "FileVersion",      RPGSS_VERSION "\0"
+      VALUE "InternalName",     "rpgss.dll\0"
+      VALUE "LegalCopyright",   "(C) 2014 Anatoli Steinmark\0"
       VALUE "OriginalFilename", "rpgss.dll\0"
-      VALUE "ProductName", "RPGSS\0"
+      VALUE "ProductName",      "RPGSS\0"
+      VALUE "ProductVersion",   RPGSS_VERSION "\0"
+      VALUE "Comments",         "For more information visit https://github.com/kyuu/dynrpg-rpgss/\0"
     END
   END
   BLOCK "VarFileInfo"
   BEGIN
-    VALUE "Translation", 0xFFFF, 0x0000
+    VALUE "Translation", 0x0409, 1252
   END
 END
-
