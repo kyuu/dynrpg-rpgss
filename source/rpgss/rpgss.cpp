@@ -53,7 +53,7 @@ bool onStartup(char* pluginName)
 
     RPGSS_DEBUG_GUARD("onStartup()")
 
-    rpgss::debug::Log() << RPGSS_VERSION;
+    rpgss::debug::Log() << "RPGSS version is " << RPGSS_VERSION;
 
     rpgss::debug::Log() << "Initializing subsystems...";
     if (!rpgss::io::InitIoSubsystem() ||
