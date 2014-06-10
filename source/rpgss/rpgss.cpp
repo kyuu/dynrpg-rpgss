@@ -355,6 +355,36 @@ bool onBattlerDrawn(RPG::Battler* battler, bool isMonster, int id)
 }
 
 //---------------------------------------------------------
+// Called after the system background was drawn.
+bool onSystemBackgroundDrawn(RECT* rect)
+{
+    lua_getglobal(LUA_STATE, "onSystemBackgroundDrawn");
+    if (lua_isfunction(LUA_STATE, -1)) {
+        // push function argument 1
+        lua_pushinteger(LUA_STATE, rect->left);
+
+        // push function argument 2
+        lua_pushinteger(LUA_STATE, rect->top);
+
+        // push function argument 3
+        lua_pushinteger(LUA_STATE, rect->right - rect->left);
+
+        // push function argument 4
+        lua_pushinteger(LUA_STATE, rect->bottom - rect->top);
+
+        // call function
+        if (!rpgss::script::Call(LUA_STATE, 4, 0)) {
+            rpgss::ReportLuaError(LUA_STATE);
+            return true;
+        }
+    } else {
+        lua_pop(LUA_STATE, 1); // pop result of lua_getglobal()
+    }
+
+    return true;
+}
+
+//---------------------------------------------------------
 // Called when a "Comment" event command is encountered.
 bool onComment(const char* text, const RPG::ParsedCommentData* parsedData, RPG::EventScriptLine* nextScriptLine, RPG::EventScriptData* scriptData, int eventId, int pageId, int lineId, int* nextLineId)
 {
