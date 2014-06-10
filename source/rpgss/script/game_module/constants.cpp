@@ -423,6 +423,63 @@ namespace rpgss {
                 return true;
             }
 
+            bool GetMenuScreenConstant();
+            bool GetMenuScreenConstant();
+
+            //---------------------------------------------------------
+            bool GetMenuScreenConstant(int menuscreen, std::string& out_menuscreen_str)
+            {
+                typedef boost::unordered_map<int, std::string> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    (0, "main screen"            )
+                    (1, "item screen"            )
+                    (2, "item target selection"  )
+                    (3, "skill screen"           )
+                    (4, "skill target selection" )
+                    (5, "teleport screen"        )
+                    (6, "equipment screen"       )
+                    (7, "end confirmation screen")
+                    (8, "status screen"          )
+                    (9, "party order screen"     );
+
+                map_type::iterator mapped_value = map.find(menuscreen);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_menuscreen_str = mapped_value->second;
+                return true;
+            }
+
+            //---------------------------------------------------------
+            bool GetMenuScreenConstant(const std::string& menuscreen_str, int& out_menuscreen)
+            {
+                typedef boost::unordered_map<std::string, int> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    ("main screen",             0)
+                    ("item screen",             1)
+                    ("item target selection",   2)
+                    ("skill screen",            3)
+                    ("skill target selection",  4)
+                    ("teleport screen",         5)
+                    ("equipment screen",        6)
+                    ("end confirmation screen", 7)
+                    ("status screen",           8)
+                    ("party order screen",      9);
+
+                map_type::iterator mapped_value = map.find(menuscreen_str);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_menuscreen = mapped_value->second;
+                return true;
+            }
+
         } // namespace game_module
     } // namespace script
 } // namespace rpgss

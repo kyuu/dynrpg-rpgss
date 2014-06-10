@@ -69,6 +69,12 @@ namespace RPG {
         return ret;
     }
 
+    //---------------------------------------------------------
+    int getMenuScreen()
+    {
+        return (**reinterpret_cast<char***>(0x4CDC60))[12];
+    }
+
 } // namespace RPG
 
 namespace rpgss {
@@ -2079,6 +2085,46 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            double game_get_ticksPerFrame()
+            {
+                return RPG::screen->millisecondsPerFrame;
+            }
+
+            //---------------------------------------------------------
+            std::string game_menu_get_screen()
+            {
+                std::string menuscreen_str;
+                if (!GetMenuScreenConstant(RPG::getMenuScreen(), menuscreen_str)) {
+                    luaL_error(Context::Current().interpreter(), "unexpected internal value");
+                }
+                return menuscreen_str;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_allowed()
+            {
+                return RPG::system->menuAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_allowed(bool allowed)
+            {
+                RPG::system->menuAllowed = allowed;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_saveAllowed()
+            {
+                return RPG::system->saveAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_saveAllowed(bool saveAllowed)
+            {
+                RPG::system->saveAllowed = saveAllowed;
+            }
+
+            //---------------------------------------------------------
             bool RegisterGameModule(lua_State* L)
             {
                 luabridge::getGlobalNamespace(L)
@@ -2185,6 +2231,13 @@ namespace rpgss {
                         .addProperty("switches",            &game_get_switches)
                         .addProperty("actors",              &game_get_actors)
                         .addProperty("party",               &game_get_actorParty)
+                        .addProperty("ticksPerFrame",       &game_get_ticksPerFrame)
+
+                        .beginNamespace("menu")
+                            .addProperty("screen",          &game_menu_get_screen)
+                            .addProperty("allowed",         &game_menu_get_allowed,         &game_menu_set_allowed)
+                            .addProperty("saveAllowed",     &game_menu_get_saveAllowed,     &game_menu_set_saveAllowed)
+                        .endNamespace()
 
                         .beginNamespace("map")
                             .addProperty("hero",                    &map_get_hero)
