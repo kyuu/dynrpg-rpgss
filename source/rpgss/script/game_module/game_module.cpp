@@ -25,17 +25,14 @@
 #include <boost/unordered_map.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include <emmintrin.h>
-
 #define NOT_MAIN_MODULE
 #include <DynRPG/DynRPG.h>
 
 #include "../../Context.hpp"
 #include "../../common/types.hpp"
-#include "../../common/cpuinfo.hpp"
-#include "../../graphics/primitives.hpp"
-#include "../graphics_module/graphics_module.hpp"
 #include "../core_module/core_module.hpp"
+#include "../graphics_module/graphics_module.hpp"
+#include "Screen.hpp"
 #include "game_module.hpp"
 
 #define RPGSS_SANE_SWITCH_ARRAY_SIZE_LIMIT   999999
@@ -613,39 +610,6 @@ namespace rpgss {
              **********************************************************/
 
             //---------------------------------------------------------
-            struct Screen
-            {
-                //---------------------------------------------------------
-                static u16* Pixels()
-                {
-                    return RPG::screen->canvas->getScanline(0);
-                }
-
-                //---------------------------------------------------------
-                static int Width()
-                {
-                    return RPG::screen->canvas->width();
-                }
-
-                //---------------------------------------------------------
-                static int Height()
-                {
-                    return RPG::screen->canvas->height();
-                }
-
-                //---------------------------------------------------------
-                static int Pitch()
-                {
-                    return RPG::screen->canvas->lineSize / 2;
-                }
-
-                static core::Recti ClipRect;
-            };
-
-            //---------------------------------------------------------
-            core::Recti Screen::ClipRect = core::Recti(0, 0, 320, 240);
-
-            //---------------------------------------------------------
             int screen_get_width()
             {
                 return RPG::screen->canvas->width();
@@ -680,10 +644,11 @@ namespace rpgss {
             //---------------------------------------------------------
             int screen_getClipRect(lua_State* L)
             {
-                lua_pushnumber(L, Screen::ClipRect.getX());
-                lua_pushnumber(L, Screen::ClipRect.getY());
-                lua_pushnumber(L, Screen::ClipRect.getWidth());
-                lua_pushnumber(L, Screen::ClipRect.getHeight());
+                const core::Recti& clip_rect = Screen::GetClipRect();
+                lua_pushnumber(L, clip_rect.getX());
+                lua_pushnumber(L, clip_rect.getY());
+                lua_pushnumber(L, clip_rect.getWidth());
+                lua_pushnumber(L, clip_rect.getHeight());
                 return 4;
             }
 
@@ -696,16 +661,13 @@ namespace rpgss {
                 int h = luaL_checkint(L, 4);
 
                 core::Recti clip_rect = core::Recti(x, y, w, h);
-                core::Recti screen_bounds = core::Recti(
-                    RPG::screen->canvas->width(),
-                    RPG::screen->canvas->height()
-                );
+                core::Recti screen_bounds = core::Recti(Screen::GetWidth(), Screen::GetHeight());
 
                 if (!clip_rect.isValid() || !clip_rect.isInside(screen_bounds)) {
                     return luaL_error(L, "invalid rect");
                 }
 
-                Screen::ClipRect = clip_rect;
+                Screen::SetClipRect(clip_rect);
                 return 0;
             }
 
@@ -718,118 +680,36 @@ namespace rpgss {
                 int h = luaL_checkint(L, 4);
                 graphics::Image* destination = graphics_module::ImageWrapper::GetOpt(L, 5);
 
-                core::Recti rect(x, y, w, h);
-                core::Recti screen_bounds(RPG::screen->canvas->width(), RPG::screen->canvas->height());
+                core::Recti rect = core::Recti(x, y, w, h);
+                core::Recti screen_bounds = core::Recti(Screen::GetWidth(), Screen::GetHeight());
 
                 if (!rect.isValid() || !rect.isInside(screen_bounds)) {
                     return luaL_error(L, "invalid rect");
                 }
 
-                graphics::Image::Ptr image;
+                graphics::Image::Ptr result = Screen::CopyRect(rect, destination);
 
-                if (destination) {
-                    image = destination;
-                    image->resize(w, h);
+                if (result) {
+                    graphics_module::ImageWrapper::Push(L, result);
                 } else {
-                    image = graphics::Image::New(w, h);
+                    lua_pushnil(L);
                 }
 
-                graphics::RGBA* dst = image->getPixels();
-
-                int  src_pitch = Screen::Pitch();
-                u16* src       = Screen::Pixels() + src_pitch * y + x;
-
-                for (int iy = 0; iy < h; iy++) {
-                    for (int ix = 0; ix < w; ix++) {
-                        *dst = graphics::RGB565ToRGBA(*src);
-                        src++;
-                        dst++;
-                    }
-                    src += src_pitch - w;
-                }
-
-                graphics_module::ImageWrapper::Push(L, image);
                 return 1;
-            }
-
-            //---------------------------------------------------------
-            void screen_clear_generic(u16 color)
-            {
-                u16* dp = Screen::Pixels();
-                int  di = Screen::Pitch() - Screen::Width();
-
-                for (int y = Screen::Height(); y > 0; y--) {
-                    for (int x = Screen::Width(); x > 0; x--) {
-                        *dp = color;
-                        dp++;
-                    }
-                    dp += di;
-                }
-            }
-
-            //---------------------------------------------------------
-            void screen_clear_sse2(u16 color)
-            {
-                u16* dp = Screen::Pixels();
-                int  di = Screen::Pitch() - Screen::Width();
-
-                int burst1 = RPG::screen->canvas->width() / 8;
-                int burst2 = RPG::screen->canvas->width() % 8;
-
-                __m128i mcolor = _mm_set_epi16(
-                    color, color, color, color,
-                    color, color, color, color
-                );
-
-                for (int y = Screen::Height(); y > 0; y--) {
-                    for (int x = burst1; x > 0; x--) {
-                        _mm_storeu_si128((__m128i*)dp, mcolor);
-                        dp += 8;
-                    }
-                    for (int x = burst2; x > 0; x--) {
-                        *dp = color;
-                        dp++;
-                    }
-                    dp += di;
-                }
             }
 
             //---------------------------------------------------------
             int screen_clear(lua_State* L)
             {
-                u32 c = (u32)luaL_optint(L, 1, 0x000000FF);
-
-                if (CpuSupportsSse2())
-                {
-                    screen_clear_sse2(graphics::RGBA8888ToRGB565(c));
-                }
-                else
-                {
-                    screen_clear_generic(graphics::RGBA8888ToRGB565(c));
-                }
-
+                u32 color = (u32)luaL_optint(L, 1, 0x000000FF);
+                Screen::Clear(graphics::RGBA8888ToRGBA(color));
                 return 0;
             }
 
             //---------------------------------------------------------
             int screen_grey(lua_State* L)
             {
-                int  dst_pitch  = Screen::Pitch();
-                u16* dst_pixels = Screen::Pixels();
-
-                int w = RPG::screen->canvas->width();
-                int h = RPG::screen->canvas->height();
-
-                for (int y = 0; y < h; y++) {
-                    u16* dst = dst_pixels + dst_pitch * y;
-                    for (int x = 0; x < w; x++) {
-                        unsigned int c = *dst;
-                        unsigned int g = ((c >> 11) + ((c >> 6) & 0x001F) + (c & 0x001F)) / 3;
-                        *dst = (g << 11) | ((g << 6) | 0x01)  | g;
-                        dst++;
-                    }
-                }
-
+                Screen::Grey();
                 return 0;
             }
 
@@ -839,10 +719,10 @@ namespace rpgss {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
 
-                luaL_argcheck(L, x >= 0 && x < RPG::screen->canvas->width(),  1, "invalid x");
-                luaL_argcheck(L, y >= 0 && y < RPG::screen->canvas->height(), 2, "invalid y");
+                luaL_argcheck(L, x >= 0 && x < Screen::GetWidth(),  1, "invalid x");
+                luaL_argcheck(L, y >= 0 && y < Screen::GetHeight(), 2, "invalid y");
 
-                u16 c = *(Screen::Pixels() + Screen::Pitch() * y + x);
+                u16 c = Screen::GetPixel(x, y);
                 lua_pushinteger(L, (i32)graphics::RGB565ToRGBA8888(c));
 
                 return 1;
@@ -855,132 +735,13 @@ namespace rpgss {
                 int y = luaL_checkint(L, 2);
                 u32 c = (u32)luaL_checkint(L, 3);
 
-                luaL_argcheck(L, x >= 0 && x < RPG::screen->canvas->width(),  1, "invalid x");
-                luaL_argcheck(L, y >= 0 && y < RPG::screen->canvas->height(), 2, "invalid y");
+                luaL_argcheck(L, x >= 0 && x < Screen::GetWidth(),  1, "invalid x");
+                luaL_argcheck(L, y >= 0 && y < Screen::GetHeight(), 2, "invalid y");
 
-                *(Screen::Pixels() + Screen::Pitch() * y + x) = graphics::RGBA8888ToRGB565(c);
+                Screen::SetPixel(x, y, graphics::RGBA8888ToRGB565(c));
 
                 return 0;
             }
-
-            //---------------------------------------------------------
-            struct rgb565_set
-            {
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    asm (
-                        "leal           %1,   %%edx   \n\t"
-                        "movzbl    (%%edx),   %%eax   \n\t"
-                        "movzbl   1(%%edx),   %%ecx   \n\t"
-                        "movzbl   2(%%edx),   %%edx   \n\t"
-                        "andl         $248,   %%eax   \n\t"
-                        "sall           $8,   %%eax   \n\t"
-                        "sarl           $3,   %%edx   \n\t"
-                        "andl         $252,   %%ecx   \n\t"
-                        "sall           $3,   %%ecx   \n\t"
-                        "orl         %%ecx,   %%eax   \n\t"
-                        "orl         %%edx,   %%eax   \n\t"
-                        "leal           %0,   %%edx   \n\t"
-                        "movw         %%ax, (%%edx)"
-                        :
-                        : "m"(dst), "m"(src)
-                        : "eax", "ecx", "edx"
-                    );
-                    // C++ version:
-                    //dst = ((src.red & 0xF8) << 8) | ((src.green & 0xFC) << 3) | (src.blue >> 3);
-                }
-
-                void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
-                {
-                    dst = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | (blue >> 3);
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_mix
-            {
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    graphics::RGBA temp;
-                    int sa = src.alpha + 1;
-                    int da = 256 - src.alpha;
-                    temp.red   = (   (dst >>  11)         * da + (src.red   >> 3) * sa ) >> 8;
-                    temp.green = ( ( (dst >>   5) & 0x3F) * da + (src.green >> 2) * sa ) >> 8;
-                    temp.blue  = ( (  dst         & 0x1F) * da + (src.blue  >> 3) * sa ) >> 8;
-                    dst = (temp.red << 11) | (temp.green << 5) | temp.blue;
-                }
-
-                void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
-                {
-                    graphics::RGBA temp;
-                    int sa = alpha + 1;
-                    int da = 256 - alpha;
-                    temp.red   = (   (dst >> 11)         * da + (red   >> 3) * sa ) >> 8;
-                    temp.green = ( ( (dst >>  5) & 0x3F) * da + (green >> 2) * sa ) >> 8;
-                    temp.blue  = ( (  dst        & 0x1F) * da + (blue  >> 3) * sa ) >> 8;
-                    dst = (temp.red << 11) | (temp.green << 5) | temp.blue;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_add
-            {
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r = std::min(  (dst >> 11)         + (src.red   >> 3), 31);
-                    u8 g = std::min(( (dst >>  5) & 0x3F) + (src.green >> 2), 63);
-                    u8 b = std::min((  dst        & 0x1F) + (src.blue  >> 3), 31);
-                    dst = (r << 11) | (g << 5) | b;
-                }
-
-                void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
-                {
-                    u8 r = std::min(  (dst >> 11)         + (red   >> 3), 31);
-                    u8 g = std::min(( (dst >>  5) & 0x3F) + (green >> 2), 63);
-                    u8 b = std::min((  dst        & 0x1F) + (blue  >> 3), 31);
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_sub
-            {
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r = std::max(  (dst >> 11)         - (src.red   >> 3), 0);
-                    u8 g = std::max(( (dst >>  5) & 0x3F) - (src.green >> 2), 0);
-                    u8 b = std::max((  dst        & 0x1F) - (src.blue  >> 3), 0);
-                    dst = (r << 11) | (g << 5) | b;
-                }
-
-                void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
-                {
-                    u8 r = std::max(  (dst >> 11)         - (red   >> 3), 0);
-                    u8 g = std::max(( (dst >>  5) & 0x3F) - (green >> 2), 0);
-                    u8 b = std::max((  dst        & 0x1F) - (blue  >> 3), 0);
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_mul
-            {
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r =   (dst >> 11)         * ((src.red   >> 3) + 1) >> 5;
-                    u8 g = ( (dst >>  5) & 0x3F) * ((src.green >> 2) + 1) >> 6;
-                    u8 b = (  dst        & 0x1F) * ((src.blue  >> 3) + 1) >> 5;
-                    dst = (r << 11) | (g << 5) | b;
-                }
-
-                void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
-                {
-                    u8 r =   (dst >> 11)         * ((red   >> 3) + 1) >> 5;
-                    u8 g = ( (dst >>  5) & 0x3F) * ((green >> 2) + 1) >> 6;
-                    u8 b = (  dst        & 0x1F) * ((blue  >> 3) + 1) >> 5;
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
 
             //---------------------------------------------------------
             int screen_drawPoint(lua_State* L)
@@ -995,13 +756,11 @@ namespace rpgss {
                     return luaL_argerror(L, 4, "invalid blend mode constant");
                 }
 
-                switch (blend_mode) {
-                case graphics::BlendMode::Set:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_set()); break;
-                case graphics::BlendMode::Mix:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_mix()); break;
-                case graphics::BlendMode::Add:      graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_add()); break;
-                case graphics::BlendMode::Subtract: graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_sub()); break;
-                case graphics::BlendMode::Multiply: graphics::primitives::Point(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x, y), graphics::RGBA8888ToRGBA(c), rgb565_mul()); break;
-                }
+                Screen::DrawPoint(
+                    core::Vec2i(x, y),
+                    graphics::RGBA8888ToRGBA(c),
+                    blend_mode
+                );
 
                 return 0;
             }
@@ -1022,13 +781,13 @@ namespace rpgss {
                     return luaL_argerror(L, 7, "invalid blend mode constant");
                 }
 
-                switch (blend_mode) {
-                case graphics::BlendMode::Set:      graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_set()); break;
-                case graphics::BlendMode::Mix:      graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_mix()); break;
-                case graphics::BlendMode::Add:      graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_add()); break;
-                case graphics::BlendMode::Subtract: graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_sub()); break;
-                case graphics::BlendMode::Multiply: graphics::primitives::Line(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Vec2i(x1, y1), core::Vec2i(x2, y2), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_mul()); break;
-                }
+                Screen::DrawLine(
+                    core::Vec2i(x1, y1),
+                    core::Vec2i(x2, y2),
+                    graphics::RGBA8888ToRGBA(c1),
+                    graphics::RGBA8888ToRGBA(c2),
+                    blend_mode
+                );
 
                 return 0;
             }
@@ -1052,13 +811,15 @@ namespace rpgss {
                     return luaL_argerror(L, 10, "invalid blend mode constant");
                 }
 
-                switch (blend_mode) {
-                case graphics::BlendMode::Set:      graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_set()); break;
-                case graphics::BlendMode::Mix:      graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_mix()); break;
-                case graphics::BlendMode::Add:      graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_add()); break;
-                case graphics::BlendMode::Subtract: graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_sub()); break;
-                case graphics::BlendMode::Multiply: graphics::primitives::Rectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Recti(x, y, w, h), graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), graphics::RGBA8888ToRGBA(c3), graphics::RGBA8888ToRGBA(c4), rgb565_mul()); break;
-                }
+                Screen::DrawRectangle(
+                    fill,
+                    core::Recti(x, y, w, h),
+                    graphics::RGBA8888ToRGBA(c1),
+                    graphics::RGBA8888ToRGBA(c2),
+                    graphics::RGBA8888ToRGBA(c3),
+                    graphics::RGBA8888ToRGBA(c4),
+                    blend_mode
+                );
 
                 return 0;
             }
@@ -1079,13 +840,14 @@ namespace rpgss {
                     return luaL_argerror(L, 7, "invalid blend mode constant");
                 }
 
-                switch (blend_mode) {
-                case graphics::BlendMode::Set:      graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_set()); break;
-                case graphics::BlendMode::Mix:      graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_mix()); break;
-                case graphics::BlendMode::Add:      graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_add()); break;
-                case graphics::BlendMode::Subtract: graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_sub()); break;
-                case graphics::BlendMode::Multiply: graphics::primitives::Circle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, fill, core::Vec2i(x, y), r, graphics::RGBA8888ToRGBA(c1), graphics::RGBA8888ToRGBA(c2), rgb565_mul()); break;
-                }
+                Screen::DrawCircle(
+                    fill,
+                    core::Vec2i(x, y),
+                    r,
+                    graphics::RGBA8888ToRGBA(c1),
+                    graphics::RGBA8888ToRGBA(c2),
+                    blend_mode
+                );
 
                 return 0;
             }
@@ -1116,118 +878,6 @@ namespace rpgss {
 
                 return 0;
             }
-
-            //---------------------------------------------------------
-            struct rgb565_set_col
-            {
-                graphics::RGBA c;
-
-                explicit rgb565_set_col(graphics::RGBA color)
-                    : c(color)
-                {
-                    c.red   = (c.red   >> 3) + 1;
-                    c.green = (c.green >> 2) + 1;
-                    c.blue  = (c.blue  >> 3) + 1;
-                }
-
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r = ((src.red   >> 3) * c.red  ) >> 5;
-                    u8 g = ((src.green >> 2) * c.green) >> 6;
-                    u8 b = ((src.blue  >> 3) * c.blue ) >> 5;
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_mix_col
-            {
-                graphics::RGBA c;
-
-                explicit rgb565_mix_col(graphics::RGBA color)
-                    : c(color)
-                {
-                    c.red   = (c.red   >> 3) + 1;
-                    c.green = (c.green >> 2) + 1;
-                    c.blue  = (c.blue  >> 3) + 1;
-                }
-
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    int sa = (src.alpha * (c.alpha + 1) >> 8) + 1;
-                    int da = 256 - (sa - 1);
-                    u8 r = (   (dst >>  11)         * da + (((src.red   >> 3) * c.red  ) >> 5) * sa ) >> 8;
-                    u8 g = ( ( (dst >>   5) & 0x3F) * da + (((src.green >> 2) * c.green) >> 6) * sa ) >> 8;
-                    u8 b = ( (  dst         & 0x1F) * da + (((src.blue  >> 3) * c.blue ) >> 5) * sa ) >> 8;
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_add_col
-            {
-                graphics::RGBA c;
-
-                explicit rgb565_add_col(graphics::RGBA color)
-                    : c(color)
-                {
-                    c.red   = (c.red   >> 3) + 1;
-                    c.green = (c.green >> 2) + 1;
-                    c.blue  = (c.blue  >> 3) + 1;
-                }
-
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r = std::min(   (dst >> 11)         + (((src.red   >> 3) * c.red  ) >> 5), 31 );
-                    u8 g = std::min( ( (dst >>  5) & 0x3F) + (((src.green >> 2) * c.green) >> 6), 63 );
-                    u8 b = std::min( (  dst        & 0x1F) + (((src.blue  >> 3) * c.blue ) >> 5), 31 );
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_sub_col
-            {
-                graphics::RGBA c;
-
-                explicit rgb565_sub_col(graphics::RGBA color)
-                    : c(color)
-                {
-                    c.red   = (c.red   >> 3) + 1;
-                    c.green = (c.green >> 2) + 1;
-                    c.blue  = (c.blue  >> 3) + 1;
-                }
-
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r = std::max(   (dst >> 11)         - (((src.red   >> 3) * c.red  ) >> 5), 0 );
-                    u8 g = std::max( ( (dst >>  5) & 0x3F) - (((src.green >> 2) * c.green) >> 6), 0 );
-                    u8 b = std::max( (  dst        & 0x1F) - (((src.blue  >> 3) * c.blue ) >> 5), 0 );
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
-
-            //---------------------------------------------------------
-            struct rgb565_mul_col
-            {
-                graphics::RGBA c;
-
-                explicit rgb565_mul_col(graphics::RGBA color)
-                    : c(color)
-                {
-                    c.red   = (c.red   >> 3) + 1;
-                    c.green = (c.green >> 2) + 1;
-                    c.blue  = (c.blue  >> 3) + 1;
-                }
-
-                void operator()(u16& dst, const graphics::RGBA& src)
-                {
-                    u8 r =   (dst >> 11)         * ((((src.red   >> 3) * c.red  ) >> 5) + 1) >> 5;
-                    u8 g = ( (dst >>  5) & 0x3F) * ((((src.green >> 2) * c.green) >> 6) + 1) >> 6;
-                    u8 b = (  dst        & 0x1F) * ((((src.blue  >> 3) * c.blue ) >> 5) + 1) >> 5;
-                    dst = (r << 11) | (g << 5) | b;
-                }
-            };
 
             //---------------------------------------------------------
             int screen_draw(lua_State* L)
@@ -1279,62 +929,15 @@ namespace rpgss {
                     sh = that->getHeight();
                 }
 
-                if (angle == 0.0)
-                {
-                    if (color == 0xFFFFFFFF)
-                    {
-                        switch (blend_mode) {
-                        case graphics::BlendMode::Set:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set()); break;
-                        case graphics::BlendMode::Mix:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix()); break;
-                        case graphics::BlendMode::Add:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add()); break;
-                        case graphics::BlendMode::Subtract: graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_sub()); break;
-                        case graphics::BlendMode::Multiply: graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mul()); break;
-                        }
-                    }
-                    else
-                    {
-                        switch (blend_mode) {
-                        case graphics::BlendMode::Set:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Mix:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Add:      graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Subtract: graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_sub_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Multiply: graphics::primitives::TexturedRectangle(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, core::Recti(x, y, sw, sh).scale(scale), that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mul_col(graphics::RGBA8888ToRGBA(color))); break;
-                        }
-                    }
-                }
-                else
-                {
-                    core::Recti rect = core::Recti(x, y, sw, sh).scale(scale);
-                    core::Vec2i center_of_rotation = rect.getCenter();
-
-                    core::Vec2i vertices[4] = {
-                        rect.getUpperLeft().rotateBy(angle, center_of_rotation),
-                        rect.getUpperRight().rotateBy(angle, center_of_rotation),
-                        rect.getLowerRight().rotateBy(angle, center_of_rotation),
-                        rect.getLowerLeft().rotateBy(angle, center_of_rotation)
-                    };
-
-                    if (color == 0xFFFFFFFF)
-                    {
-                        switch (blend_mode) {
-                        case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set()); break;
-                        case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix()); break;
-                        case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add()); break;
-                        case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_sub()); break;
-                        case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mul()); break;
-                        }
-                    }
-                    else
-                    {
-                        switch (blend_mode) {
-                        case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_sub_col(graphics::RGBA8888ToRGBA(color))); break;
-                        case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mul_col(graphics::RGBA8888ToRGBA(color))); break;
-                        }
-                    }
-                }
+                Screen::Draw(
+                    that,
+                    core::Recti(sx, sy, sw, sh),
+                    core::Vec2i(x, y),
+                    angle,
+                    scale,
+                    graphics::RGBA8888ToRGBA(color),
+                    blend_mode
+                );
 
                 return 0;
             }
@@ -1398,33 +1001,16 @@ namespace rpgss {
                     sh = that->getHeight();
                 }
 
-                core::Vec2i vertices[4] = {
+                Screen::Drawq(
+                    that,
+                    core::Recti(sx, sy, sw, sh),
                     core::Vec2i(x1, y1),
                     core::Vec2i(x2, y2),
                     core::Vec2i(x3, y3),
-                    core::Vec2i(x4, y4)
-                };
-
-                if (color == 0xFFFFFFFF)
-                {
-                    switch (blend_mode) {
-                    case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set()); break;
-                    case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix()); break;
-                    case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add()); break;
-                    case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_sub()); break;
-                    case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mul()); break;
-                    }
-                }
-                else
-                {
-                    switch (blend_mode) {
-                    case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_set_col(graphics::RGBA8888ToRGBA(color))); break;
-                    case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mix_col(graphics::RGBA8888ToRGBA(color))); break;
-                    case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_add_col(graphics::RGBA8888ToRGBA(color))); break;
-                    case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_sub_col(graphics::RGBA8888ToRGBA(color))); break;
-                    case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(Screen::Pixels(), Screen::Pitch(), Screen::ClipRect, vertices, that->getPixels(), that->getWidth(), core::Recti(sx, sy, sw, sh), rgb565_mul_col(graphics::RGBA8888ToRGBA(color))); break;
-                    }
-                }
+                    core::Vec2i(x4, y4),
+                    graphics::RGBA8888ToRGBA(color),
+                    blend_mode
+                );
 
                 return 0;
             }
@@ -1440,73 +1026,14 @@ namespace rpgss {
                 float scale          = luaL_optnumber(L, 5, 1.0);
                 u32 color            = luaL_optint(L, 6, 0xFFFFFFFF);
 
-                int cur_x = x;
-                int cur_y = y;
-
-                for (size_t i = 0; i < len; i++)
-                {
-                    switch (text[i])
-                    {
-                        case ' ':
-                        {
-                            const graphics::Image* space_char_image = font->getCharImage(' ');
-                            int space_w = (int)(space_char_image ? space_char_image->getWidth() * scale : 0);
-                            cur_x += space_w;
-                            break;
-                        }
-                        case '\t':
-                        {
-                            const graphics::Image* space_char_image = font->getCharImage(' ');
-                            int tab_w = (int)(space_char_image ? space_char_image->getWidth() * font->getTabWidth() * scale : 0);
-                            if (tab_w > 0) {
-                                tab_w = tab_w - ((cur_x - x) % tab_w);
-                            }
-                            cur_x += tab_w;
-                            break;
-                        }
-                        case '\n':
-                        {
-                            cur_x = x;
-                            cur_y += (int)(font->getMaxCharHeight() * scale);
-                            break;
-                        }
-                        default:
-                        {
-                            const graphics::Image* char_image = font->getCharImage(text[i]);
-                            if (char_image)
-                            {
-                                if (color == 0xFFFFFFFF)
-                                {
-                                    graphics::primitives::TexturedRectangle(
-                                        Screen::Pixels(),
-                                        Screen::Pitch(),
-                                        Screen::ClipRect,
-                                        core::Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
-                                        char_image->getPixels(),
-                                        char_image->getWidth(),
-                                        core::Recti(0, 0, char_image->getWidth(), char_image->getHeight()),
-                                        rgb565_mix()
-                                    );
-                                }
-                                else
-                                {
-                                    graphics::primitives::TexturedRectangle(
-                                        Screen::Pixels(),
-                                        Screen::Pitch(),
-                                        Screen::ClipRect,
-                                        core::Recti(cur_x, cur_y, char_image->getWidth(), char_image->getHeight()).scale(scale),
-                                        char_image->getPixels(),
-                                        char_image->getWidth(),
-                                        core::Recti(0, 0, char_image->getWidth(), char_image->getHeight()),
-                                        rgb565_mix_col(graphics::RGBA8888ToRGBA(color))
-                                    );
-                                }
-                                cur_x += (int)(char_image->getWidth() * scale);
-                            }
-                            break;
-                        }
-                    }
-                }
+                Screen::DrawText(
+                    font,
+                    core::Vec2i(x, y),
+                    text,
+                    len,
+                    scale,
+                    graphics::RGBA8888ToRGBA(color)
+                );
 
                 return 0;
             }
@@ -1525,229 +1052,11 @@ namespace rpgss {
                 luaL_argcheck(L, h >= 0, 5, "invalid height");
                 luaL_argcheck(L, opacity >= 0 && opacity <= 255, 6, "invalid opacity");
 
-                // for brevity
-                int x1 = x;
-                int y1 = y;
-                int x2 = x + w - 1;
-                int y2 = y + h - 1;
-
-                const graphics::Image* tlBorder = windowSkin->getBorderImage(graphics::WindowSkin::TopLeftBorder);
-                const graphics::Image* trBorder = windowSkin->getBorderImage(graphics::WindowSkin::TopRightBorder);
-                const graphics::Image* brBorder = windowSkin->getBorderImage(graphics::WindowSkin::BottomRightBorder);
-                const graphics::Image* blBorder = windowSkin->getBorderImage(graphics::WindowSkin::BottomLeftBorder);
-
-                // draw background
-                if (w > 0 && h > 0) {
-                    graphics::RGBA tlColor = windowSkin->getBgColor(graphics::WindowSkin::TopLeftBgColor);
-                    graphics::RGBA trColor = windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor);
-                    graphics::RGBA brColor = windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor);
-                    graphics::RGBA blColor = windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor);
-
-                    // apply opacity
-                    tlColor.alpha = (tlColor.alpha * opacity) / 255;
-                    trColor.alpha = (trColor.alpha * opacity) / 255;
-                    brColor.alpha = (brColor.alpha * opacity) / 255;
-                    blColor.alpha = (blColor.alpha * opacity) / 255;
-
-                    graphics::primitives::Rectangle(
-                        Screen::Pixels(),
-                        Screen::Pitch(),
-                        Screen::ClipRect,
-                        true,
-                        core::Recti(x, y, w, h),
-                        tlColor,
-                        trColor,
-                        brColor,
-                        blColor,
-                        rgb565_mix()
-                    );
-                }
-
-                // draw top left edge
-                graphics::primitives::TexturedRectangle(
-                    Screen::Pixels(),
-                    Screen::Pitch(),
-                    Screen::ClipRect,
-                    core::Vec2i(x1 - tlBorder->getWidth(), y1 - tlBorder->getHeight()),
-                    tlBorder->getPixels(),
-                    tlBorder->getWidth(),
-                    core::Recti(tlBorder->getDimensions()),
-                    rgb565_mix()
+                Screen::DrawWindow(
+                    windowSkin,
+                    core::Recti(x, y, w, h),
+                    opacity
                 );
-
-                // draw top right edge
-                graphics::primitives::TexturedRectangle(
-                    Screen::Pixels(),
-                    Screen::Pitch(),
-                    Screen::ClipRect,
-                    core::Vec2i(x2 + 1, y1 - trBorder->getHeight()),
-                    trBorder->getPixels(),
-                    trBorder->getWidth(),
-                    core::Recti(trBorder->getDimensions()),
-                    rgb565_mix()
-                );
-
-                // draw bottom right edge
-                graphics::primitives::TexturedRectangle(
-                    Screen::Pixels(),
-                    Screen::Pitch(),
-                    Screen::ClipRect,
-                    core::Vec2i(x2 + 1, y2 + 1 ),
-                    brBorder->getPixels(),
-                    brBorder->getWidth(),
-                    core::Recti(brBorder->getDimensions()),
-                    rgb565_mix()
-                );
-
-                // draw bottom left edge
-                graphics::primitives::TexturedRectangle(
-                    Screen::Pixels(),
-                    Screen::Pitch(),
-                    Screen::ClipRect,
-                    core::Vec2i(x1 - blBorder->getWidth(), y2 + 1 ),
-                    blBorder->getPixels(),
-                    blBorder->getWidth(),
-                    core::Recti(blBorder->getDimensions()),
-                    rgb565_mix()
-                );
-
-                // draw top and bottom borders
-                if (w > 0)
-                {
-                    const graphics::Image* tBorder  = windowSkin->getBorderImage(graphics::WindowSkin::TopBorder);
-                    const graphics::Image* bBorder  = windowSkin->getBorderImage(graphics::WindowSkin::BottomBorder);
-
-                    int i;
-
-                    // draw top border
-                    i = x1;
-                    while ((x2 - i) + 1 >= tBorder->getWidth()) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(i, y1 - tBorder->getHeight()),
-                            tBorder->getPixels(),
-                            tBorder->getWidth(),
-                            core::Recti(tBorder->getDimensions()),
-                            rgb565_mix()
-                        );
-
-                        i += tBorder->getWidth();
-                    }
-
-                    if ((x2 - i) + 1 > 0) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(i, y1 - tBorder->getHeight()),
-                            tBorder->getPixels(),
-                            tBorder->getWidth(),
-                            core::Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()),
-                            rgb565_mix()
-                        );
-                    }
-
-                    // draw bottom border
-                    i = x1;
-                    while ((x2 - i) + 1 >= bBorder->getWidth()) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(i, y2 + 1),
-                            bBorder->getPixels(),
-                            bBorder->getWidth(),
-                            core::Recti(bBorder->getDimensions()),
-                            rgb565_mix()
-                        );
-
-                        i += bBorder->getWidth();
-                    }
-
-                    if ((x2 - i) + 1 > 0) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(i, y2 + 1),
-                            bBorder->getPixels(),
-                            bBorder->getWidth(),
-                            core::Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()),
-                            rgb565_mix()
-                        );
-                    }
-                }
-
-                // draw left and right borders
-                if (h > 0)
-                {
-                    const graphics::Image* lBorder  = windowSkin->getBorderImage(graphics::WindowSkin::LeftBorder);
-                    const graphics::Image* rBorder  = windowSkin->getBorderImage(graphics::WindowSkin::RightBorder);
-
-                    int i;
-
-                    // draw left border
-                    i = y1;
-                    while ((y2 - i) + 1 >= lBorder->getHeight()) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(x1 - lBorder->getWidth(), i),
-                            lBorder->getPixels(),
-                            lBorder->getWidth(),
-                            core::Recti(lBorder->getDimensions()),
-                            rgb565_mix()
-                        );
-
-                        i += lBorder->getHeight();
-                    }
-
-                    if ((y2 - i) + 1 > 0) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(x1 - lBorder->getWidth(), i),
-                            lBorder->getPixels(),
-                            lBorder->getWidth(),
-                            core::Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1),
-                            rgb565_mix()
-                        );
-                    }
-
-                    // draw right border
-                    i = y1;
-                    while ((y2 - i) + 1 >= rBorder->getHeight()) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(x2 + 1, i),
-                            rBorder->getPixels(),
-                            rBorder->getWidth(),
-                            core::Recti(rBorder->getDimensions()),
-                            rgb565_mix()
-                        );
-
-                        i += rBorder->getHeight();
-                    }
-
-                    if ((y2 - i) + 1 > 0) {
-                        graphics::primitives::TexturedRectangle(
-                            Screen::Pixels(),
-                            Screen::Pitch(),
-                            Screen::ClipRect,
-                            core::Vec2i(x2 + 1, i),
-                            rBorder->getPixels(),
-                            rBorder->getWidth(),
-                            core::Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1),
-                            rgb565_mix()
-                        );
-                    }
-                }
 
                 return 0;
             }
