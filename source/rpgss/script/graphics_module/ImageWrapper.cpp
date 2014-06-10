@@ -616,16 +616,13 @@ namespace rpgss {
                 int y = luaL_checkint(L, 4);
                 int w = luaL_checkint(L, 5);
                 int h = luaL_checkint(L, 6);
-                int opacity = luaL_optint(L, 7, 255);
 
                 luaL_argcheck(L, w >= 0, 5, "invalid width");
                 luaL_argcheck(L, h >= 0, 6, "invalid height");
-                luaL_argcheck(L, opacity >= 0 && opacity <= 255, 7, "invalid opacity");
 
                 This->drawWindow(
                     windowSkin,
-                    core::Recti(x, y, w, h),
-                    opacity
+                    core::Recti(x, y, w, h)
                 );
 
                 return 0;

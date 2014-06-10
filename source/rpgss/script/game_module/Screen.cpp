@@ -700,7 +700,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             void
-            Screen::DrawWindow(const graphics::WindowSkin* windowSkin, core::Recti windowRect, int opacity)
+            Screen::DrawWindow(const graphics::WindowSkin* windowSkin, core::Recti windowRect)
             {
                 assert(windowSkin);
 
@@ -727,12 +727,6 @@ namespace rpgss {
                     graphics::RGBA trColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor));
                     graphics::RGBA brColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor));
                     graphics::RGBA blColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor));
-
-                    // apply opacity
-                    tlColor.alpha = (tlColor.alpha * opacity) / 255;
-                    trColor.alpha = (trColor.alpha * opacity) / 255;
-                    brColor.alpha = (brColor.alpha * opacity) / 255;
-                    blColor.alpha = (blColor.alpha * opacity) / 255;
 
                     graphics::primitives::Rectangle(
                         GetPixels(),

@@ -1483,7 +1483,7 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         void
-        Image::drawWindow(const WindowSkin* windowSkin, core::Recti windowRect, int opacity)
+        Image::drawWindow(const WindowSkin* windowSkin, core::Recti windowRect)
         {
             if (!windowRect.isValid())
             {
@@ -1508,12 +1508,6 @@ namespace rpgss {
                 RGBA trColor = windowSkin->getBgColor(WindowSkin::TopRightBgColor);
                 RGBA brColor = windowSkin->getBgColor(WindowSkin::BottomRightBgColor);
                 RGBA blColor = windowSkin->getBgColor(WindowSkin::BottomLeftBgColor);
-
-                // apply opacity
-                tlColor.alpha = (tlColor.alpha * opacity) / 255;
-                trColor.alpha = (trColor.alpha * opacity) / 255;
-                brColor.alpha = (brColor.alpha * opacity) / 255;
-                blColor.alpha = (blColor.alpha * opacity) / 255;
 
                 primitives::Rectangle(
                     _pixels,

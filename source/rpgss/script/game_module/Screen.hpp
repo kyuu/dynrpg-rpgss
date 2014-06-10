@@ -60,7 +60,7 @@ namespace rpgss {
                 static void Draw(const graphics::Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle = 0.0, float scale = 1.0, graphics::RGBA color = graphics::RGBA(255, 255, 255, 255), int blendMode = graphics::BlendMode::Mix);
                 static void Drawq(const graphics::Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, graphics::RGBA color = graphics::RGBA(255, 255, 255, 255), int blendMode = graphics::BlendMode::Mix);
                 static void DrawText(const graphics::Font* font, core::Vec2i pos, const char* text, int len = -1, float scale = 1.0, graphics::RGBA color = graphics::RGBA(255, 255, 255, 255));
-                static void DrawWindow(const graphics::WindowSkin* windowSkin, core::Recti windowRect, int opacity = 255);
+                static void DrawWindow(const graphics::WindowSkin* windowSkin, core::Recti windowRect);
 
             private:
                 Screen(); // non-instantiable

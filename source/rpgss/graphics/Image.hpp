@@ -111,7 +111,7 @@ namespace rpgss {
             void drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255), int blendMode = BlendMode::Mix);
             void drawq(const Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color = RGBA(255, 255, 255, 255), int blendMode = BlendMode::Mix);
 
-            void drawWindow(const WindowSkin* windowSkin, core::Recti windowRect, int opacity = 255);
+            void drawWindow(const WindowSkin* windowSkin, core::Recti windowRect);
 
             void drawText(const Font* font, core::Vec2i pos, const char* text, int len = -1, float scale = 1.0, RGBA color = RGBA(255, 255, 255, 255));
 
