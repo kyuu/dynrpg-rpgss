@@ -324,6 +324,17 @@ namespace rpgss {
                 }
             }
 
+            //---------------------------------------------------------
+            graphics::RGBA
+            Screen::ApplyBrightness(graphics::RGBA color)
+            {
+                int brightness = RPG::screen->canvas->brightness;
+                int r = std::min(255, (color.red   * brightness) / 100);
+                int g = std::min(255, (color.green * brightness) / 100);
+                int b = std::min(255, (color.blue  * brightness) / 100);
+                return graphics::RGBA(r, g, b, color.alpha);
+            }
+
             //-----------------------------------------------------------------
             u16
             Screen::GetPixel(int x, int y)
@@ -459,6 +470,8 @@ namespace rpgss {
             void
             Screen::DrawPoint(const core::Vec2i& pos, graphics::RGBA color, int blendMode)
             {
+                color = ApplyBrightness(color);
+
                 switch (blendMode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Point(GetPixels(), GetPitch(), _clipRect, pos, color, rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Point(GetPixels(), GetPitch(), _clipRect, pos, color, rgb565_mix()); break;
@@ -472,6 +485,9 @@ namespace rpgss {
             void
             Screen::DrawLine(const core::Vec2i& p1, const core::Vec2i& p2, graphics::RGBA c1, graphics::RGBA c2, int blendMode)
             {
+                c1 = ApplyBrightness(c1);
+                c2 = ApplyBrightness(c2);
+
                 switch (blendMode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Line(GetPixels(), GetPitch(), _clipRect, p1, p2, c1, c2, rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Line(GetPixels(), GetPitch(), _clipRect, p1, p2, c1, c2, rgb565_mix()); break;
@@ -485,6 +501,11 @@ namespace rpgss {
             void
             Screen::DrawRectangle(bool fill, const core::Recti& rect, graphics::RGBA c1, graphics::RGBA c2, graphics::RGBA c3, graphics::RGBA c4, int blendMode)
             {
+                c1 = ApplyBrightness(c1);
+                c2 = ApplyBrightness(c2);
+                c3 = ApplyBrightness(c3);
+                c4 = ApplyBrightness(c4);
+
                 switch (blendMode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Rectangle(GetPixels(), GetPitch(), _clipRect, fill, rect, c1, c2, c3, c4, rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Rectangle(GetPixels(), GetPitch(), _clipRect, fill, rect, c1, c2, c3, c4, rgb565_mix()); break;
@@ -498,6 +519,9 @@ namespace rpgss {
             void
             Screen::DrawCircle(bool fill, const core::Vec2i& center, int radius, graphics::RGBA c1, graphics::RGBA c2, int blendMode)
             {
+                c1 = ApplyBrightness(c1);
+                c2 = ApplyBrightness(c2);
+
                 switch (blendMode) {
                 case graphics::BlendMode::Set:      graphics::primitives::Circle(GetPixels(), GetPitch(), _clipRect, fill, center, radius, c1, c2, rgb565_set()); break;
                 case graphics::BlendMode::Mix:      graphics::primitives::Circle(GetPixels(), GetPitch(), _clipRect, fill, center, radius, c1, c2, rgb565_mix()); break;
@@ -511,6 +535,10 @@ namespace rpgss {
             void
             Screen::DrawTriangle(bool fill, const core::Vec2i& p1, const core::Vec2i& p2, const core::Vec2i& p3, graphics::RGBA c1, graphics::RGBA c2, graphics::RGBA c3, int blendMode)
             {
+                c1 = ApplyBrightness(c1);
+                c2 = ApplyBrightness(c2);
+                c3 = ApplyBrightness(c3);
+
                 // TODO
             }
 
@@ -518,6 +546,8 @@ namespace rpgss {
             void
             Screen::Draw(const graphics::Image* image, const core::Recti& image_rect, const core::Vec2i& pos, float angle, float scale, graphics::RGBA color, int blendMode)
             {
+                color = ApplyBrightness(color);
+
                 if (angle == 0.0)
                 {
                     core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
@@ -561,6 +591,7 @@ namespace rpgss {
             void
             Screen::Drawq(const graphics::Image* image, const core::Recti& image_rect, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, graphics::RGBA color, int blendMode)
             {
+                color = ApplyBrightness(color);
                 core::Vec2i pos[4] = { ul, ur, lr, ll };
 
                 if (color == graphics::RGBA(255, 255, 255, 255))
@@ -591,6 +622,8 @@ namespace rpgss {
             {
                 assert(font);
                 assert(text);
+
+                color = ApplyBrightness(color);
 
                 if (len < 0) {
                     len = std::strlen(text);
@@ -671,10 +704,11 @@ namespace rpgss {
             {
                 assert(windowSkin);
 
-                if (!windowRect.isValid())
-                {
+                if (!windowRect.isValid()) {
                     return;
                 }
+
+                graphics::RGBA color = ApplyBrightness(graphics::RGBA(255, 255, 255, 255));
 
                 // for brevity
                 int x1 = windowRect.ul.x;
@@ -689,10 +723,10 @@ namespace rpgss {
 
                 // draw background
                 if (!windowRect.isEmpty()) {
-                    graphics::RGBA tlColor = windowSkin->getBgColor(graphics::WindowSkin::TopLeftBgColor);
-                    graphics::RGBA trColor = windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor);
-                    graphics::RGBA brColor = windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor);
-                    graphics::RGBA blColor = windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor);
+                    graphics::RGBA tlColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::TopLeftBgColor));
+                    graphics::RGBA trColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::TopRightBgColor));
+                    graphics::RGBA brColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::BottomRightBgColor));
+                    graphics::RGBA blColor = ApplyBrightness(windowSkin->getBgColor(graphics::WindowSkin::BottomLeftBgColor));
 
                     // apply opacity
                     tlColor.alpha = (tlColor.alpha * opacity) / 255;
@@ -723,7 +757,7 @@ namespace rpgss {
                     tlBorder->getPixels(),
                     tlBorder->getWidth(),
                     core::Recti(tlBorder->getDimensions()),
-                    rgb565_mix()
+                    rgb565_mix_col(color)
                 );
 
                 // draw top right edge
@@ -735,7 +769,7 @@ namespace rpgss {
                     trBorder->getPixels(),
                     trBorder->getWidth(),
                     core::Recti(trBorder->getDimensions()),
-                    rgb565_mix()
+                    rgb565_mix_col(color)
                 );
 
                 // draw bottom right edge
@@ -747,7 +781,7 @@ namespace rpgss {
                     brBorder->getPixels(),
                     brBorder->getWidth(),
                     core::Recti(brBorder->getDimensions()),
-                    rgb565_mix()
+                    rgb565_mix_col(color)
                 );
 
                 // draw bottom left edge
@@ -759,7 +793,7 @@ namespace rpgss {
                     blBorder->getPixels(),
                     blBorder->getWidth(),
                     core::Recti(blBorder->getDimensions()),
-                    rgb565_mix()
+                    rgb565_mix_col(color)
                 );
 
                 // draw top and bottom borders
@@ -781,7 +815,7 @@ namespace rpgss {
                             tBorder->getPixels(),
                             tBorder->getWidth(),
                             core::Recti(tBorder->getDimensions()),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
 
                         i += tBorder->getWidth();
@@ -796,7 +830,7 @@ namespace rpgss {
                             tBorder->getPixels(),
                             tBorder->getWidth(),
                             core::Recti(0, 0, (x2 - i) + 1, tBorder->getHeight()),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
                     }
 
@@ -811,7 +845,7 @@ namespace rpgss {
                             bBorder->getPixels(),
                             bBorder->getWidth(),
                             core::Recti(bBorder->getDimensions()),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
 
                         i += bBorder->getWidth();
@@ -826,7 +860,7 @@ namespace rpgss {
                             bBorder->getPixels(),
                             bBorder->getWidth(),
                             core::Recti(0, 0, (x2 - i) + 1, bBorder->getHeight()),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
                     }
                 }
@@ -850,7 +884,7 @@ namespace rpgss {
                             lBorder->getPixels(),
                             lBorder->getWidth(),
                             core::Recti(lBorder->getDimensions()),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
 
                         i += lBorder->getHeight();
@@ -865,7 +899,7 @@ namespace rpgss {
                             lBorder->getPixels(),
                             lBorder->getWidth(),
                             core::Recti(0, 0, lBorder->getWidth(), (y2 - i) + 1),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
                     }
 
@@ -880,7 +914,7 @@ namespace rpgss {
                             rBorder->getPixels(),
                             rBorder->getWidth(),
                             core::Recti(rBorder->getDimensions()),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
 
                         i += rBorder->getHeight();
@@ -895,7 +929,7 @@ namespace rpgss {
                             rBorder->getPixels(),
                             rBorder->getWidth(),
                             core::Recti(0, 0, rBorder->getWidth(), (y2 - i) + 1),
-                            rgb565_mix()
+                            rgb565_mix_col(color)
                         );
                     }
                 }

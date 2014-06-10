@@ -43,6 +43,7 @@ namespace rpgss {
                 static u16* GetPixels();
                 static const core::Recti& GetClipRect();
                 static void SetClipRect(const core::Recti& clipRect);
+                static graphics::RGBA ApplyBrightness(graphics::RGBA color);
 
                 static u16 GetPixel(int x, int y);
                 static void SetPixel(int x, int y, u16 color);
