@@ -1277,7 +1277,7 @@ namespace rpgss {
         Image::draw(const Image* image, const core::Vec2i& pos, float angle, float scale, RGBA color, int blendMode)
         {
             core::Recti image_rect = core::Recti(image->getDimensions());
-            draw(image, image_rect, pos, angle, scale, color);
+            draw(image, image_rect, pos, angle, scale, color, blendMode);
         }
 
         //-----------------------------------------------------------------
@@ -1364,7 +1364,7 @@ namespace rpgss {
                 core::Vec2i lr = rect.getLowerRight().rotateBy(angle, center_of_rotation);
                 core::Vec2i ll = rect.getLowerLeft().rotateBy(angle, center_of_rotation);
 
-                drawq(image, image_rect, ul, ur, lr, ll, color);
+                drawq(image, image_rect, ul, ur, lr, ll, color, blendMode);
             }
         }
 
@@ -1373,7 +1373,7 @@ namespace rpgss {
         Image::drawq(const Image* image, const core::Vec2i& ul, const core::Vec2i& ur, const core::Vec2i& lr, const core::Vec2i& ll, RGBA color, int blendMode)
         {
             core::Recti image_rect = core::Recti(image->getDimensions());
-            drawq(image, image_rect, ul, ur, lr, ll, color);
+            drawq(image, image_rect, ul, ur, lr, ll, color, blendMode);
         }
 
         //-----------------------------------------------------------------
