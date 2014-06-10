@@ -194,19 +194,23 @@ namespace rpgss {
                 int nargs = lua_gettop(L);
                 if (nargs >= 2 && lua_isstring(L, 2))
                 {
-                    // writeImage(image, filename [, palletize])
+                    // writeImage(image, filename [, palletize, mask])
                     graphics::Image* image = ImageWrapper::Get(L, 1);
                     const char* filename = luaL_checkstring(L, 2);
                     bool palletize = lua_toboolean(L, 3);
-                    lua_pushboolean(L, graphics::WriteImage(image, filename, palletize));
+                    i32 mask = luaL_optint(L, 4, -1);
+
+                    lua_pushboolean(L, graphics::WriteImage(image, filename, palletize, mask));
                 }
                 else
                 {
-                    // writeImage(image, stream [, palletize])
+                    // writeImage(image, stream [, palletize, mask])
                     graphics::Image* image = ImageWrapper::Get(L, 1);
                     io::File* file = io_module::FileWrapper::Get(L, 2);
                     bool palletize = lua_toboolean(L, 3);
-                    lua_pushboolean(L, graphics::WriteImage(image, file, palletize));
+                    i32 mask = luaL_optint(L, 4, -1);
+
+                    lua_pushboolean(L, graphics::WriteImage(image, file, palletize, mask));
                 }
                 return 1;
             }
