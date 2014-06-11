@@ -167,6 +167,8 @@
 		<Unit filename="../source/rpgss/script/game_module/HeroWrapper.hpp" />
 		<Unit filename="../source/rpgss/script/game_module/MonsterWrapper.cpp" />
 		<Unit filename="../source/rpgss/script/game_module/MonsterWrapper.hpp" />
+		<Unit filename="../source/rpgss/script/game_module/Screen.cpp" />
+		<Unit filename="../source/rpgss/script/game_module/Screen.hpp" />
 		<Unit filename="../source/rpgss/script/game_module/constants.cpp" />
 		<Unit filename="../source/rpgss/script/game_module/constants.hpp" />
 		<Unit filename="../source/rpgss/script/game_module/game_module.cpp" />
