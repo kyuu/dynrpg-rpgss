@@ -550,7 +550,7 @@ namespace rpgss {
 
                 if (angle == 0.0)
                 {
-                    core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
+                    core::Recti rect = core::Recti(pos, image_rect.getDimensions()).scale(scale);
 
                     if (color == graphics::RGBA(255, 255, 255, 255))
                     {
