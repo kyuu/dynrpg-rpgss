@@ -52,21 +52,21 @@
 			<Add option="-Wno-unused-label" />
 			<Add option="-msse2" />
 			<Add option="-mstackrealign" />
-			<Add directory="../thirdparty/dynrpg-sdk-0.20/include" />
-			<Add directory="../thirdparty/physfs-2.0.3/include" />
-			<Add directory="../thirdparty/luajit-2.0.3/include" />
-			<Add directory="../thirdparty/audiere-1.9.4/include" />
-			<Add directory="../thirdparty/azura-1.0.0/include" />
-			<Add directory="../thirdparty/zlib-1.2.8/include" />
-			<Add directory="../thirdparty/boost-1.55.0/include" />
+			<Add directory="../thirdparty/dynrpg-sdk/include" />
+			<Add directory="../thirdparty/physfs/include" />
+			<Add directory="../thirdparty/luajit/include" />
+			<Add directory="../thirdparty/audiere/include" />
+			<Add directory="../thirdparty/azura/include" />
+			<Add directory="../thirdparty/zlib/include" />
+			<Add directory="../thirdparty/boost/include" />
 		</Compiler>
 		<Linker>
-			<Add option="-L../thirdparty/dynrpg-sdk-0.20/lib" />
-			<Add option="-L../thirdparty/physfs-2.0.3/lib" />
-			<Add option="-L../thirdparty/luajit-2.0.3" />
-			<Add option="-L../thirdparty/audiere-1.9.4/lib" />
-			<Add option="-L../thirdparty/azura-1.0.0/lib" />
-			<Add option="-L../thirdparty/zlib-1.2.8/lib" />
+			<Add option="-L../thirdparty/dynrpg-sdk/lib" />
+			<Add option="-L../thirdparty/physfs/lib" />
+			<Add option="-L../thirdparty/luajit" />
+			<Add option="-L../thirdparty/audiere/lib" />
+			<Add option="-L../thirdparty/azura/lib" />
+			<Add option="-L../thirdparty/zlib/lib" />
 			<Add library="dynrpg" />
 			<Add library="physfs.dll" />
 			<Add library="audiere" />
