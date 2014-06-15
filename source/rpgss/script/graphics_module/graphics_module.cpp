@@ -22,6 +22,9 @@
     THE SOFTWARE.
 */
 
+#define NOT_MAIN_MODULE
+#include <DynRPG/DynRPG.h>
+
 #include "../core_module/core_module.hpp"
 #include "../io_module/io_module.hpp"
 #include "graphics_module.hpp"
@@ -88,6 +91,81 @@ namespace rpgss {
                     }
                 }
 
+                return 1;
+            }
+
+            //---------------------------------------------------------
+            int graphics_newSystemFontImage(lua_State* L)
+            {
+                int color = luaL_optint(L, 1, 0);
+
+                int char_w = 12;
+                int char_h = 16;
+
+                int image_w = char_w * 16 + 17;
+                int image_h = char_h * 16 + 17;
+
+                RPG::Image* buffer = RPG::Image::create(image_w + 16, image_h + 16);
+                buffer->setSystemPalette();
+                buffer->clear();
+
+                for (int i = 0; i < 16; i++) {
+                    for (int j = 0; j < 16; j++) {
+                        char ascii_code = (char)(i * 16 + j);
+                        buffer->drawText(1 + j + j * char_w, 1 + i + i * char_h, std::string(1, ascii_code), color);
+                    }
+                }
+
+                graphics::Image::Ptr font_image = graphics::Image::New(image_w, image_h, graphics::RGBA(0, 0, 0, 0));
+
+                for (int i = 0; i < 17; i++) {
+                    font_image->drawLine(
+                        core::Vec2i(i * (char_w + 1), 0),
+                        core::Vec2i(i * (char_w + 1), image_h - 1),
+                        graphics::RGBA(255, 0, 0, 255),
+                        graphics::BlendMode::Set
+                    );
+                    font_image->drawLine(
+                        core::Vec2i(0, i * (char_h + 1)),
+                        core::Vec2i(image_w - 1, i * (char_h + 1)),
+                        graphics::RGBA(255, 0, 0, 255),
+                        graphics::BlendMode::Set
+                    );
+                }
+
+                for (int i = 0; i < 16; i++) {
+                    for (int j = 0; j < 16; j++) {
+                        for (int y = 0; y < char_h; y++) {
+                            for (int x = 0; x < char_w; x++) {
+                                int p_x = 1 + j + j * char_w + x;
+                                int p_y = 1 + i + i * char_h + y;
+                                int p_i = buffer->pixel(p_x, p_y);
+                                if (p_i > 0) { // skip transparent pixels
+                                    u32 p_c = (u32)buffer->palette[p_i]; // XBGR format
+                                    font_image->setPixel(p_x, p_y, graphics::RGBA((u8)(p_c), (u8)(p_c >> 8), (u8)(p_c >> 16), 255));
+                                }
+                            }
+                        }
+                        // system font characters are 6px wide,
+                        // so stick to this convention
+                        font_image->drawRectangle(
+                            true,
+                            core::Recti(
+                                1 + j + j * char_w + 6,
+                                1 + i + i * char_h,
+                                char_w - 6,
+                                char_h
+                            ),
+                            graphics::RGBA(255, 0, 0, 255),
+                            graphics::BlendMode::Set
+                        );
+                    }
+                }
+
+                // clean up
+                RPG::Image::destroy(buffer);
+
+                ImageWrapper::Push(L, font_image);
                 return 1;
             }
 
@@ -233,6 +311,7 @@ namespace rpgss {
                         .endClass()
 
                         .addCFunction("newFont", &graphics_newFont)
+                        .addCFunction("newSystemFontImage", &graphics_newSystemFontImage)
 
                         .beginClass<WindowSkinWrapper>("WindowSkin")
                             .addProperty("topLeftColor",     &WindowSkinWrapper::get_topLeftColor,     &WindowSkinWrapper::set_topLeftColor)
