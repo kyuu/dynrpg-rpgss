@@ -52,6 +52,8 @@ namespace rpgss {
             bool GetMenuSceneConstant(const std::string& menuscene_str, int& out_menuscene);
             bool GetBattleLayoutConstant(int battlelayout, std::string& out_battlelayout_str);
             bool GetBattleLayoutConstant(const std::string& battlelayout_str, int& out_battlelayout);
+            bool GetAtbModeConstant(int atbmode, std::string& out_atbmode_str);
+            bool GetAtbModeConstant(const std::string& atbmode_str, int& out_atbmode);
 
         } // namespace game_module
     } // namespace script

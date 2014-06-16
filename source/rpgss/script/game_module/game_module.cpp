@@ -344,6 +344,26 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            std::string game_battle_get_atbMode()
+            {
+                std::string atbmode_str;
+                if (!GetAtbModeConstant(RPG::system->atbMode, atbmode_str)) {
+                    luaL_error(Context::Current().interpreter(), "unexpected internal value");
+                }
+                return atbmode_str;
+            }
+
+            //---------------------------------------------------------
+            void game_battle_set_atbMode(const std::string& atbmode_str)
+            {
+                int atbmode;
+                if (!GetAtbModeConstant(atbmode_str, atbmode)) {
+                    luaL_error(Context::Current().interpreter(), "invalid value");
+                }
+                RPG::system->atbMode = atbmode;
+            }
+
+            //---------------------------------------------------------
             int game_battle_get_speed()
             {
                 return RPG::battleSpeed;
@@ -1644,6 +1664,7 @@ namespace rpgss {
 
                         .beginNamespace("battle")
                             .addProperty("layout",                  &game_battle_get_layout,            &game_battle_set_layout)
+                            .addProperty("atbMode",                 &game_battle_get_atbMode,           &game_battle_set_atbMode)
                             .addProperty("speed",                   &game_battle_get_speed,             &game_battle_set_speed)
                             .addProperty("enemies",                 &game_battle_get_enemies)
                         .endNamespace()

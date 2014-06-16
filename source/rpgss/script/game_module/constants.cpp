@@ -517,6 +517,44 @@ namespace rpgss {
                 return true;
             }
 
+            //---------------------------------------------------------
+            bool GetAtbModeConstant(int atbmode, std::string& out_atbmode_str)
+            {
+                typedef boost::unordered_map<int, std::string> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    (RPG::ATBM_ACTIVE, "active")
+                    (RPG::ATBM_WAIT,   "wait"  );
+
+                map_type::iterator mapped_value = map.find(atbmode);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_atbmode_str = mapped_value->second;
+                return true;
+            }
+
+            //---------------------------------------------------------
+            bool GetAtbModeConstant(const std::string& atbmode_str, int& out_atbmode)
+            {
+                typedef boost::unordered_map<std::string, int> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    ("active", RPG::ATBM_ACTIVE)
+                    ("wait",   RPG::ATBM_WAIT  );
+
+                map_type::iterator mapped_value = map.find(atbmode_str);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_atbmode = mapped_value->second;
+                return true;
+            }
+
         } // namespace game_module
     } // namespace script
 } // namespace rpgss
