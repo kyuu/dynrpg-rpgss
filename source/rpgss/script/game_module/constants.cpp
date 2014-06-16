@@ -423,60 +423,57 @@ namespace rpgss {
                 return true;
             }
 
-            bool GetMenuScreenConstant();
-            bool GetMenuScreenConstant();
-
             //---------------------------------------------------------
-            bool GetMenuScreenConstant(int menuscreen, std::string& out_menuscreen_str)
+            bool GetMenuSceneConstant(int menuscene, std::string& out_menuscene_str)
             {
                 typedef boost::unordered_map<int, std::string> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    (0, "main screen"            )
-                    (1, "item screen"            )
-                    (2, "item target selection"  )
-                    (3, "skill screen"           )
-                    (4, "skill target selection" )
-                    (5, "teleport screen"        )
-                    (6, "equipment screen"       )
-                    (7, "end confirmation screen")
-                    (8, "status screen"          )
-                    (9, "party order screen"     );
+                    (0, "main"        )
+                    (1, "item"        )
+                    (2, "use item"    )
+                    (3, "skill"       )
+                    (4, "use skill"   )
+                    (5, "teleport"    )
+                    (6, "equip"       )
+                    (7, "quit"        )
+                    (8, "status"      )
+                    (9, "order"       );
 
-                map_type::iterator mapped_value = map.find(menuscreen);
+                map_type::iterator mapped_value = map.find(menuscene);
 
                 if (mapped_value == map.end()) {
                     return false;
                 }
 
-                out_menuscreen_str = mapped_value->second;
+                out_menuscene_str = mapped_value->second;
                 return true;
             }
 
             //---------------------------------------------------------
-            bool GetMenuScreenConstant(const std::string& menuscreen_str, int& out_menuscreen)
+            bool GetMenuSceneConstant(const std::string& menuscene_str, int& out_menuscene)
             {
                 typedef boost::unordered_map<std::string, int> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    ("main screen",             0)
-                    ("item screen",             1)
-                    ("item target selection",   2)
-                    ("skill screen",            3)
-                    ("skill target selection",  4)
-                    ("teleport screen",         5)
-                    ("equipment screen",        6)
-                    ("end confirmation screen", 7)
-                    ("status screen",           8)
-                    ("party order screen",      9);
+                    ("main",        0)
+                    ("item",        1)
+                    ("use item",    2)
+                    ("skill",       3)
+                    ("use skill",   4)
+                    ("teleport",    5)
+                    ("equip",       6)
+                    ("quit",        7)
+                    ("status",      8)
+                    ("order",       9);
 
-                map_type::iterator mapped_value = map.find(menuscreen_str);
+                map_type::iterator mapped_value = map.find(menuscene_str);
 
                 if (mapped_value == map.end()) {
                     return false;
                 }
 
-                out_menuscreen = mapped_value->second;
+                out_menuscene = mapped_value->second;
                 return true;
             }
 

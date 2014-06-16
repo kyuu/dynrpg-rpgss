@@ -1397,13 +1397,13 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            std::string game_menu_get_screen()
+            std::string game_menu_get_scene()
             {
-                std::string menuscreen_str;
-                if (!GetMenuScreenConstant(RPG::getMenuScreen(), menuscreen_str)) {
+                std::string menuscene_str;
+                if (!GetMenuSceneConstant(RPG::getMenuScreen(), menuscene_str)) {
                     luaL_error(Context::Current().interpreter(), "unexpected internal value");
                 }
-                return menuscreen_str;
+                return menuscene_str;
             }
 
             //---------------------------------------------------------
@@ -1540,7 +1540,7 @@ namespace rpgss {
                         .addProperty("party",               &game_get_party)
 
                         .beginNamespace("menu")
-                            .addProperty("screen",          &game_menu_get_screen)
+                            .addProperty("scene",           &game_menu_get_scene)
                             .addProperty("allowed",         &game_menu_get_allowed,         &game_menu_set_allowed)
                             .addProperty("saveAllowed",     &game_menu_get_saveAllowed,     &game_menu_set_saveAllowed)
                         .endNamespace()
