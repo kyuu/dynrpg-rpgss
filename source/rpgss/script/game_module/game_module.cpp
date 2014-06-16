@@ -1431,6 +1431,30 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            bool game_menu_get_teleportAllowed()
+            {
+                return RPG::system->teleportAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_teleportAllowed(bool teleportAllowed)
+            {
+                RPG::system->teleportAllowed = teleportAllowed;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_escapeAllowed()
+            {
+                return RPG::system->escapeAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_escapeAllowed(bool escapeAllowed)
+            {
+                RPG::system->escapeAllowed = escapeAllowed;
+            }
+
+            //---------------------------------------------------------
             bool RegisterGameModule(lua_State* L)
             {
                 luabridge::getGlobalNamespace(L)
@@ -1543,6 +1567,8 @@ namespace rpgss {
                             .addProperty("scene",           &game_menu_get_scene)
                             .addProperty("allowed",         &game_menu_get_allowed,         &game_menu_set_allowed)
                             .addProperty("saveAllowed",     &game_menu_get_saveAllowed,     &game_menu_set_saveAllowed)
+                            .addProperty("teleportAllowed", &game_menu_get_teleportAllowed, &game_menu_set_teleportAllowed)
+                            .addProperty("escapeAllowed",   &game_menu_get_escapeAllowed,   &game_menu_set_escapeAllowed)
                         .endNamespace()
 
                         .beginNamespace("map")
