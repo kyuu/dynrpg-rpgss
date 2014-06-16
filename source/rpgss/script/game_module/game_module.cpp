@@ -324,6 +324,38 @@ namespace rpgss {
              **********************************************************/
 
             //---------------------------------------------------------
+            std::string game_battle_get_layout()
+            {
+                std::string layout_str;
+                if (!GetBattleLayoutConstant(RPG::battleSettings->layout, layout_str)) {
+                    luaL_error(Context::Current().interpreter(), "unexpected internal value");
+                }
+                return layout_str;
+            }
+
+            //---------------------------------------------------------
+            void game_battle_set_layout(const std::string& layout_str)
+            {
+                int layout;
+                if (!GetBattleLayoutConstant(layout_str, layout)) {
+                    luaL_error(Context::Current().interpreter(), "invalid value");
+                }
+                RPG::battleSettings->layout = layout;
+            }
+
+            //---------------------------------------------------------
+            int game_battle_get_speed()
+            {
+                return RPG::battleSpeed;
+            }
+
+            //---------------------------------------------------------
+            void game_battle_set_speed(int speed)
+            {
+                RPG::battleSpeed = speed;
+            }
+
+            //---------------------------------------------------------
             int game_battle_enemies_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
@@ -1611,7 +1643,9 @@ namespace rpgss {
                         .endNamespace()
 
                         .beginNamespace("battle")
-                            .addProperty("enemies",     &game_battle_get_enemies)
+                            .addProperty("layout",                  &game_battle_get_layout,            &game_battle_set_layout)
+                            .addProperty("speed",                   &game_battle_get_speed,             &game_battle_set_speed)
+                            .addProperty("enemies",                 &game_battle_get_enemies)
                         .endNamespace()
 
                         .beginNamespace("input")

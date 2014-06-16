@@ -50,6 +50,8 @@ namespace rpgss {
             bool GetSceneConstant(const std::string& scene_str, int& out_scene);
             bool GetMenuSceneConstant(int menuscene, std::string& out_menuscene_str);
             bool GetMenuSceneConstant(const std::string& menuscene_str, int& out_menuscene);
+            bool GetBattleLayoutConstant(int battlelayout, std::string& out_battlelayout_str);
+            bool GetBattleLayoutConstant(const std::string& battlelayout_str, int& out_battlelayout);
 
         } // namespace game_module
     } // namespace script

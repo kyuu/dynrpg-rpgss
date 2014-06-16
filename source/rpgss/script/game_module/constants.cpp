@@ -477,6 +477,46 @@ namespace rpgss {
                 return true;
             }
 
+            //---------------------------------------------------------
+            bool GetBattleLayoutConstant(int battlelayout, std::string& out_battlelayout_str)
+            {
+                typedef boost::unordered_map<int, std::string> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    (RPG::BL_TRADITIONAL, "traditional")
+                    (RPG::BL_ALTERNATIVE, "alternative")
+                    (RPG::BL_GAUGE,       "gauge"      );
+
+                map_type::iterator mapped_value = map.find(battlelayout);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_battlelayout_str = mapped_value->second;
+                return true;
+            }
+
+            //---------------------------------------------------------
+            bool GetBattleLayoutConstant(const std::string& battlelayout_str, int& out_battlelayout)
+            {
+                typedef boost::unordered_map<std::string, int> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    ("traditional", RPG::BL_TRADITIONAL)
+                    ("alternative", RPG::BL_ALTERNATIVE)
+                    ("gauge",       RPG::BL_GAUGE      );
+
+                map_type::iterator mapped_value = map.find(battlelayout_str);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_battlelayout = mapped_value->second;
+                return true;
+            }
+
         } // namespace game_module
     } // namespace script
 } // namespace rpgss
