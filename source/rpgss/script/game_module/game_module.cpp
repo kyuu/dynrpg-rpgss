@@ -195,30 +195,56 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_map_findEventById(lua_State* L)
+            int game_map_existsEvent(lua_State* L)
             {
-                int id = luaL_checkint(L, 1);
-                RPG::Event* event = RPG::map->events.get(id);
-                if (event) {
-                    luabridge::push(L, EventWrapper(event));
+                if (lua_gettop(L) >= 1 && lua_type(L, 1) == LUA_TSTRING) {
+                    // game.map.existsEvent(name)
+                    const char* name = luaL_checkstring(L, 1);
+                    for (int i = 0; i < RPG::map->events.count(); ++i) {
+                        RPG::Event* event = RPG::map->events.ptr->list[i];
+                        if (std::strcmp(event->getName().c_str(), name) == 0) {
+                            lua_pushboolean(L, true);
+                            return 1;
+                        }
+                    }
+                    lua_pushboolean(L, false);
                 } else {
-                    lua_pushnil(L);
+                    // game.map.existsEvent(id)
+                    int id = luaL_checkint(L, 1);
+                    RPG::Event* event = RPG::map->events.get(id);
+                    if (event) {
+                        lua_pushboolean(L, true);
+                    } else {
+                        lua_pushboolean(L, false);
+                    }
                 }
                 return 1;
             }
 
             //---------------------------------------------------------
-            int game_map_findEventByName(lua_State* L)
+            int game_map_findEvent(lua_State* L)
             {
-                const char* name = luaL_checkstring(L, 1);
-                for (int i = 0; i < RPG::map->events.count(); ++i) {
-                    RPG::Event* event = RPG::map->events.ptr->list[i];
-                    if (std::strcmp(event->getName().c_str(), name) == 0) {
+                if (lua_gettop(L) >= 1 && lua_type(L, 1) == LUA_TSTRING) {
+                    // game.map.findEvent(name)
+                    const char* name = luaL_checkstring(L, 1);
+                    for (int i = 0; i < RPG::map->events.count(); ++i) {
+                        RPG::Event* event = RPG::map->events.ptr->list[i];
+                        if (std::strcmp(event->getName().c_str(), name) == 0) {
+                            luabridge::push(L, EventWrapper(event));
+                            return 1;
+                        }
+                    }
+                    lua_pushnil(L);
+                } else {
+                    // game.map.findEvent(id)
+                    int id = luaL_checkint(L, 1);
+                    RPG::Event* event = RPG::map->events.get(id);
+                    if (event) {
                         luabridge::push(L, EventWrapper(event));
-                        return 1;
+                    } else {
+                        lua_pushnil(L);
                     }
                 }
-                lua_pushnil(L);
                 return 1;
             }
 
@@ -1527,8 +1553,8 @@ namespace rpgss {
                             .addProperty("height",                  &game_map_get_height)
                             .addProperty("cameraX",                 &game_map_get_cameraX)
                             .addProperty("cameraY",                 &game_map_get_cameraY)
-                            .addCFunction("findEventById",          &game_map_findEventById)
-                            .addCFunction("findEventByName",        &game_map_findEventByName)
+                            .addCFunction("existsEvent",            &game_map_existsEvent)
+                            .addCFunction("findEvent",              &game_map_findEvent)
                             .addCFunction("updateEvents",           &game_map_updateEvents)
                             .addCFunction("getCameraPosition",      &game_map_getCameraPosition)
                             .addCFunction("setCameraPosition",      &game_map_setCameraPosition)
