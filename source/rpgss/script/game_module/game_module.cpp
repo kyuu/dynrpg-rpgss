@@ -83,7 +83,7 @@ namespace rpgss {
              **********************************************************/
 
             //---------------------------------------------------------
-            luabridge::LuaRef map_get_hero()
+            luabridge::LuaRef game_map_get_hero()
             {
                 lua_State* L = Context::Current().interpreter();
 
@@ -104,7 +104,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_events_proxy_table_indexMetaMethod(lua_State* L)
+            int game_map_events_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 if (n < 1 || n > RPG::map->events.count()) {
@@ -115,87 +115,87 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_events_proxy_table_newindexMetaMethod(lua_State* L)
+            int game_map_events_proxy_mt_newindexMetaMethod(lua_State* L)
             {
                return luaL_error(L, "operation not allowed");
             }
 
             //---------------------------------------------------------
-            int map_events_proxy_table_lenMetaMethod(lua_State* L)
+            int game_map_events_proxy_mt_lenMetaMethod(lua_State* L)
             {
                 lua_pushnumber(L, RPG::map->events.count());
                 return 1;
             }
 
             //---------------------------------------------------------
-            luabridge::LuaRef map_get_events()
+            luabridge::LuaRef game_map_get_events()
             {
                 lua_State* L = Context::Current().interpreter();
 
-                lua_pushstring(L, "__game_map_events_proxy_table");
-                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy table from registry table
+                lua_pushstring(L, "__game_map_events_proxy");
+                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy from registry table
 
-                if (!lua_istable(L, -1)) {
-                    lua_newtable(L); // proxy table
+                if (!lua_istable(L, -1)) { // proxy doesn't exist yet, create it
+                    lua_newuserdata(L, 1 /* dummy size, we don't use the userdata memory */); // proxy
 
                     lua_newtable(L); // metatable
 
                     lua_pushstring(L, "__index");
-                    lua_pushcfunction(L, map_events_proxy_table_indexMetaMethod);
+                    lua_pushcfunction(L, game_map_events_proxy_mt_indexMetaMethod);
                     lua_rawset(L, -3); // add __index() to metatable
 
                     lua_pushstring(L, "__newindex");
-                    lua_pushcfunction(L, map_events_proxy_table_newindexMetaMethod);
+                    lua_pushcfunction(L, game_map_events_proxy_mt_newindexMetaMethod);
                     lua_rawset(L, -3); // add __newindex() to metatable
 
                     lua_pushstring(L, "__len");
-                    lua_pushcfunction(L, map_events_proxy_table_lenMetaMethod);
+                    lua_pushcfunction(L, game_map_events_proxy_mt_lenMetaMethod);
                     lua_rawset(L, -3); // add __len() to metatable
 
-                    lua_setmetatable(L, -2); // set metatable for proxy table
+                    lua_setmetatable(L, -2); // set metatable for proxy
 
-                    lua_pushstring(L, "__game_map_events_proxy_table");
-                    lua_pushvalue(L, -2); // push proxy table
-                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy table in registry table
+                    lua_pushstring(L, "__game_map_events_proxy");
+                    lua_pushvalue(L, -2); // push proxy
+                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy in registry table
 
-                    assert(lua_istable(L, -1));
+                    assert(lua_isuserdata(L, -1));
                 }
 
                 return luabridge::LuaRef::fromStack(L, -1);
             }
 
             //---------------------------------------------------------
-            int map_get_id()
+            int game_map_get_id()
             {
                 return RPG::hero->mapId;
             }
 
             //---------------------------------------------------------
-            int map_get_width()
+            int game_map_get_width()
             {
                 return RPG::map->getWidth();
             }
 
             //---------------------------------------------------------
-            int map_get_height()
+            int game_map_get_height()
             {
                 return RPG::map->getHeight();
             }
 
             //---------------------------------------------------------
-            int map_get_cameraX()
+            int game_map_get_cameraX()
             {
                 return RPG::map->getCameraX();
             }
 
             //---------------------------------------------------------
-            int map_get_cameraY()
+            int game_map_get_cameraY()
             {
                 return RPG::map->getCameraY();
             }
 
             //---------------------------------------------------------
-            int map_findEventById(lua_State* L)
+            int game_map_findEventById(lua_State* L)
             {
                 int id = luaL_checkint(L, 1);
                 RPG::Event* event = RPG::map->events.get(id);
@@ -208,7 +208,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_findEventByName(lua_State* L)
+            int game_map_findEventByName(lua_State* L)
             {
                 const char* name = luaL_checkstring(L, 1);
                 for (int i = 0; i < RPG::map->events.count(); ++i) {
@@ -223,14 +223,14 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_updateEvents(lua_State* L)
+            int game_map_updateEvents(lua_State* L)
             {
                 RPG::map->updateEvents();
                 return 0;
             }
 
             //---------------------------------------------------------
-            int map_getCameraPosition(lua_State* L)
+            int game_map_getCameraPosition(lua_State* L)
             {
                 lua_pushnumber(L, RPG::map->getCameraX());
                 lua_pushnumber(L, RPG::map->getCameraY());
@@ -238,7 +238,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_setCameraPosition(lua_State* L)
+            int game_map_setCameraPosition(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -247,7 +247,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_moveCamera(lua_State* L)
+            int game_map_moveCamera(lua_State* L)
             {
                 int ox = luaL_checkint(L, 1);
                 int oy = luaL_checkint(L, 2);
@@ -257,7 +257,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_getLowerLayerTileId(lua_State* L)
+            int game_map_getLowerLayerTileId(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -270,7 +270,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_getUpperLayerTileId(lua_State* L)
+            int game_map_getUpperLayerTileId(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -283,7 +283,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int map_getTerrainId(lua_State* L)
+            int game_map_getTerrainId(lua_State* L)
             {
                 int tileId = luaL_checkint(L, 1);
 
@@ -298,7 +298,7 @@ namespace rpgss {
              **********************************************************/
 
             //---------------------------------------------------------
-            int battle_monster_party_proxy_table_indexMetaMethod(lua_State* L)
+            int game_battle_enemies_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 if (n < 1 || n > RPG::monsters.count()) {
@@ -309,50 +309,50 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int battle_monster_party_proxy_table_newindexMetaMethod(lua_State* L)
+            int game_battle_enemies_proxy_mt_newindexMetaMethod(lua_State* L)
             {
                return luaL_error(L, "operation not allowed");
             }
 
             //---------------------------------------------------------
-            int battle_monster_party_proxy_table_lenMetaMethod(lua_State* L)
+            int game_battle_enemies_proxy_mt_lenMetaMethod(lua_State* L)
             {
                 lua_pushnumber(L, RPG::monsters.count());
                 return 1;
             }
 
             //---------------------------------------------------------
-            luabridge::LuaRef battle_get_monsterParty()
+            luabridge::LuaRef game_battle_get_enemies()
             {
                 lua_State* L = Context::Current().interpreter();
 
-                lua_pushstring(L, "__game_battle_monster_party_proxy_table");
-                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy table from registry table
+                lua_pushstring(L, "__game_battle_enemies_proxy");
+                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy from registry table
 
-                if (!lua_istable(L, -1)) {
-                    lua_newtable(L); // proxy table
+                if (!lua_istable(L, -1)) { // proxy doesn't exist yet, create it
+                    lua_newuserdata(L, 1 /* dummy size, we don't use the userdata memory */); // proxy
 
                     lua_newtable(L); // metatable
 
                     lua_pushstring(L, "__index");
-                    lua_pushcfunction(L, battle_monster_party_proxy_table_indexMetaMethod);
+                    lua_pushcfunction(L, game_battle_enemies_proxy_mt_indexMetaMethod);
                     lua_rawset(L, -3); // add __index() to metatable
 
                     lua_pushstring(L, "__newindex");
-                    lua_pushcfunction(L, battle_monster_party_proxy_table_newindexMetaMethod);
+                    lua_pushcfunction(L, game_battle_enemies_proxy_mt_newindexMetaMethod);
                     lua_rawset(L, -3); // add __newindex() to metatable
 
                     lua_pushstring(L, "__len");
-                    lua_pushcfunction(L, battle_monster_party_proxy_table_lenMetaMethod);
+                    lua_pushcfunction(L, game_battle_enemies_proxy_mt_lenMetaMethod);
                     lua_rawset(L, -3); // add __len() to metatable
 
-                    lua_setmetatable(L, -2); // set metatable for proxy table
+                    lua_setmetatable(L, -2); // set metatable for proxy
 
-                    lua_pushstring(L, "__game_battle_monster_party_proxy_table");
-                    lua_pushvalue(L, -2); // push proxy table
-                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy table in registry table
+                    lua_pushstring(L, "__game_battle_enemies_proxy");
+                    lua_pushvalue(L, -2); // push proxy
+                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy in registry table
 
-                    assert(lua_istable(L, -1));
+                    assert(lua_isuserdata(L, -1));
                 }
 
                 return luabridge::LuaRef::fromStack(L, -1);
@@ -363,7 +363,7 @@ namespace rpgss {
              **********************************************************/
 
             //---------------------------------------------------------
-            int input_pressed(lua_State* L)
+            int game_input_pressed(lua_State* L)
             {
                 int nargs = lua_gettop(L);
                 if (nargs < 1) {
@@ -387,7 +387,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int input_assign(lua_State* L)
+            int game_input_assign(lua_State* L)
             {
                 const char* rpg_key_str = luaL_checkstring(L, 1);
 
@@ -464,7 +464,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int music_playSystemBGM(lua_State* L)
+            int game_music_playSystemBGM(lua_State* L)
             {
                 const char* system_bgm_str = luaL_checkstring(L, 1);
 
@@ -478,7 +478,7 @@ namespace rpgss {
             }
 */
             //---------------------------------------------------------
-            int music_play(lua_State* L)
+            int game_music_play(lua_State* L)
             {
                 const char* filename = luaL_checkstring(L, 1);
                 int fade_in_time     = luaL_optint(L, 2, 0);
@@ -509,7 +509,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int music_fadeOut(lua_State* L)
+            int game_music_fadeOut(lua_State* L)
             {
                 int fade_out_time = luaL_checkint(L, 1);
                 RPG::Music::fadeOut(fade_out_time);
@@ -517,7 +517,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int music_stop(lua_State* L)
+            int game_music_stop(lua_State* L)
             {
                 RPG::Music::stop();
                 return 0;
@@ -558,7 +558,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int sound_playSystemSE(lua_State* L)
+            int game_sound_playSystemSE(lua_State* L)
             {
                 const char* system_se_str = luaL_checkstring(L, 1);
 
@@ -572,7 +572,7 @@ namespace rpgss {
             }
 */
             //---------------------------------------------------------
-            int sound_play(lua_State* L)
+            int game_sound_play(lua_State* L)
             {
                 const char* filename = luaL_checkstring(L, 1);
                 int volume           = luaL_optint(L, 2, 100);
@@ -599,7 +599,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int sound_stop(lua_State* L)
+            int game_sound_stop(lua_State* L)
             {
                 RPG::Sound::stop();
                 return 0;
@@ -610,31 +610,31 @@ namespace rpgss {
              **********************************************************/
 
             //---------------------------------------------------------
-            int screen_get_width()
+            int game_screen_get_width()
             {
                 return RPG::screen->canvas->width();
             }
 
             //---------------------------------------------------------
-            int screen_get_height()
+            int game_screen_get_height()
             {
                 return RPG::screen->canvas->height();
             }
 
             //---------------------------------------------------------
-            int screen_get_brightness()
+            int game_screen_get_brightness()
             {
                 return RPG::screen->canvas->brightness;
             }
 
             //---------------------------------------------------------
-            void screen_set_brightness(int brightness)
+            void game_screen_set_brightness(int brightness)
             {
                 RPG::screen->canvas->brightness = brightness;
             }
 
             //---------------------------------------------------------
-            int screen_getDimensions(lua_State* L)
+            int game_screen_getDimensions(lua_State* L)
             {
                 lua_pushnumber(L, RPG::screen->canvas->width());
                 lua_pushnumber(L, RPG::screen->canvas->height());
@@ -642,7 +642,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_getClipRect(lua_State* L)
+            int game_screen_getClipRect(lua_State* L)
             {
                 const core::Recti& clip_rect = Screen::GetClipRect();
                 lua_pushnumber(L, clip_rect.getX());
@@ -653,7 +653,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_setClipRect(lua_State* L)
+            int game_screen_setClipRect(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -672,7 +672,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_copyRect(lua_State* L)
+            int game_screen_copyRect(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -699,7 +699,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_clear(lua_State* L)
+            int game_screen_clear(lua_State* L)
             {
                 u32 color = (u32)luaL_optint(L, 1, 0x000000FF);
                 Screen::Clear(graphics::RGBA8888ToRGBA(color));
@@ -707,14 +707,14 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_grey(lua_State* L)
+            int game_screen_grey(lua_State* L)
             {
                 Screen::Grey();
                 return 0;
             }
 
             //---------------------------------------------------------
-            int screen_getPixel(lua_State* L)
+            int game_screen_getPixel(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -729,7 +729,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_setPixel(lua_State* L)
+            int game_screen_setPixel(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -744,7 +744,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawPoint(lua_State* L)
+            int game_screen_drawPoint(lua_State* L)
             {
                 int x = luaL_checkint(L, 1);
                 int y = luaL_checkint(L, 2);
@@ -766,7 +766,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawLine(lua_State* L)
+            int game_screen_drawLine(lua_State* L)
             {
                 int x1 = luaL_checkint(L, 1);
                 int y1 = luaL_checkint(L, 2);
@@ -793,7 +793,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawRectangle(lua_State* L)
+            int game_screen_drawRectangle(lua_State* L)
             {
                 bool fill = lua_toboolean(L, 1);
                 int     x = luaL_checkint(L, 2);
@@ -825,7 +825,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawCircle(lua_State* L)
+            int game_screen_drawCircle(lua_State* L)
             {
                 bool fill = lua_toboolean(L, 1);
                 int     x = luaL_checkint(L, 2);
@@ -853,7 +853,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawTriangle(lua_State* L)
+            int game_screen_drawTriangle(lua_State* L)
             {
                 /*
                 bool fill = lua_toboolean(L, 1);
@@ -880,7 +880,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_draw(lua_State* L)
+            int game_screen_draw(lua_State* L)
             {
                 graphics::Image* that = 0;
                 int   sx, sy, sw, sh;
@@ -943,7 +943,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawq(lua_State* L)
+            int game_screen_drawq(lua_State* L)
             {
                 graphics::Image* that = 0;
                 int sx, sy, sw, sh;
@@ -1016,7 +1016,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawText(lua_State* L)
+            int game_screen_drawText(lua_State* L)
             {
                 graphics::Font* font = graphics_module::FontWrapper::Get(L, 1);
                 int x                = luaL_checkint(L, 2);
@@ -1039,7 +1039,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int screen_drawWindow(lua_State* L)
+            int game_screen_drawWindow(lua_State* L)
             {
                 graphics::WindowSkin* windowSkin = graphics_module::WindowSkinWrapper::Get(L, 1);
                 int x = luaL_checkint(L, 2);
@@ -1091,7 +1091,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_variables_proxy_table_indexMetaMethod(lua_State* L)
+            int game_variables_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 luaL_argcheck(L, n >= 1 && n <= RPGSS_SANE_VARIABLE_ARRAY_SIZE_LIMIT, 2, "index out of bounds");
@@ -1103,7 +1103,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_variables_proxy_table_newindexMetaMethod(lua_State* L)
+            int game_variables_proxy_mt_newindexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 int v = luaL_checkint(L, 3);
@@ -1116,19 +1116,10 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_variables_proxy_table_lenMetaMethod(lua_State* L)
+            int game_variables_proxy_mt_lenMetaMethod(lua_State* L)
             {
                 lua_pushnumber(L, RPG::system->variables.size);
                 return 1;
-            }
-
-            //---------------------------------------------------------
-            int game_variables_proxy_table_resize(lua_State* L)
-            {
-                int n = luaL_checkint(L, 1);
-                luaL_argcheck(L, n >= 0 && n <= RPGSS_SANE_VARIABLE_ARRAY_SIZE_LIMIT, 2, "invalid size");
-                RPG::system->variables.resize(n);
-                return 0;
             }
 
             //---------------------------------------------------------
@@ -1136,44 +1127,40 @@ namespace rpgss {
             {
                 lua_State* L = Context::Current().interpreter();
 
-                lua_pushstring(L, "__game_variables_proxy_table");
-                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy table from registry table
+                lua_pushstring(L, "__game_variables_proxy");
+                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy from registry table
 
-                if (!lua_istable(L, -1)) {
-                    lua_newtable(L); // proxy table
-
-                    lua_pushstring(L, "resize");
-                    lua_pushcfunction(L, game_variables_proxy_table_resize);
-                    lua_rawset(L, -3); // add resize() to proxy table
+                if (!lua_istable(L, -1)) { // proxy doesn't exist yet, create it
+                    lua_newuserdata(L, 1 /* dummy size, we don't use the userdata memory */); // proxy
 
                     lua_newtable(L); // metatable
 
                     lua_pushstring(L, "__index");
-                    lua_pushcfunction(L, game_variables_proxy_table_indexMetaMethod);
+                    lua_pushcfunction(L, game_variables_proxy_mt_indexMetaMethod);
                     lua_rawset(L, -3); // add __index() to metatable
 
                     lua_pushstring(L, "__newindex");
-                    lua_pushcfunction(L, game_variables_proxy_table_newindexMetaMethod);
+                    lua_pushcfunction(L, game_variables_proxy_mt_newindexMetaMethod);
                     lua_rawset(L, -3); // add __newindex() to metatable
 
                     lua_pushstring(L, "__len");
-                    lua_pushcfunction(L, game_variables_proxy_table_lenMetaMethod);
+                    lua_pushcfunction(L, game_variables_proxy_mt_lenMetaMethod);
                     lua_rawset(L, -3); // add __len() to metatable
 
-                    lua_setmetatable(L, -2); // set metatable for proxy table
+                    lua_setmetatable(L, -2); // set metatable for proxy
 
-                    lua_pushstring(L, "__game_variables_proxy_table");
-                    lua_pushvalue(L, -2); // push proxy table
-                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy table in registry table
+                    lua_pushstring(L, "__game_variables_proxy");
+                    lua_pushvalue(L, -2); // push proxy
+                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy in registry table
 
-                    assert(lua_istable(L, -1));
+                    assert(lua_isuserdata(L, -1));
                 }
 
                 return luabridge::LuaRef::fromStack(L, -1);
             }
 
             //---------------------------------------------------------
-            int game_switches_proxy_table_indexMetaMethod(lua_State* L)
+            int game_switches_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 luaL_argcheck(L, n >= 1 && n <= RPGSS_SANE_SWITCH_ARRAY_SIZE_LIMIT, 2, "index out of bounds");
@@ -1185,7 +1172,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_switches_proxy_table_newindexMetaMethod(lua_State* L)
+            int game_switches_proxy_mt_newindexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 bool v = lua_toboolean(L, 3);
@@ -1199,19 +1186,10 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_switches_proxy_table_lenMetaMethod(lua_State* L)
+            int game_switches_proxy_mt_lenMetaMethod(lua_State* L)
             {
                 lua_pushnumber(L, RPG::system->switches.size);
                 return 1;
-            }
-
-            //---------------------------------------------------------
-            int game_switches_proxy_table_resize(lua_State* L)
-            {
-                int n = luaL_checkint(L, 1);
-                luaL_argcheck(L, n >= 0 && n <= RPGSS_SANE_SWITCH_ARRAY_SIZE_LIMIT, 2, "invalid size");
-                RPG::system->switches.resize(n);
-                return 0;
             }
 
             //---------------------------------------------------------
@@ -1219,44 +1197,40 @@ namespace rpgss {
             {
                 lua_State* L = Context::Current().interpreter();
 
-                lua_pushstring(L, "__game_switches_proxy_table");
-                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy table from registry table
+                lua_pushstring(L, "__game_switches_proxy");
+                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy from registry table
 
-                if (!lua_istable(L, -1)) {
-                    lua_newtable(L); // proxy table
-
-                    lua_pushstring(L, "resize");
-                    lua_pushcfunction(L, game_switches_proxy_table_resize);
-                    lua_rawset(L, -3); // add resize() to proxy table
+                if (!lua_istable(L, -1)) { // proxy doesn't exist yet, create it
+                    lua_newuserdata(L, 1 /* dummy size, we don't use the userdata memory */); // proxy
 
                     lua_newtable(L); // metatable
 
                     lua_pushstring(L, "__index");
-                    lua_pushcfunction(L, game_switches_proxy_table_indexMetaMethod);
+                    lua_pushcfunction(L, game_switches_proxy_mt_indexMetaMethod);
                     lua_rawset(L, -3); // add __index() to metatable
 
                     lua_pushstring(L, "__newindex");
-                    lua_pushcfunction(L, game_switches_proxy_table_newindexMetaMethod);
+                    lua_pushcfunction(L, game_switches_proxy_mt_newindexMetaMethod);
                     lua_rawset(L, -3); // add __newindex() to metatable
 
                     lua_pushstring(L, "__len");
-                    lua_pushcfunction(L, game_switches_proxy_table_lenMetaMethod);
+                    lua_pushcfunction(L, game_switches_proxy_mt_lenMetaMethod);
                     lua_rawset(L, -3); // add __len() to metatable
 
-                    lua_setmetatable(L, -2); // set metatable for proxy table
+                    lua_setmetatable(L, -2); // set metatable for proxy
 
-                    lua_pushstring(L, "__game_switches_proxy_table");
-                    lua_pushvalue(L, -2); // push proxy table
-                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy table in registry table
+                    lua_pushstring(L, "__game_switches_proxy");
+                    lua_pushvalue(L, -2); // push proxy
+                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy in registry table
 
-                    assert(lua_istable(L, -1));
+                    assert(lua_isuserdata(L, -1));
                 }
 
                 return luabridge::LuaRef::fromStack(L, -1);
             }
 
             //---------------------------------------------------------
-            int game_actors_proxy_table_indexMetaMethod(lua_State* L)
+            int game_actors_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 if (n < 1 || n > RPG::actors.count()) {
@@ -1267,13 +1241,13 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_actors_proxy_table_newindexMetaMethod(lua_State* L)
+            int game_actors_proxy_mt_newindexMetaMethod(lua_State* L)
             {
                return luaL_error(L, "operation not allowed");
             }
 
             //---------------------------------------------------------
-            int game_actors_proxy_table_lenMetaMethod(lua_State* L)
+            int game_actors_proxy_mt_lenMetaMethod(lua_State* L)
             {
                 lua_pushnumber(L, RPG::actors.count());
                 return 1;
@@ -1284,33 +1258,33 @@ namespace rpgss {
             {
                 lua_State* L = Context::Current().interpreter();
 
-                lua_pushstring(L, "__game_actors_proxy_table");
-                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy table from registry table
+                lua_pushstring(L, "__game_actors_proxy");
+                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy from registry table
 
-                if (!lua_istable(L, -1)) {
-                    lua_newtable(L); // proxy table
+                if (!lua_istable(L, -1)) { // proxy doesn't exist yet, create it
+                    lua_newuserdata(L, 1 /* dummy size, we don't use the userdata memory */); // proxy
 
                     lua_newtable(L); // metatable
 
                     lua_pushstring(L, "__index");
-                    lua_pushcfunction(L, game_actors_proxy_table_indexMetaMethod);
+                    lua_pushcfunction(L, game_actors_proxy_mt_indexMetaMethod);
                     lua_rawset(L, -3); // add __index() to metatable
 
                     lua_pushstring(L, "__newindex");
-                    lua_pushcfunction(L, game_actors_proxy_table_newindexMetaMethod);
+                    lua_pushcfunction(L, game_actors_proxy_mt_newindexMetaMethod);
                     lua_rawset(L, -3); // add __newindex() to metatable
 
                     lua_pushstring(L, "__len");
-                    lua_pushcfunction(L, game_actors_proxy_table_lenMetaMethod);
+                    lua_pushcfunction(L, game_actors_proxy_mt_lenMetaMethod);
                     lua_rawset(L, -3); // add __len() to metatable
 
-                    lua_setmetatable(L, -2); // set metatable for proxy table
+                    lua_setmetatable(L, -2); // set metatable for proxy
 
-                    lua_pushstring(L, "__game_actors_proxy_table");
-                    lua_pushvalue(L, -2); // push proxy table
-                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy table in registry table
+                    lua_pushstring(L, "__game_actors_proxy");
+                    lua_pushvalue(L, -2); // push proxy
+                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy in registry table
 
-                    assert(lua_istable(L, -1));
+                    assert(lua_isuserdata(L, -1));
                 }
 
                 return luabridge::LuaRef::fromStack(L, -1);
@@ -1330,7 +1304,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_actor_party_proxy_table_indexMetaMethod(lua_State* L)
+            int game_party_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
                 if (n < 1 || n > game_get_actor_party_size()) {
@@ -1341,50 +1315,50 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_actor_party_proxy_table_newindexMetaMethod(lua_State* L)
+            int game_party_proxy_mt_newindexMetaMethod(lua_State* L)
             {
                return luaL_error(L, "operation not allowed");
             }
 
             //---------------------------------------------------------
-            int game_actor_party_proxy_table_lenMetaMethod(lua_State* L)
+            int game_party_proxy_mt_lenMetaMethod(lua_State* L)
             {
                 lua_pushnumber(L, game_get_actor_party_size());
                 return 1;
             }
 
             //---------------------------------------------------------
-            luabridge::LuaRef game_get_actorParty()
+            luabridge::LuaRef game_get_party()
             {
                 lua_State* L = Context::Current().interpreter();
 
-                lua_pushstring(L, "__game_actor_party_proxy_table");
-                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy table from registry table
+                lua_pushstring(L, "__game_party_proxy");
+                lua_rawget(L, LUA_REGISTRYINDEX); // get proxy from registry table
 
-                if (!lua_istable(L, -1)) {
-                    lua_newtable(L); // proxy table
+                if (!lua_istable(L, -1)) { // proxy doesn't exist yet, create it
+                    lua_newuserdata(L, 1 /* dummy size, we don't use the userdata memory */); // proxy
 
                     lua_newtable(L); // metatable
 
                     lua_pushstring(L, "__index");
-                    lua_pushcfunction(L, game_actor_party_proxy_table_indexMetaMethod);
+                    lua_pushcfunction(L, game_party_proxy_mt_indexMetaMethod);
                     lua_rawset(L, -3); // add __index() to metatable
 
                     lua_pushstring(L, "__newindex");
-                    lua_pushcfunction(L, game_actor_party_proxy_table_newindexMetaMethod);
+                    lua_pushcfunction(L, game_party_proxy_mt_newindexMetaMethod);
                     lua_rawset(L, -3); // add __newindex() to metatable
 
                     lua_pushstring(L, "__len");
-                    lua_pushcfunction(L, game_actor_party_proxy_table_lenMetaMethod);
+                    lua_pushcfunction(L, game_party_proxy_mt_lenMetaMethod);
                     lua_rawset(L, -3); // add __len() to metatable
 
-                    lua_setmetatable(L, -2); // set metatable for proxy table
+                    lua_setmetatable(L, -2); // set metatable for proxy
 
-                    lua_pushstring(L, "__game_actor_party_proxy_table");
-                    lua_pushvalue(L, -2); // push proxy table
-                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy table in registry table
+                    lua_pushstring(L, "__game_party_proxy");
+                    lua_pushvalue(L, -2); // push proxy
+                    lua_rawset(L, LUA_REGISTRYINDEX); // store proxy in registry table
 
-                    assert(lua_istable(L, -1));
+                    assert(lua_isuserdata(L, -1));
                 }
 
                 return luabridge::LuaRef::fromStack(L, -1);
@@ -1529,6 +1503,7 @@ namespace rpgss {
 
                     .beginNamespace("game")
 
+                        .addProperty("ticksPerFrame",       &game_get_ticksPerFrame)
                         .addProperty("scene",               &game_get_scene)
                         .addProperty("isTestPlay",          &game_get_isTestPlay)
                         .addProperty("isBattleTest",        &game_get_isBattleTest)
@@ -1536,8 +1511,7 @@ namespace rpgss {
                         .addProperty("variables",           &game_get_variables)
                         .addProperty("switches",            &game_get_switches)
                         .addProperty("actors",              &game_get_actors)
-                        .addProperty("party",               &game_get_actorParty)
-                        .addProperty("ticksPerFrame",       &game_get_ticksPerFrame)
+                        .addProperty("party",               &game_get_party)
 
                         .beginNamespace("menu")
                             .addProperty("screen",          &game_menu_get_screen)
@@ -1546,65 +1520,65 @@ namespace rpgss {
                         .endNamespace()
 
                         .beginNamespace("map")
-                            .addProperty("hero",                    &map_get_hero)
-                            .addProperty("events",                  &map_get_events)
-                            .addProperty("id",                      &map_get_id)
-                            .addProperty("width",                   &map_get_width)
-                            .addProperty("height",                  &map_get_height)
-                            .addProperty("cameraX",                 &map_get_cameraX)
-                            .addProperty("cameraY",                 &map_get_cameraY)
-                            .addCFunction("findEventById",          &map_findEventById)
-                            .addCFunction("findEventByName",        &map_findEventByName)
-                            .addCFunction("updateEvents",           &map_updateEvents)
-                            .addCFunction("getCameraPosition",      &map_getCameraPosition)
-                            .addCFunction("setCameraPosition",      &map_setCameraPosition)
-                            .addCFunction("moveCamera",             &map_moveCamera)
-                            .addCFunction("getLowerLayerTileId",    &map_getLowerLayerTileId)
-                            .addCFunction("getUpperLayerTileId",    &map_getUpperLayerTileId)
-                            .addCFunction("getTerrainId",           &map_getTerrainId)
+                            .addProperty("hero",                    &game_map_get_hero)
+                            .addProperty("events",                  &game_map_get_events)
+                            .addProperty("id",                      &game_map_get_id)
+                            .addProperty("width",                   &game_map_get_width)
+                            .addProperty("height",                  &game_map_get_height)
+                            .addProperty("cameraX",                 &game_map_get_cameraX)
+                            .addProperty("cameraY",                 &game_map_get_cameraY)
+                            .addCFunction("findEventById",          &game_map_findEventById)
+                            .addCFunction("findEventByName",        &game_map_findEventByName)
+                            .addCFunction("updateEvents",           &game_map_updateEvents)
+                            .addCFunction("getCameraPosition",      &game_map_getCameraPosition)
+                            .addCFunction("setCameraPosition",      &game_map_setCameraPosition)
+                            .addCFunction("moveCamera",             &game_map_moveCamera)
+                            .addCFunction("getLowerLayerTileId",    &game_map_getLowerLayerTileId)
+                            .addCFunction("getUpperLayerTileId",    &game_map_getUpperLayerTileId)
+                            .addCFunction("getTerrainId",           &game_map_getTerrainId)
                         .endNamespace()
 
                         .beginNamespace("battle")
-                            .addProperty("enemies", &battle_get_monsterParty)
+                            .addProperty("enemies",     &game_battle_get_enemies)
                         .endNamespace()
 
                         .beginNamespace("input")
-                            .addCFunction("pressed", &input_pressed)
-                            .addCFunction("assign",  &input_assign)
+                            .addCFunction("pressed",    &game_input_pressed)
+                            .addCFunction("assign",     &game_input_assign)
                         .endNamespace()
 
                         .beginNamespace("music")
-                            .addCFunction("play",    &music_play)
-                            .addCFunction("fadeOut", &music_fadeOut)
-                            .addCFunction("stop",    &music_stop)
+                            .addCFunction("play",       &game_music_play)
+                            .addCFunction("fadeOut",    &game_music_fadeOut)
+                            .addCFunction("stop",       &game_music_stop)
                         .endNamespace()
 
                         .beginNamespace("sound")
-                            .addCFunction("play", &sound_play)
-                            .addCFunction("stop", &sound_stop)
+                            .addCFunction("play",       &game_sound_play)
+                            .addCFunction("stop",       &game_sound_stop)
                         .endNamespace()
 
                         .beginNamespace("screen")
-                            .addProperty("width",                   &screen_get_width)
-                            .addProperty("height",                  &screen_get_height)
-                            .addProperty("brightness",              &screen_get_brightness, &screen_set_brightness)
-                            .addCFunction("getDimensions",          &screen_getDimensions)
-                            .addCFunction("getClipRect",            &screen_getClipRect)
-                            .addCFunction("setClipRect",            &screen_setClipRect)
-                            .addCFunction("copyRect",               &screen_copyRect)
-                            .addCFunction("clear",                  &screen_clear)
-                            .addCFunction("grey",                   &screen_grey)
-                            .addCFunction("getPixel",               &screen_getPixel)
-                            .addCFunction("setPixel",               &screen_setPixel)
-                            .addCFunction("drawPoint",              &screen_drawPoint)
-                            .addCFunction("drawLine",               &screen_drawLine)
-                            .addCFunction("drawRectangle",          &screen_drawRectangle)
-                            .addCFunction("drawCircle",             &screen_drawCircle)
-                            .addCFunction("drawTriangle",           &screen_drawTriangle)
-                            .addCFunction("draw",                   &screen_draw)
-                            .addCFunction("drawq",                  &screen_drawq)
-                            .addCFunction("drawText",               &screen_drawText)
-                            .addCFunction("drawWindow",             &screen_drawWindow)
+                            .addProperty("width",                   &game_screen_get_width)
+                            .addProperty("height",                  &game_screen_get_height)
+                            .addProperty("brightness",              &game_screen_get_brightness, &game_screen_set_brightness)
+                            .addCFunction("getDimensions",          &game_screen_getDimensions)
+                            .addCFunction("getClipRect",            &game_screen_getClipRect)
+                            .addCFunction("setClipRect",            &game_screen_setClipRect)
+                            .addCFunction("copyRect",               &game_screen_copyRect)
+                            .addCFunction("clear",                  &game_screen_clear)
+                            .addCFunction("grey",                   &game_screen_grey)
+                            .addCFunction("getPixel",               &game_screen_getPixel)
+                            .addCFunction("setPixel",               &game_screen_setPixel)
+                            .addCFunction("drawPoint",              &game_screen_drawPoint)
+                            .addCFunction("drawLine",               &game_screen_drawLine)
+                            .addCFunction("drawRectangle",          &game_screen_drawRectangle)
+                            .addCFunction("drawCircle",             &game_screen_drawCircle)
+                            .addCFunction("drawTriangle",           &game_screen_drawTriangle)
+                            .addCFunction("draw",                   &game_screen_draw)
+                            .addCFunction("drawq",                  &game_screen_drawq)
+                            .addCFunction("drawText",               &game_screen_drawText)
+                            .addCFunction("drawWindow",             &game_screen_drawWindow)
                         .endNamespace()
 
                     .endNamespace();
