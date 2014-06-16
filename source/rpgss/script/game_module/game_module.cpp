@@ -1391,9 +1391,27 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            double game_get_ticksPerFrame()
+            int game_get_fps()
+            {
+                return RPG::screen->maxFPS;
+            }
+
+            //---------------------------------------------------------
+            void game_set_fps(int fps)
+            {
+                return RPG::screen->setFPS(fps);
+            }
+
+            //---------------------------------------------------------
+            double game_get_millisPerFrame()
             {
                 return RPG::screen->millisecondsPerFrame;
+            }
+
+            //---------------------------------------------------------
+            int game_get_frameCounter()
+            {
+                return RPG::system->frameCounter;
             }
 
             //---------------------------------------------------------
@@ -1553,7 +1571,9 @@ namespace rpgss {
 
                     .beginNamespace("game")
 
-                        .addProperty("ticksPerFrame",       &game_get_ticksPerFrame)
+                        .addProperty("fps",                 &game_get_fps,                  &game_set_fps)
+                        .addProperty("millisPerFrame",      &game_get_millisPerFrame)
+                        .addProperty("frameCounter",        &game_get_frameCounter)
                         .addProperty("scene",               &game_get_scene)
                         .addProperty("isTestPlay",          &game_get_isTestPlay)
                         .addProperty("isBattleTest",        &game_get_isBattleTest)
