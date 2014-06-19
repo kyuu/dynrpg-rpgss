@@ -39,6 +39,7 @@ namespace rpgss {
     namespace debug {
 
         void ShowMessage(const char* format, ...);
+        void ShowWarning(const char* format, ...);
         void ShowError(const char* format, ...);
 
     } // namespace debug
