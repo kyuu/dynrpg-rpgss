@@ -79,6 +79,68 @@ namespace rpgss {
         namespace game_module {
 
             /**********************************************************
+             *                          MENU
+             **********************************************************/
+
+            //---------------------------------------------------------
+            std::string game_menu_get_scene()
+            {
+                std::string menuscene_str;
+                if (!GetMenuSceneConstant(RPG::getMenuScreen(), menuscene_str)) {
+                    luaL_error(Context::Current().interpreter(), "unexpected internal value");
+                }
+                return menuscene_str;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_allowed()
+            {
+                return RPG::system->menuAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_allowed(bool allowed)
+            {
+                RPG::system->menuAllowed = allowed;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_saveAllowed()
+            {
+                return RPG::system->saveAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_saveAllowed(bool saveAllowed)
+            {
+                RPG::system->saveAllowed = saveAllowed;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_teleportAllowed()
+            {
+                return RPG::system->teleportAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_teleportAllowed(bool teleportAllowed)
+            {
+                RPG::system->teleportAllowed = teleportAllowed;
+            }
+
+            //---------------------------------------------------------
+            bool game_menu_get_escapeAllowed()
+            {
+                return RPG::system->escapeAllowed;
+            }
+
+            //---------------------------------------------------------
+            void game_menu_set_escapeAllowed(bool escapeAllowed)
+            {
+                RPG::system->escapeAllowed = escapeAllowed;
+            }
+
+            /**********************************************************
              *                          MAP
              **********************************************************/
 
@@ -1464,64 +1526,6 @@ namespace rpgss {
             int game_get_frameCounter()
             {
                 return RPG::system->frameCounter;
-            }
-
-            //---------------------------------------------------------
-            std::string game_menu_get_scene()
-            {
-                std::string menuscene_str;
-                if (!GetMenuSceneConstant(RPG::getMenuScreen(), menuscene_str)) {
-                    luaL_error(Context::Current().interpreter(), "unexpected internal value");
-                }
-                return menuscene_str;
-            }
-
-            //---------------------------------------------------------
-            bool game_menu_get_allowed()
-            {
-                return RPG::system->menuAllowed;
-            }
-
-            //---------------------------------------------------------
-            void game_menu_set_allowed(bool allowed)
-            {
-                RPG::system->menuAllowed = allowed;
-            }
-
-            //---------------------------------------------------------
-            bool game_menu_get_saveAllowed()
-            {
-                return RPG::system->saveAllowed;
-            }
-
-            //---------------------------------------------------------
-            void game_menu_set_saveAllowed(bool saveAllowed)
-            {
-                RPG::system->saveAllowed = saveAllowed;
-            }
-
-            //---------------------------------------------------------
-            bool game_menu_get_teleportAllowed()
-            {
-                return RPG::system->teleportAllowed;
-            }
-
-            //---------------------------------------------------------
-            void game_menu_set_teleportAllowed(bool teleportAllowed)
-            {
-                RPG::system->teleportAllowed = teleportAllowed;
-            }
-
-            //---------------------------------------------------------
-            bool game_menu_get_escapeAllowed()
-            {
-                return RPG::system->escapeAllowed;
-            }
-
-            //---------------------------------------------------------
-            void game_menu_set_escapeAllowed(bool escapeAllowed)
-            {
-                RPG::system->escapeAllowed = escapeAllowed;
             }
 
             //---------------------------------------------------------
