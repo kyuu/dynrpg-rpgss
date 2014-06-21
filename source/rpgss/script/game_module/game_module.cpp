@@ -1505,15 +1505,15 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_get_fps()
+            int game_get_frameRate()
             {
                 return RPG::screen->maxFPS;
             }
 
             //---------------------------------------------------------
-            void game_set_fps(int fps)
+            void game_set_frameRate(int frameRate)
             {
-                return RPG::screen->setFPS(fps);
+                RPG::screen->setFPS(frameRate);
             }
 
             //---------------------------------------------------------
@@ -1627,7 +1627,7 @@ namespace rpgss {
 
                     .beginNamespace("game")
 
-                        .addProperty("fps",                 &game_get_fps,                  &game_set_fps)
+                        .addProperty("frameRate",           &game_get_frameRate,            &game_set_frameRate)
                         .addProperty("millisPerFrame",      &game_get_millisPerFrame)
                         .addProperty("frameCounter",        &game_get_frameCounter)
                         .addProperty("scene",               &game_get_scene)
