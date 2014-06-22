@@ -575,7 +575,7 @@ namespace rpgss {
                 }
                 else
                 {
-                    core::Recti rect = core::Recti(pos, image->getDimensions()).scale(scale);
+                    core::Recti rect = core::Recti(pos, image_rect.getDimensions()).scale(scale);
                     core::Vec2i center = rect.getCenter();
 
                     core::Vec2i ul = rect.getUpperLeft().rotateBy(angle, center);
@@ -594,24 +594,28 @@ namespace rpgss {
                 color = ApplyBrightness(color);
                 core::Vec2i pos[4] = { ul, ur, lr, ll };
 
+                // graphics::primitives::TexturedQuad doesn't support yet arbitrary
+                // source rects directly, so we need this fix here for the time being
+                const graphics::RGBA* image_pixels = image->getPixels() + image_rect.getY() * image->getWidth() + image_rect.getX();
+
                 if (color == graphics::RGBA(255, 255, 255, 255))
                 {
                     switch (blendMode) {
-                    case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_set()); break;
-                    case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_mix()); break;
-                    case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_add()); break;
-                    case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_sub()); break;
-                    case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_mul()); break;
+                    case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_set()); break;
+                    case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_mix()); break;
+                    case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_add()); break;
+                    case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_sub()); break;
+                    case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_mul()); break;
                     }
                 }
                 else
                 {
                     switch (blendMode) {
-                    case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_set_col(color)); break;
-                    case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_mix_col(color)); break;
-                    case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_add_col(color)); break;
-                    case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_sub_col(color)); break;
-                    case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image->getPixels(), image->getWidth(), image_rect, rgb565_mul_col(color)); break;
+                    case graphics::BlendMode::Set:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_set_col(color)); break;
+                    case graphics::BlendMode::Mix:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_mix_col(color)); break;
+                    case graphics::BlendMode::Add:      graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_add_col(color)); break;
+                    case graphics::BlendMode::Subtract: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_sub_col(color)); break;
+                    case graphics::BlendMode::Multiply: graphics::primitives::TexturedQuad(GetPixels(), GetPitch(), _clipRect, pos, image_pixels, image->getWidth(), image_rect, rgb565_mul_col(color)); break;
                     }
                 }
             }
