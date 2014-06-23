@@ -51,6 +51,25 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            int mouse_getState(lua_State* L)
+            {
+                // create a table with enough space allocated
+                // to hold the state for all mouse buttons
+                lua_createtable(L, 0, input::NUMMOUSEBUTTONS);
+
+                // populate table with key states
+                std::string mbutton_str;
+                for (int mbutton = 0; mbutton < input::NUMMOUSEBUTTONS; mbutton++) {
+                    GetMouseButtonConstant(mbutton, mbutton_str);
+                    lua_pushlstring(L, mbutton_str.c_str(), mbutton_str.size()); // push mouse button constant
+                    lua_pushboolean(L, input::IsMouseButtonPressed(mbutton)); // push mouse button state
+                    lua_rawset(L, -3); // set in table
+                }
+
+                return 1;
+            }
+
+            //---------------------------------------------------------
             int mouse_isDown(lua_State* L)
             {
                 int nargs = lua_gettop(L);
@@ -83,6 +102,7 @@ namespace rpgss {
                         .addProperty("x",            &mouse_get_x)
                         .addProperty("y",            &mouse_get_y)
                         .addCFunction("getPosition", &mouse_getPosition)
+                        .addCFunction("getState",    &mouse_getState)
                         .addCFunction("isDown",      &mouse_isDown)
                         .addCFunction("isAnyDown",   &mouse_isAnyDown)
 
