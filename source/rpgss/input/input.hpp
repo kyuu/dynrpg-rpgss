@@ -124,7 +124,7 @@ namespace rpgss {
             KEY_RCONTROL,
             KEY_LALT,
             KEY_RALT,
-            NUMKEYS_,
+            NUMKEYS,
         };
 
         enum MouseButton {
@@ -133,9 +133,10 @@ namespace rpgss {
             MOUSEBUTTON_MIDDLE,
             MOUSEBUTTON_X1,
             MOUSEBUTTON_X2,
-            NUMMOUSEBUTTONS_,
+            NUMMOUSEBUTTONS,
         };
 
+        int   GetVirtualKeyCode(int key);
         bool  IsKeyPressed(int key);
         bool  IsAnyKeyPressed();
         core::Vec2i GetMousePosition();

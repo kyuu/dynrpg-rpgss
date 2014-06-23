@@ -135,9 +135,18 @@ namespace rpgss {
         };
 
         //-----------------------------------------------------------------
+        int GetVirtualKeyCode(int key)
+        {
+            if (key >= 0 && key < NUMKEYS) {
+                return KeyToVKey[key];
+            }
+            return -1;
+        }
+
+        //-----------------------------------------------------------------
         bool IsKeyPressed(int key)
         {
-            if (key >= 0 && key < NUMKEYS_) {
+            if (key >= 0 && key < NUMKEYS) {
                 return (GetAsyncKeyState(KeyToVKey[key]) & 0x8000);
             }
             return false;
@@ -146,7 +155,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         bool IsAnyKeyPressed()
         {
-            for (int key = 0; key < NUMKEYS_; ++key) {
+            for (int key = 0; key < NUMKEYS; ++key) {
                 if (IsKeyPressed(key)) {
                     return true;
                 }
@@ -174,7 +183,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         bool IsMouseButtonPressed(int mbutton)
         {
-            if (mbutton >= 0 && mbutton < NUMMOUSEBUTTONS_) {
+            if (mbutton >= 0 && mbutton < NUMMOUSEBUTTONS) {
                 return (GetAsyncKeyState(MouseButtonToVKey[mbutton]) & 0x8000);
             }
             return false;
@@ -183,7 +192,7 @@ namespace rpgss {
         //-----------------------------------------------------------------
         bool IsAnyMouseButtonPressed()
         {
-            for (int mb = 0; mb < NUMMOUSEBUTTONS_; ++mb) {
+            for (int mb = 0; mb < NUMMOUSEBUTTONS; ++mb) {
                 if (IsMouseButtonPressed(mb)) {
                     return true;
                 }

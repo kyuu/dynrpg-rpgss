@@ -30,6 +30,43 @@ namespace rpgss {
         namespace keyboard_module {
 
             //---------------------------------------------------------
+            int keyboard_getVirtualKeyCode(lua_State* L)
+            {
+                const char* key_str = luaL_checkstring(L, 1);
+
+                // convert key constant to key code
+                int key;
+                if (!GetKeyConstant(key_str, key)) {
+                    return luaL_argerror(L, 1, key_str);
+                }
+
+                // convert key code to virtual key code
+                int vkey = input::GetVirtualKeyCode(key);
+                lua_pushinteger(L, vkey);
+
+                return 1;
+            }
+
+            //---------------------------------------------------------
+            int keyboard_getState(lua_State* L)
+            {
+                // create a table with enough space allocated
+                // to hold the state for all keys
+                lua_createtable(L, 0, input::NUMKEYS);
+
+                // populate table with key states
+                std::string key_str;
+                for (int key = 0; key < input::NUMKEYS; key++) {
+                    GetKeyConstant(key, key_str);
+                    lua_pushlstring(L, key_str.c_str(), key_str.size()); // push key constant
+                    lua_pushboolean(L, input::IsKeyPressed(key)); // push key state
+                    lua_rawset(L, -3); // set in table
+                }
+
+                return 1;
+            }
+
+            //---------------------------------------------------------
             int keyboard_isDown(lua_State* L)
             {
                 int nargs = lua_gettop(L);
@@ -59,8 +96,10 @@ namespace rpgss {
                 luabridge::getGlobalNamespace(L)
                     .beginNamespace("keyboard")
 
-                        .addCFunction("isDown",    &keyboard_isDown)
-                        .addCFunction("isAnyDown", &keyboard_isAnyDown)
+                        .addCFunction("getVirtualKeyCode",  &keyboard_getVirtualKeyCode)
+                        .addCFunction("getState",           &keyboard_getState)
+                        .addCFunction("isDown",             &keyboard_isDown)
+                        .addCFunction("isAnyDown",          &keyboard_isAnyDown)
 
                     .endNamespace();
 
