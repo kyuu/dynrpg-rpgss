@@ -126,16 +126,16 @@ namespace rpgss {
 
             //---------------------------------------------------------
             bool
-            SoundWrapper::get_repeat() const
+            SoundWrapper::get_loop() const
             {
                 return This->getRepeat();
             }
 
             //---------------------------------------------------------
             void
-            SoundWrapper::set_repeat(bool repeat)
+            SoundWrapper::set_loop(bool loop)
             {
-                This->setRepeat(repeat);
+                This->setRepeat(loop);
             }
 
             //---------------------------------------------------------

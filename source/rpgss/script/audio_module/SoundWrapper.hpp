@@ -45,8 +45,8 @@ namespace rpgss {
                 bool get_isPlaying() const;
                 bool get_isSeekable() const;
                 int get_length() const;
-                bool get_repeat() const;
-                void set_repeat(bool repeat);
+                bool get_loop() const;
+                void set_loop(bool loop);
                 float get_volume() const;
                 void set_volume(float volume);
                 int get_position() const;
