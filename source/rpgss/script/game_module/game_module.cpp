@@ -79,6 +79,20 @@ namespace rpgss {
         namespace game_module {
 
             /**********************************************************
+             *                         SYSTEM
+             **********************************************************/
+
+            //---------------------------------------------------------
+            std::string game_system_get_graphicFilename()
+            {
+                if (RPG::system->systemGraphicFilename.length() > 0) {
+                    return RPG::system->systemGraphicFilename.s_str();
+                } else {
+                    return RPG::dbSystem->systemGraphicFilename.s_str();
+                }
+            }
+
+            /**********************************************************
              *                          MENU
              **********************************************************/
 
@@ -1638,6 +1652,10 @@ namespace rpgss {
                         .addProperty("switches",            &game_get_switches)
                         .addProperty("actors",              &game_get_actors)
                         .addProperty("party",               &game_get_party)
+
+                        .beginNamespace("system")
+                            .addProperty("graphicFilename", &game_system_get_graphicFilename)
+                        .endNamespace()
 
                         .beginNamespace("menu")
                             .addProperty("scene",           &game_menu_get_scene)
