@@ -112,6 +112,14 @@ namespace rpgss {
                 _ass->setRepeat(repeat);
             }
 
+            float getPitch() const {
+                return _ass->getPitchShift();
+            }
+
+            void setPitch(float pitch) {
+                _ass->setPitchShift(pitch);
+            }
+
             float getVolume() const {
                 return _ass->getVolume();
             }

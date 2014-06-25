@@ -97,6 +97,7 @@ namespace rpgss {
                             .addProperty("isSeekable",          &SoundWrapper::get_isSeekable)
                             .addProperty("length",              &SoundWrapper::get_length)
                             .addProperty("loop",                &SoundWrapper::get_loop,                &SoundWrapper::set_loop)
+                            .addProperty("pitch",               &SoundWrapper::get_pitch,               &SoundWrapper::set_pitch)
                             .addProperty("volume",              &SoundWrapper::get_volume,              &SoundWrapper::set_volume)
                             .addProperty("position",            &SoundWrapper::get_position,            &SoundWrapper::set_position)
                             .addCFunction("__len",              &SoundWrapper::__len)

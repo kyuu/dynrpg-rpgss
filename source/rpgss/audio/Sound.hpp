@@ -45,6 +45,8 @@ namespace rpgss {
             virtual int  getLength() const = 0;
             virtual bool getRepeat() const = 0;
             virtual void setRepeat(bool repeat) = 0;
+            virtual float getPitch() const = 0;
+            virtual void setPitch(float pitch) = 0;
             virtual float getVolume() const = 0;
             virtual void setVolume(float volume) = 0;
             virtual int  getPosition() const = 0;

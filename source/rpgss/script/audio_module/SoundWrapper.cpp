@@ -140,6 +140,23 @@ namespace rpgss {
 
             //---------------------------------------------------------
             float
+            SoundWrapper::get_pitch() const
+            {
+                return This->getPitch();
+            }
+
+            //---------------------------------------------------------
+            void
+            SoundWrapper::set_pitch(float pitch)
+            {
+                if (pitch < 0.5 || pitch > 2.0) {
+                    luaL_error(Context::Current().interpreter(), "invalid value");
+                }
+                This->setPitch(pitch);
+            }
+
+            //---------------------------------------------------------
+            float
             SoundWrapper::get_volume() const
             {
                 return This->getVolume();

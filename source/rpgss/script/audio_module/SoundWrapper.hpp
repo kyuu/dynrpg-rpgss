@@ -47,6 +47,8 @@ namespace rpgss {
                 int get_length() const;
                 bool get_loop() const;
                 void set_loop(bool loop);
+                float get_pitch() const;
+                void set_pitch(float pitch);
                 float get_volume() const;
                 void set_volume(float volume);
                 int get_position() const;
