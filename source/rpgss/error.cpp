@@ -70,7 +70,7 @@ namespace rpgss {
             ss << "at Map" << FormatId(RPG::hero->mapId) << ".lmu:EV" << FormatId(eventId);
         }
 
-        ss << ":" << pageId << ":" << lineId << ":";
+        ss << ", page " << pageId << ", line " << (lineId + 1) << ":";
 
         return ss.str();
     }
@@ -124,7 +124,7 @@ namespace rpgss {
             debug::Log(2) << error_message;
             debug::Log(1) << stack_traceback;
             debug::ShowError(
-                "%s\n\nLua error:\n\n%s\n\nSee log file for more information.",
+                "%s\n\nLua error:\n\n%s\n\nSee log file for more details.",
                 event_info.c_str(),
                 error_message.c_str()
             );
