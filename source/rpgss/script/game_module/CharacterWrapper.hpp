@@ -121,6 +121,7 @@ namespace rpgss {
                 int isMovePossible(lua_State* L);
                 int stop(lua_State* L);
                 int doStep(lua_State* L);
+                int move(lua_State* L);
 
             private:
                 RPG::Character* This;

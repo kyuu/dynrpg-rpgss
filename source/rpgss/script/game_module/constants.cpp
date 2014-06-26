@@ -214,6 +214,124 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            bool GetMoveTypeConstant(int movetype, std::string& out_movetype_str)
+            {
+                typedef boost::unordered_map<int, std::string> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    (RPG::MT_MOVE_UP,                   "move up"               )
+                    (RPG::MT_MOVE_RIGHT,                "move right"            )
+                    (RPG::MT_MOVE_DOWN,                 "move down"             )
+                    (RPG::MT_MOVE_LEFT,                 "move left"             )
+                    (RPG::MT_MOVE_UP_RIGHT,             "move up-right"         )
+                    (RPG::MT_MOVE_UP_LEFT,              "move up-left"          )
+                    (RPG::MT_MOVE_DOWN_RIGHT,           "move down-right"       )
+                    (RPG::MT_MOVE_DOWN_LEFT,            "move down-left"        )
+                    (RPG::MT_MOVE_RANDOMLY,             "move randomly"         )
+                    (RPG::MT_MOVE_TOWARD_HERO,          "move toward hero"      )
+                    (RPG::MT_MOVE_AWAY_FROM_HERO,       "move away from hero"   )
+                    (RPG::MT_MOVE_FORWARD,              "move forward"          )
+                    (RPG::MT_FACE_UP,                   "face up"               )
+                    (RPG::MT_FACE_RIGHT,                "face right"            )
+                    (RPG::MT_FACE_DOWN,                 "face down"             )
+                    (RPG::MT_FACE_LEFT,                 "face left"             )
+                    (RPG::MT_FACE_RANDOMLY,             "face randomly"         )
+                    (RPG::MT_FACE_TOWARD_HERO,          "face toward hero"      )
+                    (RPG::MT_FACE_AWAY_FROM_HERO,       "face away from hero"   )
+                    (RPG::MT_TURN_RIGHT,                "turn right"            )
+                    (RPG::MT_TURN_LEFT,                 "turn left"             )
+                    (RPG::MT_TURN_AROUND,               "turn around"           )
+                    (RPG::MT_TURN_RANDOMLY,             "turn randomly"         )
+                    (RPG::MT_WAIT,                      "wait"                  )
+                    (RPG::MT_BEGIN_JUMP,                "begin jump"            )
+                    (RPG::MT_END_JUMP,                  "end jump"              )
+                    (RPG::MT_LOCK_FACING,               "lock facing"           )
+                    (RPG::MT_UNLOCK_FACING,             "unlock facing"         )
+                    (RPG::MT_INCREASE_SPEED,            "increase speed"        )
+                    (RPG::MT_DECREASE_SPEED,            "decrease speed"        )
+                    (RPG::MT_INCREASE_FREQUENCY,        "increase frequency"    )
+                    (RPG::MT_DECREASE_FREQUENCY,        "decrease frequency"    )
+                    (RPG::MT_INCREASE_TRANSPARENCY,     "increase transparency" )
+                    (RPG::MT_DECREASE_TRANSPARENCY,     "decrease transparency" )
+                    (RPG::MT_PHASING_MODE_ON,           "phasing mode on"       )
+                    (RPG::MT_PHASING_MODE_OFF,          "phasing mode off"      )
+                    (RPG::MT_STOP_ANIMATION,            "stop animation"        )
+                    (RPG::MT_RESUME_ANIMATION,          "resume animation"      )
+                    (RPG::MT_SWITCH_ON,                 "switch on"             )
+                    (RPG::MT_SWITCH_OFF,                "switch off"            )
+                    (RPG::MT_CHANGE_GRAPHIC,            "change graphic"        )
+                    (RPG::MT_PLAY_SE,                   "play se"               );
+
+                map_type::iterator mapped_value = map.find(movetype);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_movetype_str = mapped_value->second;
+                return true;
+            }
+
+            //---------------------------------------------------------
+            bool GetMoveTypeConstant(const std::string& movetype_str, int& out_movetype)
+            {
+                typedef boost::unordered_map<std::string, int> map_type;
+
+                static map_type map = boost::assign::map_list_of
+                    ("move up",              RPG::MT_MOVE_UP                )
+                    ("move right",           RPG::MT_MOVE_RIGHT             )
+                    ("move down",            RPG::MT_MOVE_DOWN              )
+                    ("move left",            RPG::MT_MOVE_LEFT              )
+                    ("move up-right",        RPG::MT_MOVE_UP_RIGHT          )
+                    ("move up-left",         RPG::MT_MOVE_UP_LEFT           )
+                    ("move down-right",      RPG::MT_MOVE_DOWN_RIGHT        )
+                    ("move down-left",       RPG::MT_MOVE_DOWN_LEFT         )
+                    ("move randomly",        RPG::MT_MOVE_RANDOMLY          )
+                    ("move toward hero",     RPG::MT_MOVE_TOWARD_HERO       )
+                    ("move away from hero",  RPG::MT_MOVE_AWAY_FROM_HERO    )
+                    ("move forward",         RPG::MT_MOVE_FORWARD           )
+                    ("face up",              RPG::MT_FACE_UP                )
+                    ("face right",           RPG::MT_FACE_RIGHT             )
+                    ("face down",            RPG::MT_FACE_DOWN              )
+                    ("face left",            RPG::MT_FACE_LEFT              )
+                    ("face randomly",        RPG::MT_FACE_RANDOMLY          )
+                    ("face toward hero",     RPG::MT_FACE_TOWARD_HERO       )
+                    ("face away from hero",  RPG::MT_FACE_AWAY_FROM_HERO    )
+                    ("turn right",           RPG::MT_TURN_RIGHT             )
+                    ("turn left",            RPG::MT_TURN_LEFT              )
+                    ("turn around",          RPG::MT_TURN_AROUND            )
+                    ("turn randomly",        RPG::MT_TURN_RANDOMLY          )
+                    ("wait",                 RPG::MT_WAIT                   )
+                    ("begin jump",           RPG::MT_BEGIN_JUMP             )
+                    ("end jump",             RPG::MT_END_JUMP               )
+                    ("lock facing",          RPG::MT_LOCK_FACING            )
+                    ("unlock facing",        RPG::MT_UNLOCK_FACING          )
+                    ("increase speed",       RPG::MT_INCREASE_SPEED         )
+                    ("decrease speed",       RPG::MT_DECREASE_SPEED         )
+                    ("increase frequency",   RPG::MT_INCREASE_FREQUENCY     )
+                    ("decrease frequency",   RPG::MT_DECREASE_FREQUENCY     )
+                    ("increase transparency",RPG::MT_INCREASE_TRANSPARENCY  )
+                    ("decrease transparency",RPG::MT_DECREASE_TRANSPARENCY  )
+                    ("phasing mode on",      RPG::MT_PHASING_MODE_ON        )
+                    ("phasing mode off",     RPG::MT_PHASING_MODE_OFF       )
+                    ("stop animation",       RPG::MT_STOP_ANIMATION         )
+                    ("resume animation",     RPG::MT_RESUME_ANIMATION       )
+                    ("switch on",            RPG::MT_SWITCH_ON              )
+                    ("switch off",           RPG::MT_SWITCH_OFF             )
+                    ("change graphic",       RPG::MT_CHANGE_GRAPHIC         )
+                    ("play se",              RPG::MT_PLAY_SE                );
+
+                map_type::iterator mapped_value = map.find(movetype_str);
+
+                if (mapped_value == map.end()) {
+                    return false;
+                }
+
+                out_movetype = mapped_value->second;
+                return true;
+            }
+
+            //---------------------------------------------------------
             bool GetControlModeConstant(int controlmode, std::string& out_controlmode_str)
             {
                 typedef boost::unordered_map<int, std::string> map_type;

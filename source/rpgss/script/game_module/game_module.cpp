@@ -1583,6 +1583,7 @@ namespace rpgss {
                             .addCFunction("isMovePossible",         &CharacterWrapper::isMovePossible)
                             .addCFunction("stop",                   &CharacterWrapper::stop)
                             .addCFunction("doStep",                 &CharacterWrapper::doStep)
+                            .addCFunction("move",                   &CharacterWrapper::move)
                         .endClass()
 
                         .deriveClass<EventWrapper, CharacterWrapper>("Event")

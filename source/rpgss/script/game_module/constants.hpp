@@ -40,6 +40,8 @@ namespace rpgss {
             bool GetLayerConstant(const std::string& layer_str, int& out_layer);
             bool GetAnimationTypeConstant(int animationtype, std::string& out_animationtype_str);
             bool GetAnimationTypeConstant(const std::string& animationtype_str, int& out_animationtype);
+            bool GetMoveTypeConstant(int movetype, std::string& out_movetype_str);
+            bool GetMoveTypeConstant(const std::string& movetype_str, int& out_movetype);
             bool GetControlModeConstant(int controlmode, std::string& out_controlmode_str);
             bool GetControlModeConstant(const std::string& controlmode_str, int& out_controlmode);
             bool GetVehicleConstant(int vehicle, std::string& out_vehicle_str);

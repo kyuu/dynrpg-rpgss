@@ -533,6 +533,135 @@ namespace rpgss {
                 return 0;
             }
 
+            //---------------------------------------------------------
+            int
+            CharacterWrapper::move(lua_State* L)
+            {
+                int nargs = lua_gettop(L);
+                luaL_argcheck(L, lua_type(L, 2) == LUA_TTABLE, 2, "expected table");
+                luaL_argcheck(L, (nargs >= 3 ? lua_type(L, 3) == LUA_TBOOLEAN : true), 3, "expected boolean");
+                luaL_argcheck(L, (nargs >= 4 ? lua_type(L, 4) == LUA_TBOOLEAN : true), 4, "expected boolean");
+
+                bool repeat_pattern = (nargs >= 3 ? lua_toboolean(L, 3) : false);
+                bool ignore_impossible = (nargs >= 4 ? lua_toboolean(L, 4) : true);
+                int frequency = luaL_optint(L, 5, 8);
+
+                // get length of movement pattern
+                int movement_pattern_len = (int)lua_objlen(L, 2);
+                if (movement_pattern_len < 1) {
+                    return luaL_error(L, "empty movement pattern");
+                }
+
+                // static buffer, so we don't leak if an error occurs
+                static std::string buffer;
+
+                // encode movement pattern
+                buffer.clear();
+                for (int move_idx = 1; move_idx <= movement_pattern_len; move_idx++) {
+                    // get move
+                    lua_rawgeti(L, 2, move_idx);
+
+                    switch (lua_type(L, -1))
+                    {
+                        case LUA_TSTRING:
+                        {
+                            // convert string move type to integer move type
+                            const char* movetype_str = lua_tostring(L, -1);
+                            int movetype;
+                            if (!GetMoveTypeConstant(movetype_str, movetype)) {
+                                return luaL_error(L, "invalid move #%d (\"%s\")", move_idx, movetype_str);
+                            }
+
+                            // add move
+                            buffer += (char)movetype;
+
+                            break;
+                        }
+                        case LUA_TTABLE:
+                        {
+                            // get length of move
+                            int move_len = lua_objlen(L, -1);
+                            if (move_len < 1) {
+                                return luaL_error(L, "empty move #%d", move_idx);
+                            }
+
+                            // get move type
+                            lua_rawgeti(L, -1, 1);
+
+                            // make sure move type is a string
+                            if (lua_type(L, -1) != LUA_TSTRING) {
+                                return luaL_error(L, "invalid move #%d", move_idx);
+                            }
+
+                            // convert string move type to integer move type
+                            const char* movetype_str = lua_tostring(L, -1);
+                            int movetype;
+                            if (!GetMoveTypeConstant(movetype_str, movetype)) {
+                                return luaL_error(L, "invalid move #%d (\"%s\")", move_idx, movetype_str);
+                            }
+
+                            // add move
+                            buffer += (char)movetype;
+
+                            // pop move type
+                            lua_pop(L, 1);
+
+                            // encode parameters, if any
+                            for (int param_idx = 2; param_idx <= move_len; param_idx++) {
+                                // get parameter
+                                lua_rawgeti(L, -1, param_idx);
+
+                                // add parameter
+                                switch (lua_type(L, -1)) {
+                                    case LUA_TNUMBER: {
+                                        int param = lua_tointeger(L, -1);
+                                        if (param < 0) { // integer params can't be negative
+                                            return luaL_error(L, "invalid move #%d", move_idx);
+                                        }
+                                        buffer += RPG::encode(param);
+                                        break;
+                                    }
+                                    case LUA_TSTRING: {
+                                        size_t param_len;
+                                        const char* param = lua_tolstring(L, -1, &param_len);
+                                        if (param_len == 0) { // string params can't be empty
+                                            return luaL_error(L, "invalid move #%d", move_idx);
+                                        }
+                                        buffer += RPG::encode(param);
+                                        break;
+                                    }
+                                    default: return luaL_error(L, "invalid move #%d", move_idx);
+                                }
+
+                                // pop parameter
+                                lua_pop(L, 1);
+                            }
+
+                            break;
+                        }
+                        default: return luaL_error(L, "invalid move #%d", move_idx);
+                    }
+
+                    // pop move
+                    lua_pop(L, 1);
+                }
+
+                // move
+                This->move(
+                    buffer.c_str(),
+                    buffer.size(),
+                    repeat_pattern,
+                    ignore_impossible,
+                    frequency
+                );
+
+                // don't trust Character::move
+                This->moveRoute->repeatPattern = repeat_pattern;
+                This->moveRoute->ignoreImpossible = ignore_impossible;
+
+                return 0;
+            }
+
         } // namespace game_module
     } // namespace script
 } // namespace rpgss
