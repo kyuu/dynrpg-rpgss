@@ -177,6 +177,16 @@ namespace rpgss {
                     mousePos.y /= 2;
                 }
             }
+            if (mousePos.x < 0) {
+                mousePos.x = 0;
+            } else if (mousePos.x > RPG::screen->canvas->width() - 1) {
+                mousePos.x = RPG::screen->canvas->width() - 1;
+            }
+            if (mousePos.y < 0) {
+                mousePos.y = 0;
+            } else if (mousePos.y > RPG::screen->canvas->height() - 1) {
+                mousePos.y = RPG::screen->canvas->height() - 1;
+            }
             return core::Vec2i(mousePos.x, mousePos.y);
         }
 
