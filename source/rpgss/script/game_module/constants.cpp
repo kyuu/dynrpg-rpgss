@@ -133,9 +133,9 @@ namespace rpgss {
                 typedef boost::unordered_map<int, std::string> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    (RPG::LAYER_BELOW_HERO,         "below hero"        )
-                    (RPG::LAYER_SAME_LEVEL_AS_HERO, "same level as hero")
-                    (RPG::LAYER_ABOVE_HERO,         "above hero"        );
+                    (RPG::LAYER_BELOW_HERO,         "below hero"  )
+                    (RPG::LAYER_SAME_LEVEL_AS_HERO, "same as hero")
+                    (RPG::LAYER_ABOVE_HERO,         "above hero"  );
 
                 map_type::iterator mapped_value = map.find(layer);
 
@@ -153,9 +153,9 @@ namespace rpgss {
                 typedef boost::unordered_map<std::string, int> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    ("below hero",         RPG::LAYER_BELOW_HERO        )
-                    ("same level as hero", RPG::LAYER_SAME_LEVEL_AS_HERO)
-                    ("above hero",         RPG::LAYER_ABOVE_HERO        );
+                    ("below hero",   RPG::LAYER_BELOW_HERO        )
+                    ("same as hero", RPG::LAYER_SAME_LEVEL_AS_HERO)
+                    ("above hero",   RPG::LAYER_ABOVE_HERO        );
 
                 map_type::iterator mapped_value = map.find(layer_str);
 
@@ -337,9 +337,9 @@ namespace rpgss {
                 typedef boost::unordered_map<int, std::string> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    (RPG::CONTROL_EVERYTHING,                   "control everything"                )
-                    (RPG::CONTROL_EVERYTHING_EXCEPT_MOVEMENT,   "control everything except movement")
-                    (RPG::CONTROL_NOTHING,                      "control nothing"                   );
+                    (RPG::CONTROL_EVERYTHING,                   "full"       )
+                    (RPG::CONTROL_EVERYTHING_EXCEPT_MOVEMENT,   "no movement")
+                    (RPG::CONTROL_NOTHING,                      "disabled"   );
 
                 map_type::iterator mapped_value = map.find(controlmode);
 
