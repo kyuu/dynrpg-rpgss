@@ -1245,6 +1245,12 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            int game_get_playTime()
+            {
+                return (int)((RPG::system->frameCounter * RPG::screen->millisecondsPerFrame) / 1000);
+            }
+
+            //---------------------------------------------------------
             int game_variables_proxy_mt_indexMetaMethod(lua_State* L)
             {
                 int n = luaL_checkint(L, 2);
@@ -1649,6 +1655,7 @@ namespace rpgss {
                         .addProperty("isTestPlay",          &game_get_isTestPlay)
                         .addProperty("isBattleTest",        &game_get_isBattleTest)
                         .addProperty("saveCount",           &game_get_saveCount)
+                        .addProperty("playTime",            &game_get_playTime)
                         .addProperty("variables",           &game_get_variables)
                         .addProperty("switches",            &game_get_switches)
                         .addProperty("actors",              &game_get_actors)
