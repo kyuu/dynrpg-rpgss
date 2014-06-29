@@ -357,9 +357,9 @@ namespace rpgss {
                 typedef boost::unordered_map<std::string, int> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    ("control everything",                  RPG::CONTROL_EVERYTHING                )
-                    ("control everything except movement",  RPG::CONTROL_EVERYTHING_EXCEPT_MOVEMENT)
-                    ("control nothing",                     RPG::CONTROL_NOTHING                   );
+                    ("full",         RPG::CONTROL_EVERYTHING                )
+                    ("no movement",  RPG::CONTROL_EVERYTHING_EXCEPT_MOVEMENT)
+                    ("disabled",     RPG::CONTROL_NOTHING                   );
 
                 map_type::iterator mapped_value = map.find(controlmode_str);
 
