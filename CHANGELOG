@@ -1,3 +1,64 @@
+Changes between 0.8.0 and 0.7.0
+-------------------------------
+
+  * Added onSystemBackgroundDrawn callback.
+  * Added keyboard.getVirtualKeyCode.
+  * Added keyboard.getState.
+  * Added mouse.getState.
+  * Mouse position is now clipped to screen dimensions.
+  * Added Sound.pitch.
+  * Renamed Sound.repeat to Sound.loop to avoid collision with Lua's
+    "repeat" keyword.
+  * Added graphics.newSystemFontImage.
+  * Added option to graphics.writeImage to force a particular color as
+    the first palette entry in palletized images.
+  * Added game.frameRate.
+  * Added game.millisPerFrame.
+  * Added game.frameCounter.
+  * Added game.playTime.
+  * Added game.system.graphicFilename.
+  * Added game.menu.scene.
+  * Added game.menu.allowed.
+  * Added game.menu.saveAllowed.
+  * Added game.menu.teleportAllowed.
+  * Added game.menu.escapeAllowed.
+  * Added game.battle.layout.
+  * Added game.battle.atbMode.
+  * Added game.battle.speed.
+  * Added game.map.existsEvent.
+  * Added game.map.findEvent (replaces game.map.findEventById and
+    game.map.findEventByName).
+  * game.map.moveCamera now behaves as expected (positive offsets move toward
+    positive infinity, negative offsets move toward negative infinity).
+  * Renamed control mode and layer constants for brevity.
+  * Added Character:move.
+  * Renamed game.music.fadeOut to game.music.fade for consistency.
+  * Added a temporary workaround in game.screen.drawq that fixes the issue
+    that the TexturedQuad primitive ignores the source rect position.
+  * Moved screen drawing code into its own module for reasons of clarity
+    and improved maintainability.
+  * Anything rendered to the screen is now affected by the screen brightness
+    to avoid sticking out during transitions.
+  * Added bitmap versions of the system fonts msmincho and msgothic, as well
+    as initial versions of the system window skins.
+  * The # (length) operation now works on proxies returned by properties
+    like game.party, game.map.events, game.battle.enemies, etc.
+  * Refactored and restructured existing system scripts for improved
+    modularity and maintainability.
+  * Added class.lua (allows for solid object-oriented programming in Lua;
+    powered by Yonaba's 30log library).
+  * Added Cache.lua (allows caching of frequently used resources like images,
+    fonts and window skins).
+  * Added Timer.lua (keeps track of and provides an interface to query the
+    frame/time delta between updates).
+  * Added CallbackManager.lua (allows writing encapsulated extensions).
+  * Added InputManager.lua (allows listening/reacting to input events).
+  * Added AudioManager.lua (allows playback of BGM, BGS, ME and SE).
+  * Added GameClock.lua (keeps track of the total play time and optionally
+    displays it in the main menu).
+  * Added PathFinder.lua (adds powerful and feature-rich pathfinding tools;
+    powered by Yonaba's Jumper library).
+
 Changes between 0.7.0 and 0.6.0
 -------------------------------
 
