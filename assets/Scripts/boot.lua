@@ -1,20 +1,46 @@
-require "std"
-require "esi"
+require "system"
+require "utility"
 
+function onInit()
+    CallbackManager:onInit()
+end
 
 function onTitleScreen()
-    World:reset()
+    CallbackManager:onTitleScreen()
+end
+
+function onNewGame()
+    CallbackManager:onNewGame()
 end
 
 function onLoadGame(id, data)
-    World:load(data)
+    CallbackManager:onLoadGame(id, data)
 end
 
 function onSaveGame(id)
-    return World:save()
+    return CallbackManager:onSaveGame(id)
 end
 
 function onSceneDrawn(scene)
-    World:update(scene)
-    World:render(scene)
+    CallbackManager:onSceneDrawn(scene)
+end
+
+function onDrawCharacter(character, isHero)
+    return CallbackManager:onDrawCharacter(character, isHero)
+end
+
+function onCharacterDrawn(character, isHero)
+    CallbackManager:onCharacterDrawn(character, isHero)
+end
+
+function onDrawBattler(battler, isMonster, id)
+    return CallbackManager:onDrawBattler(battler, isMonster, id)
+end
+
+function onBattlerDrawn(battler, isMonster, id)
+    CallbackManager:onBattlerDrawn(battler, isMonster, id)
+end
+
+function onSystemBackgroundDrawn(x, y, width, height)
+    CallbackManager:onSystemBackgroundDrawn(x, y, width, height)
 end

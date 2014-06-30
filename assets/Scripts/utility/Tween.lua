@@ -1,55 +1,55 @@
+require "system.class"
 
-
-Tween = {
-    __classname = "Tween",
-
+Tween = class {
+    __name = "Tween",
+    
     __serialize = function(obj)
         local mfile = io.newMemoryFile()
         local writer = io.newWriter(mfile)
-        
+
         -- write value
-        writer:writeDouble(obj._value)
-        
-        -- write t, b, c, d
-        writer:writeDouble(obj._t)
-        writer:writeDouble(obj._b)
-        writer:writeDouble(obj._c)
-        writer:writeDouble(obj._d)
-        
-        -- write easing
-        writer:writeUint32(#obj._easing)
-        writer:writeString(obj._easing)
-        
+        writer:writeDouble(obj.value)
+
+        -- write interpolation state
+        writer:writeDouble(obj.t)
+        writer:writeDouble(obj.b)
+        writer:writeDouble(obj.c)
+        writer:writeDouble(obj.d)
+
+        -- write interpolation type
+        writer:writeUint32(#obj.easing)
+        writer:writeString(obj.easing)
+
         return mfile:copyBuffer()
     end,
-    
-    __deserialize = function(data)
-        local mfile = io.newMemoryFile(data)
+
+    __deserialize = function(obj_data)
+        local mfile = io.newMemoryFile(obj_data)
         local reader = io.newReader(mfile)
-        
+
         -- create instance
         local obj = setmetatable({}, Tween)
 
         -- read value
-        obj._value = reader:readDouble()
-        
-        -- read t, b, c, d
-        obj._t = reader:readDouble()
-        obj._b = reader:readDouble()
-        obj._c = reader:readDouble()
-        obj._d = reader:readDouble()
-        
-        -- read easing
-        obj._easing = reader:readString(reader:readUint32())
+        obj.value = reader:readDouble()
+
+        -- read interpolation state
+        obj.t = reader:readDouble()
+        obj.b = reader:readDouble()
+        obj.c = reader:readDouble()
+        obj.d = reader:readDouble()
+
+        -- read interpolation type
+        obj.easing = reader:readString(reader:readUint32())
 
         -- check for EOF
         if mfile.eof then
             error("EOF")
         end
-        
+
         return obj
     end,
-
+    
     ease = {
         -- http://www.gizma.com/easing/
         -- https://gist.github.com/Metallix/628de265d0a24e0c4acb
@@ -149,63 +149,61 @@ Tween = {
         end
     }
 }
-Tween.__index = Tween
 
-function Tween.new(value)
-    local self = setmetatable({}, Tween)
+function Tween:__init(value)
+    self.value = value
     
-    self._value = value
+    -- interpolation state
+    self.t = 0
+    self.b = 0
+    self.c = 0
+    self.d = 0
     
-    self._t = 0
-    self._b = 0
-    self._c = 0
-    self._d = 0
-    
-    self._easing = ""
-    
-    return self
+    -- interpolation type
+    self.easing = ""
 end
 
-function Tween.update(self, ms)
-    if self._d > 0 then
-        self._t = self._t + ms
-        if self._t < self._d then
-            self._value = Tween.ease[self._easing](self._t, self._b, self._c, self._d)
+function Tween:update(ms)
+    if self.d > 0 then
+        self.t = self.t + ms
+        if self.t < self.d then
+            -- interpolate
+            self.value = Tween.ease[self.easing](self.t, self.b, self.c, self.d)
         else
-            self._value = self._b + self._c
-            self._d = 0
-            -- we just finished tweening
+            -- tween finished
+            self:setValue(self.b + self.c)
             return true
         end
     end
-    -- either no tweening in progress or we are not finished yet
+    -- either no tween in progress or tween not finished yet
     return false
 end
 
-function Tween.get(self)
-    return self._value
+function Tween:getValue()
+    return self.value
 end
 
-function Tween.set(self, value)
-    self._value = value
-    -- stop any ongoing tweening
-    self._d = 0
+function Tween:setValue(value)
+    self.value = value
+    
+    self.t = 0
+    self.b = 0
+    self.c = 0
+    self.d = 0
+    
+    self.easing = ""
 end
 
-function Tween.tween_to(self, value, ms, easing)
-    if value ~= self._value and ms > 0 then
-        self._t = 0
-        self._b = self._value
-        self._c = value - self._value
-        self._d = ms
-        self._easing = easing or "linear"
+function Tween:tweenTo(value, duration, easing)
+    if value ~= self.value and duration > 0 then
+        self.t = 0
+        self.b = self.value
+        self.c = value - self.value
+        self.d = duration
+        
+        self.easing = easing or "linear"
     else
-        -- either we are already there or ms <= 0
-        self._value = value
-        self._d = 0
+        -- either we are already there or duration <= 0
+        self:setValue(value)
     end
-end
-
-function Tween.stop_tween(self)
-    self._d = 0
 end

@@ -1,13 +1,14 @@
-
-
-function typeof(var)
-    local t = type(var)
-    if t ~= "table" and t ~= "userdata" then
-        return t
-    end
-    local mt = getmetatable(var)
-    if mt ~= nil and type(mt.__classname) == "string" then
-        return mt.__classname
+function typeof(obj)
+    local t = type(obj)
+    if t == "table" then
+        if type(obj.__name) == "string" then
+            return obj.__name
+        end
+    elseif t == "userdata" then
+        local mt = getmetatable(obj)
+        if mt ~= nil and type(mt.__name) == "string" then
+            return mt.__name
+        end
     end
     return t
 end
@@ -21,7 +22,7 @@ function serialize(obj)
 
     if class == nil or class.__serialize == nil then
         -- object not serializable
-        error("Objects of type '"..classname.."' not serializable.")
+        error("objects of type '"..classname.."' not serializable")
     end
 
     local objdata = class.__serialize(obj)
@@ -33,7 +34,7 @@ function serialize(obj)
     -- write object data
     writer:writeUint32(#objdata)
     writer:writeBytes(objdata)
-
+    
     return mfile:copyBuffer()
 end
 
