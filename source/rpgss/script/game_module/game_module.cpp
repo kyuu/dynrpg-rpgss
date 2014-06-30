@@ -663,7 +663,7 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
-            int game_music_fadeOut(lua_State* L)
+            int game_music_fade(lua_State* L)
             {
                 int fade_out_time = luaL_checkint(L, 1);
                 RPG::Music::fadeOut(fade_out_time);
@@ -1706,7 +1706,7 @@ namespace rpgss {
 
                         .beginNamespace("music")
                             .addCFunction("play",       &game_music_play)
-                            .addCFunction("fadeOut",    &game_music_fadeOut)
+                            .addCFunction("fade",       &game_music_fade)
                             .addCFunction("stop",       &game_music_stop)
                         .endNamespace()
 
