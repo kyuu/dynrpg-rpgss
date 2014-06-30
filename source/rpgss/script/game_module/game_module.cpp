@@ -351,8 +351,11 @@ namespace rpgss {
             //---------------------------------------------------------
             int game_map_moveCamera(lua_State* L)
             {
-                int ox = luaL_checkint(L, 1);
-                int oy = luaL_checkint(L, 2);
+                // negate offsets, so that the result is expected:
+                // positive offsets move toward positive infinity,
+                // negative offsets move toward negative infinity
+                int ox = -1 * luaL_checkint(L, 1);
+                int oy = -1 * luaL_checkint(L, 2);
                 int speed = luaL_checkint(L, 3);
                 RPG::map->moveCamera(ox, oy, speed);
                 return 0;
