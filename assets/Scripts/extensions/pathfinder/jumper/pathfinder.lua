@@ -323,7 +323,7 @@ if (...) then
   -- @tparam[opt] bool tunnel Whether or not the pathfinder can tunnel though walls diagonally (not compatible with `Jump Point Search`)
   -- @treturn {node,...} a path (array of `nodes`) when found, otherwise `nil`
   -- @treturn number the path length when found, `0` otherwise
-  function Pathfinder:getPath(startX, startY, endX, endY, tunnel)
+  function Pathfinder:getPath(startX, startY, endX, endY, tunnel, allowNearest)
 		reset()
     local startNode = self.grid:getNodeAt(startX, startY)
     local endNode = self.grid:getNodeAt(endX, endY)
@@ -331,8 +331,10 @@ if (...) then
     assert(endNode and self.grid:isWalkableAt(endX, endY),
       ('Invalid or unreachable location [%d, %d]'):format(endX, endY))
     local _endNode = Finders[self.finder](self, startNode, endNode, toClear, tunnel)
-    if _endNode then 
-			return traceBackPath(self, _endNode, startNode), lastPathCost
+    if _endNode then
+        if (_endNode.x == endX and _endNode.y == endY) or allowNearest then
+            return traceBackPath(self, _endNode, startNode), lastPathCost
+        end
     end
     lastPathCost = 0
     return nil, lastPathCost

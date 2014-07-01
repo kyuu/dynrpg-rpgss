@@ -57,14 +57,15 @@ if (...) then
 		finder.openList:push(startNode)
 		toClear[startNode] = true
 		startNode.opened = true
-		
+        
+        local nearestNode = startNode
 		while not finder.openList:empty() do
 			local node = finder.openList:pop()
 			node.closed = true
 			if node == endNode then
 				return node
 			end
-			local neighbours = finder.grid:getNeighbours(node, finder.walkable, finder.allowDiagonal, tunnel)
+            local neighbours = finder.grid:getNeighbours(node, finder.walkable, finder.allowDiagonal, tunnel)
 			for i, neighbour in ipairs(neighbours) do
 				if not neighbour.closed then
 					toClear[neighbour] = true
@@ -73,11 +74,14 @@ if (...) then
 						neighbour.parent = nil					
 					end
 					updateVertex(finder, node, neighbour, endNode, heuristic, overrideCostEval)
+                    if neighbour.h < nearestNode.h then
+                        nearestNode = neighbour
+                    end
 				end			
 			end		
 		end		
 		
-		return nil
+        return nearestNode
 	end
 	
 end

@@ -104,40 +104,42 @@ function PathFinder:isWalkable(x, y)
     return true
 end
 
-function PathFinder:findPath(sx, sy, ex, ey)
-    local tm = self.terrainMaps[game.map.id]
-    if tm == nil then
-        tm = self:createTerrainMap()
-        self.terrainMaps[game.map.id] = tm
+function PathFinder:findPath(sx, sy, ex, ey, allowNearest)
+    local terrainMap = self.terrainMaps[game.map.id]
+    if terrainMap == nil then
+        terrainMap = self:createTerrainMap()
+        self.terrainMaps[game.map.id] = terrainMap
     end
-    local cm = self:createCollisionMap(tm)
-    local pf = JPF(JG(cm), "ASTAR", 1)
-    pf:setMode(self.searchMode:upper())
-    return pf:getPath(sx+1, sy+1, ex+1, ey+1)
+    local collisionMap = self:createCollisionMap(terrainMap)
+    local finder = JPF(JG(collisionMap), "ASTAR", 1)
+    finder:setMode(self.searchMode:upper())
+    return finder:getPath(sx+1, sy+1, ex+1, ey+1, false, allowNearest)
 end
 
-function PathFinder:move(character, x, y, frequency, maxmoves)
+function PathFinder:move(character, x, y, frequency, maxMoves, allowNearest)
     frequency = frequency or 8
-    maxmoves = maxmoves or -1
+    maxMoves = maxMoves or -1
     local sx, sy = character:getPosition()
     if sx == x and sy == y then
         return
     end
-    local path, length = self:findPath(sx, sy, x, y)
+    local path, length = self:findPath(sx, sy, x, y, allowNearest)
     if path then
         local mpat = {}
         local prev
         for node, _ in path:iter() do
             if prev then
                 table.insert(mpat, self.moves[(node.x-prev.x)..(node.y-prev.y)])
-                maxmoves = maxmoves - 1
-                if maxmoves == 0 then
+                maxMoves = maxMoves - 1
+                if maxMoves == 0 then
                     break
                 end
             end
             prev = node
         end
-        character:move(mpat, false, true, frequency)
+        if #mpat > 0 then
+            character:move(mpat, false, true, frequency)
+        end
     end
     return path, length
 end
