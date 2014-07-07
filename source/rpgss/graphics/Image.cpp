@@ -1457,7 +1457,7 @@ namespace rpgss {
                                     char_image->getPixels(),
                                     char_image->getWidth(),
                                     core::Recti(char_image->getDimensions()),
-                                    rgba_mix()
+                                    rgba_set()
                                 );
                             }
                             else
@@ -1470,7 +1470,7 @@ namespace rpgss {
                                     char_image->getPixels(),
                                     char_image->getWidth(),
                                     core::Recti(char_image->getDimensions()),
-                                    rgba_mix_col(color)
+                                    rgba_set_col(color)
                                 );
                             }
                             cur_x += (int)(char_image->getWidth() * scale);
