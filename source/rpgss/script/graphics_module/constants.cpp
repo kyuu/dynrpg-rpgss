@@ -39,11 +39,11 @@ namespace rpgss {
                 typedef boost::unordered_map<int, std::string> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    (graphics::BlendMode::Set,      "set"     )
-                    (graphics::BlendMode::Mix,      "mix"     )
-                    (graphics::BlendMode::Add,      "add"     )
-                    (graphics::BlendMode::Subtract, "subtract")
-                    (graphics::BlendMode::Multiply, "multiply");
+                    (graphics::BlendMode::Set,      "set")
+                    (graphics::BlendMode::Mix,      "mix")
+                    (graphics::BlendMode::Add,      "add")
+                    (graphics::BlendMode::Subtract, "sub")
+                    (graphics::BlendMode::Multiply, "mul");
 
                 map_type::iterator mapped_value = map.find(blend_mode);
 
@@ -61,11 +61,11 @@ namespace rpgss {
                 typedef boost::unordered_map<std::string, int> map_type;
 
                 static map_type map = boost::assign::map_list_of
-                    ("set",      graphics::BlendMode::Set     )
-                    ("mix",      graphics::BlendMode::Mix     )
-                    ("add",      graphics::BlendMode::Add     )
-                    ("subtract", graphics::BlendMode::Subtract)
-                    ("multiply", graphics::BlendMode::Multiply);
+                    ("set", graphics::BlendMode::Set     )
+                    ("mix", graphics::BlendMode::Mix     )
+                    ("add", graphics::BlendMode::Add     )
+                    ("sub", graphics::BlendMode::Subtract)
+                    ("mul", graphics::BlendMode::Multiply);
 
                 map_type::iterator mapped_value = map.find(blend_mode_str);
 
