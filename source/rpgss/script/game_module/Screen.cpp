@@ -46,231 +46,658 @@ namespace rpgss {
                 //---------------------------------------------------------
                 struct rgb565_set
                 {
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
                         asm (
-                            "leal           %1,   %%edx   \n\t"
-                            "movzbl    (%%edx),   %%eax   \n\t"
-                            "movzbl   1(%%edx),   %%ecx   \n\t"
-                            "movzbl   2(%%edx),   %%edx   \n\t"
+                            "movzbl       (%1),   %%eax   \n\t"
                             "andl         $248,   %%eax   \n\t"
-                            "sall           $8,   %%eax   \n\t"
-                            "sarl           $3,   %%edx   \n\t"
-                            "andl         $252,   %%ecx   \n\t"
-                            "sall           $3,   %%ecx   \n\t"
-                            "orl         %%ecx,   %%eax   \n\t"
+                            "shll           $8,   %%eax   \n\t"
+                            //---------------------------------
+                            "movzbl      1(%1),   %%edx   \n\t"
+                            "andl         $252,   %%edx   \n\t"
+                            "shll           $3,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "shrl           $3,   %%ecx   \n\t"
+                            //---------------------------------
                             "orl         %%edx,   %%eax   \n\t"
-                            "leal           %0,   %%edx   \n\t"
-                            "movw         %%ax, (%%edx)"
+                            "orl         %%ecx,   %%eax   \n\t"
+                            //---------------------------------
+                            "movw         %%ax,    (%0)"
                             :
-                            : "m"(dst), "m"(src)
-                            : "eax", "ecx", "edx"
+                            : "D"(dst), "S"(src)
+                            : "eax", "edx", "ecx"
                         );
+
                         // C++ version:
-                        //dst = ((src.red & 0xF8) << 8) | ((src.green & 0xFC) << 3) | (src.blue >> 3);
+                        /*
+                        *dst = ((src->red & 0xF8) << 8) | ((src->green & 0xFC) << 3) | (src->blue >> 3);
+                        */
                     }
 
-                    void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, u8 red, u8 green, u8 blue, u8 alpha)
                     {
-                        dst = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | (blue >> 3);
+                        *dst = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | (blue >> 3);
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_mix
                 {
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
+                        u32 temp;
+                        asm (
+                            "movzbl      3(%1),   %%ecx   \n\t"
+                            "movl         $256,   %%ebx   \n\t"
+                            "subl        %%ecx,   %%ebx   \n\t"
+                            "addl           $1,   %%ecx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%edx   \n\t"
+                            "shrl          $11,   %%edx   \n\t"
+                            "imull       %%ebx,   %%edx   \n\t"
+                            "shrl           $8,   %%edx   \n\t"
+                            //-----------------
+                            "movzbl       (%1),   %%eax   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            //-----------------
+                            "addl        %%edx,   %%eax   \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "movl        %%eax,      %2   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%edx   \n\t"
+                            "shrl           $5,   %%edx   \n\t"
+                            "andl          $63,   %%edx   \n\t"
+                            "imull       %%ebx,   %%edx   \n\t"
+                            "shrl           $8,   %%edx   \n\t"
+                            //-----------------
+                            "movzbl      1(%1),   %%eax   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $10,   %%eax   \n\t"
+                            //-----------------
+                            "addl        %%edx,   %%eax   \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,      %2   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%edx   \n\t"
+                            "andl          $31,   %%edx   \n\t"
+                            "imull       %%ebx,   %%edx   \n\t"
+                            "shrl           $8,   %%edx   \n\t"
+                            //-----------------
+                            "movzbl      2(%1),   %%eax   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            //-----------------
+                            "addl        %%edx,   %%eax   \n\t"
+                            "orl            %2,   %%eax   \n\t"
+                            //---------------------------------
+                            "movw         %%ax,    (%0)"
+                            :
+                            : "D"(dst), "S"(src), "m"(temp)
+                            : "eax", "ecx", "edx", "ebx"
+                        );
+
+                        // C++ version:
+                        /*
                         graphics::RGBA temp;
-                        int sa = src.alpha + 1;
-                        int da = 256 - src.alpha;
-                        temp.red   = (   (dst >>  11)         * da + (src.red   >> 3) * sa ) >> 8;
-                        temp.green = ( ( (dst >>   5) & 0x3F) * da + (src.green >> 2) * sa ) >> 8;
-                        temp.blue  = ( (  dst         & 0x1F) * da + (src.blue  >> 3) * sa ) >> 8;
-                        dst = (temp.red << 11) | (temp.green << 5) | temp.blue;
+                        int sa = src->alpha + 1;
+                        int da = 256 - src->alpha;
+                        temp.red   = (   (*dst >>  11)         * da + (src->red   >> 3) * sa ) >> 8;
+                        temp.green = ( ( (*dst >>   5) & 0x3F) * da + (src->green >> 2) * sa ) >> 8;
+                        temp.blue  = ( (  *dst         & 0x1F) * da + (src->blue  >> 3) * sa ) >> 8;
+                        *dst = (temp.red << 11) | (temp.green << 5) | temp.blue;
+                        */
                     }
 
-                    void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, u8 red, u8 green, u8 blue, u8 alpha)
                     {
                         graphics::RGBA temp;
                         int sa = alpha + 1;
                         int da = 256 - alpha;
-                        temp.red   = (   (dst >> 11)         * da + (red   >> 3) * sa ) >> 8;
-                        temp.green = ( ( (dst >>  5) & 0x3F) * da + (green >> 2) * sa ) >> 8;
-                        temp.blue  = ( (  dst        & 0x1F) * da + (blue  >> 3) * sa ) >> 8;
-                        dst = (temp.red << 11) | (temp.green << 5) | temp.blue;
+                        temp.red   = (   (*dst >> 11)         * da + (red   >> 3) * sa ) >> 8;
+                        temp.green = ( ( (*dst >>  5) & 0x3F) * da + (green >> 2) * sa ) >> 8;
+                        temp.blue  = ( (  *dst        & 0x1F) * da + (blue  >> 3) * sa ) >> 8;
+                        *dst = (temp.red << 11) | (temp.green << 5) | temp.blue;
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_add
                 {
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r = std::min(  (dst >> 11)         + (src.red   >> 3), 31);
-                        u8 g = std::min(( (dst >>  5) & 0x3F) + (src.green >> 2), 63);
-                        u8 b = std::min((  dst        & 0x1F) + (src.blue  >> 3), 31);
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            "movzbl       (%1),   %%ecx   \n\t"
+                            "shrl           $3,   %%ecx   \n\t"
+                            "addl        %%ecx,   %%eax   \n\t"
+                            "test          $32,   %%eax   \n\t"
+                            "jz                      1f   \n\t"
+                            "movl          $31,   %%eax   \n\t"
+                            "1:                           \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "movl        %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl           $5,   %%eax   \n\t"
+                            "andl          $63,   %%eax   \n\t"
+                            "movzbl      1(%1),   %%ecx   \n\t"
+                            "shrl           $2,   %%ecx   \n\t"
+                            "addl        %%ecx,   %%eax   \n\t"
+                            "test          $64,   %%eax   \n\t"
+                            "jz                      2f   \n\t"
+                            "movl          $63,   %%eax   \n\t"
+                            "2:                           \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl          $31,   %%eax   \n\t"
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "shrl           $3,   %%ecx   \n\t"
+                            "addl        %%ecx,   %%eax   \n\t"
+                            "test          $32,   %%eax   \n\t"
+                            "jz                      3f   \n\t"
+                            "movl          $31,   %%eax   \n\t"
+                            "3:                           \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movw         %%dx,    (%0)"
+                            :
+                            : "D"(dst), "S"(src)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r = std::min(  (*dst >> 11)         + (src->red   >> 3), 31);
+                        u8 g = std::min(( (*dst >>  5) & 0x3F) + (src->green >> 2), 63);
+                        u8 b = std::min((  *dst        & 0x1F) + (src->blue  >> 3), 31);
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
 
-                    void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, u8 red, u8 green, u8 blue, u8 alpha)
                     {
-                        u8 r = std::min(  (dst >> 11)         + (red   >> 3), 31);
-                        u8 g = std::min(( (dst >>  5) & 0x3F) + (green >> 2), 63);
-                        u8 b = std::min((  dst        & 0x1F) + (blue  >> 3), 31);
-                        dst = (r << 11) | (g << 5) | b;
+                        u8 r = std::min(  (*dst >> 11)         + (red   >> 3), 31);
+                        u8 g = std::min(( (*dst >>  5) & 0x3F) + (green >> 2), 63);
+                        u8 b = std::min((  *dst        & 0x1F) + (blue  >> 3), 31);
+                        *dst = (r << 11) | (g << 5) | b;
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_sub
                 {
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r = std::max(  (dst >> 11)         - (src.red   >> 3), 0);
-                        u8 g = std::max(( (dst >>  5) & 0x3F) - (src.green >> 2), 0);
-                        u8 b = std::max((  dst        & 0x1F) - (src.blue  >> 3), 0);
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            "movzbl       (%1),   %%ecx   \n\t"
+                            "shrl           $3,   %%ecx   \n\t"
+                            "subl        %%ecx,   %%eax   \n\t"
+                            "jns                     1f   \n\t"
+                            "xorl        %%eax,   %%eax   \n\t"
+                            "1:                           \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "movl        %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl           $5,   %%eax   \n\t"
+                            "andl          $63,   %%eax   \n\t"
+                            "movzbl      1(%1),   %%ecx   \n\t"
+                            "shrl           $2,   %%ecx   \n\t"
+                            "subl        %%ecx,   %%eax   \n\t"
+                            "jns                     2f   \n\t"
+                            "xorl        %%eax,   %%eax   \n\t"
+                            "2:                           \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl          $31,   %%eax   \n\t"
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "shrl           $3,   %%ecx   \n\t"
+                            "subl        %%ecx,   %%eax   \n\t"
+                            "jns                     3f   \n\t"
+                            "xorl        %%eax,   %%eax   \n\t"
+                            "3:                           \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movw         %%dx,    (%0)"
+                            :
+                            : "D"(dst), "S"(src)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r = std::max(  (*dst >> 11)         - (src->red   >> 3), 0);
+                        u8 g = std::max(( (*dst >>  5) & 0x3F) - (src->green >> 2), 0);
+                        u8 b = std::max((  *dst        & 0x1F) - (src->blue  >> 3), 0);
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
 
-                    void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, u8 red, u8 green, u8 blue, u8 alpha)
                     {
-                        u8 r = std::max(  (dst >> 11)         - (red   >> 3), 0);
-                        u8 g = std::max(( (dst >>  5) & 0x3F) - (green >> 2), 0);
-                        u8 b = std::max((  dst        & 0x1F) - (blue  >> 3), 0);
-                        dst = (r << 11) | (g << 5) | b;
+                        u8 r = std::max(  (*dst >> 11)         - (red   >> 3), 0);
+                        u8 g = std::max(( (*dst >>  5) & 0x3F) - (green >> 2), 0);
+                        u8 b = std::max((  *dst        & 0x1F) - (blue  >> 3), 0);
+                        *dst = (r << 11) | (g << 5) | b;
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_mul
                 {
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r =   (dst >> 11)         * ((src.red   >> 3) + 1) >> 5;
-                        u8 g = ( (dst >>  5) & 0x3F) * ((src.green >> 2) + 1) >> 6;
-                        u8 b = (  dst        & 0x1F) * ((src.blue  >> 3) + 1) >> 5;
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl       $63488,   %%eax   \n\t"
+                            "movzbl       (%1),   %%ecx   \n\t"
+                            "addl           $1,   %%ecx   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl           $8,   %%eax   \n\t"
+                            "andl       $63488,   %%eax   \n\t"
+                            "movl        %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl        $2016,   %%eax   \n\t"
+                            "movzbl      1(%1),   %%ecx   \n\t"
+                            "addl           $1,   %%ecx   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl           $8,   %%eax   \n\t"
+                            "andl        $2016,   %%eax   \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl          $31,   %%eax   \n\t"
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "addl           $1,   %%ecx   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl           $8,   %%eax   \n\t"
+                            "orl         %%edx,   %%eax   \n\t"
+                            //---------------------------------
+                            "movw         %%ax,    (%0)"
+                            :
+                            : "D"(dst), "S"(src)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r =   (*dst >> 11)         * ((src->red   >> 3) + 1) >> 5;
+                        u8 g = ( (*dst >>  5) & 0x3F) * ((src->green >> 2) + 1) >> 6;
+                        u8 b = (  *dst        & 0x1F) * ((src->blue  >> 3) + 1) >> 5;
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
 
-                    void operator()(u16& dst, u8 red, u8 green, u8 blue, u8 alpha)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, u8 red, u8 green, u8 blue, u8 alpha)
                     {
-                        u8 r =   (dst >> 11)         * ((red   >> 3) + 1) >> 5;
-                        u8 g = ( (dst >>  5) & 0x3F) * ((green >> 2) + 1) >> 6;
-                        u8 b = (  dst        & 0x1F) * ((blue  >> 3) + 1) >> 5;
-                        dst = (r << 11) | (g << 5) | b;
+                        u8 r =   (*dst >> 11)         * ((red   >> 3) + 1) >> 5;
+                        u8 g = ( (*dst >>  5) & 0x3F) * ((green >> 2) + 1) >> 6;
+                        u8 b = (  *dst        & 0x1F) * ((blue  >> 3) + 1) >> 5;
+                        *dst = (r << 11) | (g << 5) | b;
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_set_col
                 {
-                    graphics::RGBA c;
+                    u32 cr;
+                    u32 cg;
+                    u32 cb;
 
                     explicit rgb565_set_col(graphics::RGBA color)
-                        : c(color)
                     {
-                        c.red   = (c.red   >> 3) + 1;
-                        c.green = (c.green >> 2) + 1;
-                        c.blue  = (c.blue  >> 3) + 1;
+                        cr = color.red   + 1;
+                        cg = color.green + 1;
+                        cb = color.blue  + 1;
                     }
 
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r = ((src.red   >> 3) * c.red  ) >> 5;
-                        u8 g = ((src.green >> 2) * c.green) >> 6;
-                        u8 b = ((src.blue  >> 3) * c.blue ) >> 5;
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzbl       (%1),   %%eax   \n\t"
+                            "imull          %2,   %%eax   \n\t"
+                            "andl       $63488,   %%eax   \n\t"
+                            //---------------------------------
+                            "movzbl      1(%1),   %%edx   \n\t"
+                            "imull          %3,   %%edx   \n\t"
+                            "shrl          $10,   %%edx   \n\t"
+                            "shll           $5,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "imull          %4,   %%ecx   \n\t"
+                            "shrl          $11,   %%ecx   \n\t"
+                            //---------------------------------
+                            "orl         %%edx,   %%eax   \n\t"
+                            "orl         %%ecx,   %%eax   \n\t"
+                            //---------------------------------
+                            "movw         %%ax,    (%0)"
+                            :
+                            : "D"(dst), "S"(src), "g"(cr), "g"(cg), "g"(cb)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r = ((src->red   >> 3) * cr) >> 5;
+                        u8 g = ((src->green >> 2) * cg) >> 6;
+                        u8 b = ((src->blue  >> 3) * cb) >> 5;
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_mix_col
                 {
-                    graphics::RGBA c;
+                    u32 cr;
+                    u32 cg;
+                    u32 cb;
+                    u32 ca;
 
                     explicit rgb565_mix_col(graphics::RGBA color)
-                        : c(color)
                     {
-                        c.red   = (c.red   >> 3) + 1;
-                        c.green = (c.green >> 2) + 1;
-                        c.blue  = (c.blue  >> 3) + 1;
+                        cr = color.red   + 1;
+                        cg = color.green + 1;
+                        cb = color.blue  + 1;
+                        ca = color.alpha + 1;
                     }
 
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        int sa = (src.alpha * (c.alpha + 1) >> 8) + 1;
+                        u32 temp = 0;
+                        asm (
+                            "movzbl      3(%1),   %%ecx   \n\t"
+                            "imull          %6,   %%ecx   \n\t"
+                            "shrl           $8,   %%ecx   \n\t"
+                            "movl         $256,   %%ebx   \n\t"
+                            "subl        %%ecx,   %%ebx   \n\t"
+                            "addl           $1,   %%ecx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%edx   \n\t"
+                            "shrl          $11,   %%edx   \n\t"
+                            "imull       %%ebx,   %%edx   \n\t"
+                            "shrl           $8,   %%edx   \n\t"
+                            //-----------------
+                            "movzbl       (%1),   %%eax   \n\t"
+                            "imull          %3,   %%eax   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $19,   %%eax   \n\t"
+                            //-----------------
+                            "addl        %%edx,   %%eax   \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "orl         %%eax,      %2   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%edx   \n\t"
+                            "shrl           $5,   %%edx   \n\t"
+                            "andl          $63,   %%edx   \n\t"
+                            "imull       %%ebx,   %%edx   \n\t"
+                            "shrl           $8,   %%edx   \n\t"
+                            //-----------------
+                            "movzbl      1(%1),   %%eax   \n\t"
+                            "imull          %4,   %%eax   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $18,   %%eax   \n\t"
+                            //-----------------
+                            "addl        %%edx,   %%eax   \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,      %2   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%edx   \n\t"
+                            "andl          $31,   %%edx   \n\t"
+                            "imull       %%ebx,   %%edx   \n\t"
+                            "shrl           $8,   %%edx   \n\t"
+                            //-----------------
+                            "movzbl      2(%1),   %%eax   \n\t"
+                            "imull          %5,   %%eax   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $19,   %%eax   \n\t"
+                            //-----------------
+                            "addl        %%edx,   %%eax   \n\t"
+                            "orl            %2,   %%eax   \n\t"
+                            //---------------------------------
+                            "movw         %%ax,    (%0)"
+                            :
+                            : "D"(dst), "S"(src), "m"(temp), "g"(cr), "g"(cg), "g"(cb), "g"(ca)
+                            : "eax", "ecx", "edx", "ebx"
+                        );
+
+                        // C++ version:
+                        /*
+                        int sa = (src->alpha * (c.alpha + 1) >> 8) + 1;
                         int da = 256 - (sa - 1);
-                        u8 r = (   (dst >>  11)         * da + (((src.red   >> 3) * c.red  ) >> 5) * sa ) >> 8;
-                        u8 g = ( ( (dst >>   5) & 0x3F) * da + (((src.green >> 2) * c.green) >> 6) * sa ) >> 8;
-                        u8 b = ( (  dst         & 0x1F) * da + (((src.blue  >> 3) * c.blue ) >> 5) * sa ) >> 8;
-                        dst = (r << 11) | (g << 5) | b;
+                        u8 r = (   (*dst >>  11)         * da + (((src->red   >> 3) * c.red  ) >> 5) * sa ) >> 8;
+                        u8 g = ( ( (*dst >>   5) & 0x3F) * da + (((src->green >> 2) * c.green) >> 6) * sa ) >> 8;
+                        u8 b = ( (  *dst         & 0x1F) * da + (((src->blue  >> 3) * c.blue ) >> 5) * sa ) >> 8;
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_add_col
                 {
-                    graphics::RGBA c;
+                    u32 cr;
+                    u32 cg;
+                    u32 cb;
 
                     explicit rgb565_add_col(graphics::RGBA color)
-                        : c(color)
                     {
-                        c.red   = (c.red   >> 3) + 1;
-                        c.green = (c.green >> 2) + 1;
-                        c.blue  = (c.blue  >> 3) + 1;
+                        cr = color.red   + 1;
+                        cg = color.green + 1;
+                        cb = color.blue  + 1;
                     }
 
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r = std::min(   (dst >> 11)         + (((src.red   >> 3) * c.red  ) >> 5), 31 );
-                        u8 g = std::min( ( (dst >>  5) & 0x3F) + (((src.green >> 2) * c.green) >> 6), 63 );
-                        u8 b = std::min( (  dst        & 0x1F) + (((src.blue  >> 3) * c.blue ) >> 5), 31 );
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            "movzbl       (%1),   %%ecx   \n\t"
+                            "imull          %2,   %%ecx   \n\t"
+                            "shrl          $11,   %%ecx   \n\t"
+                            "addl        %%ecx,   %%eax   \n\t"
+                            "test          $32,   %%eax   \n\t"
+                            "jz                      1f   \n\t"
+                            "movl          $31,   %%eax   \n\t"
+                            "1:                           \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "movl        %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl           $5,   %%eax   \n\t"
+                            "andl          $63,   %%eax   \n\t"
+                            "movzbl      1(%1),   %%ecx   \n\t"
+                            "imull          %3,   %%ecx   \n\t"
+                            "shrl          $10,   %%ecx   \n\t"
+                            "addl        %%ecx,   %%eax   \n\t"
+                            "test          $64,   %%eax   \n\t"
+                            "jz                      2f   \n\t"
+                            "movl          $63,   %%eax   \n\t"
+                            "2:                           \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl          $31,   %%eax   \n\t"
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "imull          %4,   %%ecx   \n\t"
+                            "shrl          $11,   %%ecx   \n\t"
+                            "addl        %%ecx,   %%eax   \n\t"
+                            "test          $32,   %%eax   \n\t"
+                            "jz                      3f   \n\t"
+                            "movl          $31,   %%eax   \n\t"
+                            "3:                           \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movw         %%dx,    (%0)"
+                            :
+                            : "D"(dst), "S"(src), "g"(cr), "g"(cg), "g"(cb)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r = std::min(   (*dst >> 11)         + (((src->red   >> 3) * c.red  ) >> 5), 31 );
+                        u8 g = std::min( ( (*dst >>  5) & 0x3F) + (((src->green >> 2) * c.green) >> 6), 63 );
+                        u8 b = std::min( (  *dst        & 0x1F) + (((src->blue  >> 3) * c.blue ) >> 5), 31 );
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_sub_col
                 {
-                    graphics::RGBA c;
+                    u32 cr;
+                    u32 cg;
+                    u32 cb;
 
                     explicit rgb565_sub_col(graphics::RGBA color)
-                        : c(color)
                     {
-                        c.red   = (c.red   >> 3) + 1;
-                        c.green = (c.green >> 2) + 1;
-                        c.blue  = (c.blue  >> 3) + 1;
+                        cr = color.red   + 1;
+                        cg = color.green + 1;
+                        cb = color.blue  + 1;
                     }
 
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r = std::max(   (dst >> 11)         - (((src.red   >> 3) * c.red  ) >> 5), 0 );
-                        u8 g = std::max( ( (dst >>  5) & 0x3F) - (((src.green >> 2) * c.green) >> 6), 0 );
-                        u8 b = std::max( (  dst        & 0x1F) - (((src.blue  >> 3) * c.blue ) >> 5), 0 );
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            "movzbl       (%1),   %%ecx   \n\t"
+                            "imull          %2,   %%ecx   \n\t"
+                            "shrl          $11,   %%ecx   \n\t"
+                            "subl        %%ecx,   %%eax   \n\t"
+                            "jns                     1f   \n\t"
+                            "xorl        %%eax,   %%eax   \n\t"
+                            "1:                           \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "movl        %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl           $5,   %%eax   \n\t"
+                            "andl          $63,   %%eax   \n\t"
+                            "movzbl      1(%1),   %%ecx   \n\t"
+                            "imull          %3,   %%ecx   \n\t"
+                            "shrl          $10,   %%ecx   \n\t"
+                            "subl        %%ecx,   %%eax   \n\t"
+                            "jns                     2f   \n\t"
+                            "xorl        %%eax,   %%eax   \n\t"
+                            "2:                           \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl          $31,   %%eax   \n\t"
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "imull          %4,   %%ecx   \n\t"
+                            "shrl          $11,   %%ecx   \n\t"
+                            "subl        %%ecx,   %%eax   \n\t"
+                            "jns                     3f   \n\t"
+                            "xorl        %%eax,   %%eax   \n\t"
+                            "3:                           \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movw         %%dx,    (%0)"
+                            :
+                            : "D"(dst), "S"(src), "g"(cr), "g"(cg), "g"(cb)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r = std::max(   (*dst >> 11)         - (((src->red   >> 3) * c.red  ) >> 5), 0 );
+                        u8 g = std::max( ( (*dst >>  5) & 0x3F) - (((src->green >> 2) * c.green) >> 6), 0 );
+                        u8 b = std::max( (  *dst        & 0x1F) - (((src->blue  >> 3) * c.blue ) >> 5), 0 );
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
                 };
 
                 //---------------------------------------------------------
                 struct rgb565_mul_col
                 {
-                    graphics::RGBA c;
+                    u32 cr;
+                    u32 cg;
+                    u32 cb;
 
                     explicit rgb565_mul_col(graphics::RGBA color)
-                        : c(color)
                     {
-                        c.red   = (c.red   >> 3) + 1;
-                        c.green = (c.green >> 2) + 1;
-                        c.blue  = (c.blue  >> 3) + 1;
+                        // "+3" is an optimization, so we can
+                        // do two subsequent multiplications
+                        cr = color.red   + 3;
+                        cg = color.green + 3;
+                        cb = color.blue  + 3;
                     }
 
-                    void operator()(u16& dst, const graphics::RGBA& src)
+                    __attribute__((__always_inline__))
+                    void operator()(u16* dst, const graphics::RGBA* src)
                     {
-                        u8 r =   (dst >> 11)         * ((((src.red   >> 3) * c.red  ) >> 5) + 1) >> 5;
-                        u8 g = ( (dst >>  5) & 0x3F) * ((((src.green >> 2) * c.green) >> 6) + 1) >> 6;
-                        u8 b = (  dst        & 0x1F) * ((((src.blue  >> 3) * c.blue ) >> 5) + 1) >> 5;
-                        dst = (r << 11) | (g << 5) | b;
+                        asm (
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl          $11,   %%eax   \n\t"
+                            "movzbl       (%1),   %%ecx   \n\t"
+                            "imull          %2,   %%ecx   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $16,   %%eax   \n\t"
+                            "shll          $11,   %%eax   \n\t"
+                            "movl        %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "shrl           $5,   %%eax   \n\t"
+                            "andl          $63,   %%eax   \n\t"
+                            "movzbl      1(%1),   %%ecx   \n\t"
+                            "imull          %3,   %%ecx   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $16,   %%eax   \n\t"
+                            "shll           $5,   %%eax   \n\t"
+                            "orl         %%eax,   %%edx   \n\t"
+                            //---------------------------------
+                            "movzwl       (%0),   %%eax   \n\t"
+                            "andl          $31,   %%eax   \n\t"
+                            "movzbl      2(%1),   %%ecx   \n\t"
+                            "imull          %4,   %%ecx   \n\t"
+                            "imull       %%ecx,   %%eax   \n\t"
+                            "shrl          $16,   %%eax   \n\t"
+                            "orl         %%edx,   %%eax   \n\t"
+                            //---------------------------------
+                            "movw         %%ax,    (%0)"
+                            :
+                            : "D"(dst), "S"(src), "g"(cr), "g"(cg), "g"(cb)
+                            : "eax", "edx", "ecx"
+                        );
+
+                        // C++ version:
+                        /*
+                        u8 r =   (*dst >> 11)         * ((((src->red   >> 3) * c.red  ) >> 5) + 1) >> 5;
+                        u8 g = ( (*dst >>  5) & 0x3F) * ((((src->green >> 2) * c.green) >> 6) + 1) >> 6;
+                        u8 b = (  *dst        & 0x1F) * ((((src->blue  >> 3) * c.blue ) >> 5) + 1) >> 5;
+                        *dst = (r << 11) | (g << 5) | b;
+                        */
                     }
                 };
 

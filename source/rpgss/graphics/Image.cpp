@@ -423,84 +423,84 @@ namespace rpgss {
 
         //-----------------------------------------------------------------
         struct rgba_set {
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = src.red;
-                dst.green = src.green;
-                dst.blue  = src.blue;
-                dst.alpha = src.alpha;
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = src->red;
+                dst->green = src->green;
+                dst->blue  = src->blue;
+                dst->alpha = src->alpha;
             }
 
-            void operator()(RGBA& dst, u8 red, u8 green, u8 blue, u8 alpha) {
-                dst.red   = red;
-                dst.green = green;
-                dst.blue  = blue;
-                dst.alpha = alpha;
+            void operator()(RGBA* dst, u8 red, u8 green, u8 blue, u8 alpha) {
+                dst->red   = red;
+                dst->green = green;
+                dst->blue  = blue;
+                dst->alpha = alpha;
             }
         };
 
         struct rgba_mix {
-            void operator()(RGBA& dst, const RGBA& src) {
-                int sa = src.alpha  + 1;
-                int da = 256 - src.alpha;
-                dst.red   = (dst.red   * da + src.red   * sa) >> 8;
-                dst.green = (dst.green * da + src.green * sa) >> 8;
-                dst.blue  = (dst.blue  * da + src.blue  * sa) >> 8;
+            void operator()(RGBA* dst, const RGBA* src) {
+                int sa = src->alpha  + 1;
+                int da = 256 - src->alpha;
+                dst->red   = (dst->red   * da + src->red   * sa) >> 8;
+                dst->green = (dst->green * da + src->green * sa) >> 8;
+                dst->blue  = (dst->blue  * da + src->blue  * sa) >> 8;
             }
 
-            void operator()(RGBA& dst, u8 red, u8 green, u8 blue, u8 alpha) {
+            void operator()(RGBA* dst, u8 red, u8 green, u8 blue, u8 alpha) {
                 int sa = alpha  + 1;
                 int da = 256 - alpha;
-                dst.red   = (dst.red   * da + red   * sa) >> 8;
-                dst.green = (dst.green * da + green * sa) >> 8;
-                dst.blue  = (dst.blue  * da + blue  * sa) >> 8;
+                dst->red   = (dst->red   * da + red   * sa) >> 8;
+                dst->green = (dst->green * da + green * sa) >> 8;
+                dst->blue  = (dst->blue  * da + blue  * sa) >> 8;
             }
         };
 
         struct rgba_add {
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = std::min(dst.red   + src.red,   255);
-                dst.green = std::min(dst.green + src.green, 255);
-                dst.blue  = std::min(dst.blue  + src.blue,  255);
-                dst.alpha = std::min(dst.alpha + src.alpha, 255);
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = std::min(dst->red   + src->red,   255);
+                dst->green = std::min(dst->green + src->green, 255);
+                dst->blue  = std::min(dst->blue  + src->blue,  255);
+                dst->alpha = std::min(dst->alpha + src->alpha, 255);
             }
 
-            void operator()(RGBA& dst, u8 red, u8 green, u8 blue, u8 alpha) {
-                dst.red   = std::min(dst.red   + red,   255);
-                dst.green = std::min(dst.green + green, 255);
-                dst.blue  = std::min(dst.blue  + blue,  255);
-                dst.alpha = std::min(dst.alpha + alpha, 255);
+            void operator()(RGBA* dst, u8 red, u8 green, u8 blue, u8 alpha) {
+                dst->red   = std::min(dst->red   + red,   255);
+                dst->green = std::min(dst->green + green, 255);
+                dst->blue  = std::min(dst->blue  + blue,  255);
+                dst->alpha = std::min(dst->alpha + alpha, 255);
             }
         };
 
         struct rgba_sub {
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = std::max(dst.red   - src.red,   0);
-                dst.green = std::max(dst.green - src.green, 0);
-                dst.blue  = std::max(dst.blue  - src.blue,  0);
-                dst.alpha = std::max(dst.alpha - src.alpha, 0);
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = std::max(dst->red   - src->red,   0);
+                dst->green = std::max(dst->green - src->green, 0);
+                dst->blue  = std::max(dst->blue  - src->blue,  0);
+                dst->alpha = std::max(dst->alpha - src->alpha, 0);
             }
 
-            void operator()(RGBA& dst, u8 red, u8 green, u8 blue, u8 alpha) {
-                dst.red   = std::max(dst.red   - red,   0);
-                dst.green = std::max(dst.green - green, 0);
-                dst.blue  = std::max(dst.blue  - blue,  0);
-                dst.alpha = std::max(dst.alpha - alpha, 0);
+            void operator()(RGBA* dst, u8 red, u8 green, u8 blue, u8 alpha) {
+                dst->red   = std::max(dst->red   - red,   0);
+                dst->green = std::max(dst->green - green, 0);
+                dst->blue  = std::max(dst->blue  - blue,  0);
+                dst->alpha = std::max(dst->alpha - alpha, 0);
             }
         };
 
         struct rgba_mul {
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = dst.red   * (src.red   + 1) >> 8;
-                dst.green = dst.green * (src.green + 1) >> 8;
-                dst.blue  = dst.blue  * (src.blue  + 1) >> 8;
-                dst.alpha = dst.alpha * (src.alpha + 1) >> 8;
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = dst->red   * (src->red   + 1) >> 8;
+                dst->green = dst->green * (src->green + 1) >> 8;
+                dst->blue  = dst->blue  * (src->blue  + 1) >> 8;
+                dst->alpha = dst->alpha * (src->alpha + 1) >> 8;
             }
 
-            void operator()(RGBA& dst, u8 red, u8 green, u8 blue, u8 alpha) {
-                dst.red   = dst.red   * (red   + 1) >> 8;
-                dst.green = dst.green * (green + 1) >> 8;
-                dst.blue  = dst.blue  * (blue  + 1) >> 8;
-                dst.alpha = dst.alpha * (alpha + 1) >> 8;
+            void operator()(RGBA* dst, u8 red, u8 green, u8 blue, u8 alpha) {
+                dst->red   = dst->red   * (red   + 1) >> 8;
+                dst->green = dst->green * (green + 1) >> 8;
+                dst->blue  = dst->blue  * (blue  + 1) >> 8;
+                dst->alpha = dst->alpha * (alpha + 1) >> 8;
             }
         };
 
@@ -619,11 +619,11 @@ namespace rpgss {
             {
             }
 
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = src.red   * (c.red   + 1) >> 8;
-                dst.green = src.green * (c.green + 1) >> 8;
-                dst.blue  = src.blue  * (c.blue  + 1) >> 8;
-                dst.alpha = src.alpha * (c.alpha + 1) >> 8;
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = src->red   * (c.red   + 1) >> 8;
+                dst->green = src->green * (c.green + 1) >> 8;
+                dst->blue  = src->blue  * (c.blue  + 1) >> 8;
+                dst->alpha = src->alpha * (c.alpha + 1) >> 8;
             }
         };
 
@@ -637,12 +637,12 @@ namespace rpgss {
             {
             }
 
-            void operator()(RGBA& dst, const RGBA& src) {
-                int sa = (src.alpha * (c.alpha + 1) >> 8) + 1;
+            void operator()(RGBA* dst, const RGBA* src) {
+                int sa = (src->alpha * (c.alpha + 1) >> 8) + 1;
                 int da = 256 - (sa - 1);
-                dst.red   = (dst.red   * da + (src.red   * (c.red   + 1) >> 8) * sa) >> 8;
-                dst.green = (dst.green * da + (src.green * (c.green + 1) >> 8) * sa) >> 8;
-                dst.blue  = (dst.blue  * da + (src.blue  * (c.blue  + 1) >> 8) * sa) >> 8;
+                dst->red   = (dst->red   * da + (src->red   * (c.red   + 1) >> 8) * sa) >> 8;
+                dst->green = (dst->green * da + (src->green * (c.green + 1) >> 8) * sa) >> 8;
+                dst->blue  = (dst->blue  * da + (src->blue  * (c.blue  + 1) >> 8) * sa) >> 8;
             }
         };
 
@@ -656,11 +656,11 @@ namespace rpgss {
             {
             }
 
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = std::min(dst.red   + (src.red   * (c.red   + 1) >> 8), 255);
-                dst.green = std::min(dst.green + (src.green * (c.green + 1) >> 8), 255);
-                dst.blue  = std::min(dst.blue  + (src.blue  * (c.blue  + 1) >> 8), 255);
-                dst.alpha = std::min(dst.alpha + (src.alpha * (c.alpha + 1) >> 8), 255);
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = std::min(dst->red   + (src->red   * (c.red   + 1) >> 8), 255);
+                dst->green = std::min(dst->green + (src->green * (c.green + 1) >> 8), 255);
+                dst->blue  = std::min(dst->blue  + (src->blue  * (c.blue  + 1) >> 8), 255);
+                dst->alpha = std::min(dst->alpha + (src->alpha * (c.alpha + 1) >> 8), 255);
             }
         };
 
@@ -674,11 +674,11 @@ namespace rpgss {
             {
             }
 
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = std::max(dst.red   - (src.red   * (c.red   + 1) >> 8), 0);
-                dst.green = std::max(dst.green - (src.green * (c.green + 1) >> 8), 0);
-                dst.blue  = std::max(dst.blue  - (src.blue  * (c.blue  + 1) >> 8), 0);
-                dst.alpha = std::max(dst.alpha - (src.alpha * (c.alpha + 1) >> 8), 0);
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = std::max(dst->red   - (src->red   * (c.red   + 1) >> 8), 0);
+                dst->green = std::max(dst->green - (src->green * (c.green + 1) >> 8), 0);
+                dst->blue  = std::max(dst->blue  - (src->blue  * (c.blue  + 1) >> 8), 0);
+                dst->alpha = std::max(dst->alpha - (src->alpha * (c.alpha + 1) >> 8), 0);
             }
         };
 
@@ -692,11 +692,11 @@ namespace rpgss {
             {
             }
 
-            void operator()(RGBA& dst, const RGBA& src) {
-                dst.red   = dst.red   * ((src.red   * (c.red   + 1) >> 8) + 1) >> 8;
-                dst.green = dst.green * ((src.green * (c.green + 1) >> 8) + 1) >> 8;
-                dst.blue  = dst.blue  * ((src.blue  * (c.blue  + 1) >> 8) + 1) >> 8;
-                dst.alpha = dst.alpha * ((src.alpha * (c.alpha + 1) >> 8) + 1) >> 8;
+            void operator()(RGBA* dst, const RGBA* src) {
+                dst->red   = dst->red   * ((src->red   * (c.red   + 1) >> 8) + 1) >> 8;
+                dst->green = dst->green * ((src->green * (c.green + 1) >> 8) + 1) >> 8;
+                dst->blue  = dst->blue  * ((src->blue  * (c.blue  + 1) >> 8) + 1) >> 8;
+                dst->alpha = dst->alpha * ((src->alpha * (c.alpha + 1) >> 8) + 1) >> 8;
             }
         };
 
@@ -747,7 +747,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -809,7 +809,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -871,7 +871,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -950,7 +950,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -1021,7 +1021,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -1096,7 +1096,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -1171,7 +1171,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;
@@ -1260,7 +1260,7 @@ namespace rpgss {
 
                 ix = num_remaining;
                 while (ix > 0) {
-                    fallback_renderer(*dp, *sp);
+                    fallback_renderer(dp, sp);
                     dp++;
                     sp++;
                     ix--;

@@ -57,7 +57,7 @@ namespace rpgss {
                 }
 
                 if (dstClipRect.contains(pos)) {
-                    renderer(dstPixels[dstPitch * pos.y + pos.x], color);
+                    renderer(dstPixels + dstPitch * pos.y + pos.x, &color);
                 }
             }
 
@@ -125,6 +125,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Line(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -148,7 +149,7 @@ namespace rpgss {
                     // single pixel line
                     if (dstClipRect.contains(startPos)) {
                         dstT* dptr = dstPixels + y1 * dstPitch + x1;
-                        renderer(*dptr, color);
+                        renderer(dptr, &color);
                     }
                 }
                 else if (y1 == y2 || x1 == x2)
@@ -185,7 +186,7 @@ namespace rpgss {
                     }
 
                     while (--ix) {
-                        renderer(*dptr, color);
+                        renderer(dptr, &color);
                         dptr += dinc;
                     }
 
@@ -240,7 +241,7 @@ namespace rpgss {
                     }
 
                     for (int i = 0; i < numpix; ++i) {
-                        renderer(*dptr, color);
+                        renderer(dptr, &color);
                         num += numadd;
                         if (num >= den) {
                             num -= den;
@@ -271,6 +272,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Line(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -302,7 +304,7 @@ namespace rpgss {
 
                     if (dstClipRect.contains(startPos)) {
                         dstT* dptr = dstPixels + y1 * dstPitch + x1;
-                        renderer(*dptr, startColor);
+                        renderer(dptr, &startColor);
                     }
 
                 } else if (y1 == y2 || x1 == x2) { // horizontal or vertical lines
@@ -351,7 +353,7 @@ namespace rpgss {
                     i32 a_step = (i32)(((c[1].alpha - c[0].alpha) / (float)(ix - 1)) * 4096.0);
 
                     while (--ix) {
-                        renderer(*dptr, r >> 12, g >> 12, b >> 12, a >> 12);
+                        renderer(dptr, r >> 12, g >> 12, b >> 12, a >> 12);
 
                         dptr += dinc;
 
@@ -426,7 +428,7 @@ namespace rpgss {
                     i32 a_step = (i32)(((c[1].alpha - c[0].alpha) / (float)numpix) * 4096.0);
 
                     for (int i = 0; i < numpix; ++i) {
-                        renderer(*dptr, r >> 12, g >> 12, b >> 12, a >> 12);
+                        renderer(dptr, r >> 12, g >> 12, b >> 12, a >> 12);
 
                         num += numadd;
                         if (num >= den) {
@@ -448,6 +450,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Rectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -484,7 +487,7 @@ namespace rpgss {
                     while (iy > 0) {
                         int ix = drct.getWidth();
                         while (ix > 0) {
-                            renderer(*dptr, color);
+                            renderer(dptr, &color);
                             ++dptr;
                             --ix;
                         }
@@ -514,6 +517,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Rectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -596,7 +600,7 @@ namespace rpgss {
 
                         int ix = drct.getWidth();
                         while (ix > 0) {
-                            renderer(*dptr, r >> 12, g >> 12, b >> 12, a >> 12);
+                            renderer(dptr, r >> 12, g >> 12, b >> 12, a >> 12);
 
                             ++dptr;
 
@@ -627,6 +631,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Triangle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -640,6 +645,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Triangle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -653,6 +659,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Circle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -707,16 +714,16 @@ namespace rpgss {
                         ddF_x += 2;
                         f     += ddF_x + 1;
 
-                        if (dstClipRect.contains(x - ix,     y - iy    )) renderer(*tl, color);
-                        if (dstClipRect.contains(x + ix - 1, y - iy    )) renderer(*tr, color);
-                        if (dstClipRect.contains(x - ix,     y + iy - 1)) renderer(*bl, color);
-                        if (dstClipRect.contains(x + ix - 1, y + iy - 1)) renderer(*br, color);
+                        if (dstClipRect.contains(x - ix,     y - iy    )) renderer(tl, &color);
+                        if (dstClipRect.contains(x + ix - 1, y - iy    )) renderer(tr, &color);
+                        if (dstClipRect.contains(x - ix,     y + iy - 1)) renderer(bl, &color);
+                        if (dstClipRect.contains(x + ix - 1, y + iy - 1)) renderer(br, &color);
 
                         if (ix != iy) {
-                            if (dstClipRect.contains(x - iy,     y - ix    )) renderer(*lt, color);
-                            if (dstClipRect.contains(x + iy - 1, y - ix    )) renderer(*rt, color);
-                            if (dstClipRect.contains(x - iy,     y + ix - 1)) renderer(*lb, color);
-                            if (dstClipRect.contains(x + iy - 1, y + ix - 1)) renderer(*rb, color);
+                            if (dstClipRect.contains(x - iy,     y - ix    )) renderer(lt, &color);
+                            if (dstClipRect.contains(x + iy - 1, y - ix    )) renderer(rt, &color);
+                            if (dstClipRect.contains(x - iy,     y + ix - 1)) renderer(lb, &color);
+                            if (dstClipRect.contains(x + iy - 1, y + ix - 1)) renderer(rb, &color);
                         }
 
                         if (f >= 0) {
@@ -760,7 +767,7 @@ namespace rpgss {
                         if (y - ix >= dstClipRect.ul.y && y - ix <= dstClipRect.lr.y) {
                             dstT* dst = dstPixels + (y - ix) * dstPitch + clip_l;
                             for (int i = 0, j = clip_r + 1 - clip_l; i < j; ++i, ++dst) {
-                                renderer(*dst, color);
+                                renderer(dst, &color);
                             }
                         }
 
@@ -768,7 +775,7 @@ namespace rpgss {
                         if (y + ix - 1 >= dstClipRect.ul.y && y + ix - 1 <= dstClipRect.lr.y) {
                             dstT* dst = dstPixels + (y + ix - 1) * dstPitch + clip_l;
                             for (int i = 0, j = clip_r + 1 - clip_l; i < j; ++i, ++dst) {
-                                renderer(*dst, color);
+                                renderer(dst, &color);
                             }
                         }
 
@@ -781,7 +788,7 @@ namespace rpgss {
                                 if (y - iy >= dstClipRect.ul.y && y - iy <= dstClipRect.lr.y) {
                                     dstT* dst = dstPixels + (y - iy) * dstPitch + clip_l;
                                     for (int i = 0, j = clip_r + 1 - clip_l; i < j; ++i, ++dst) {
-                                        renderer(*dst, color);
+                                        renderer(dst, &color);
                                     }
                                 }
 
@@ -789,7 +796,7 @@ namespace rpgss {
                                 if (y + iy - 1 >= dstClipRect.ul.y && y + iy - 1 <= dstClipRect.lr.y) {
                                     dstT* dst = dstPixels + (y + iy - 1) * dstPitch + clip_l;
                                     for (int i = 0, j = clip_r + 1 - clip_l; i < j; ++i, ++dst) {
-                                        renderer(*dst, color);
+                                        renderer(dst, &color);
                                     }
                                 }
                             }
@@ -804,6 +811,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename renderT>
+            __attribute__((__noinline__))
             void Circle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -864,16 +872,16 @@ namespace rpgss {
                         c.blue  = (u8)(outerColor.blue  - db * u);
                         c.alpha = (u8)(outerColor.alpha - da * u);
 
-                        if (dstClipRect.contains(x + ix - 1, y - n    )) { renderer(dstPixels[(y - n    ) * dstPitch + (x + ix - 1)], c); }
-                        if (dstClipRect.contains(x - ix,     y - n    )) { renderer(dstPixels[(y - n    ) * dstPitch + (x - ix    )], c); }
-                        if (dstClipRect.contains(x + ix - 1, y + n - 1)) { renderer(dstPixels[(y + n - 1) * dstPitch + (x + ix - 1)], c); }
-                        if (dstClipRect.contains(x - ix,     y + n - 1)) { renderer(dstPixels[(y + n - 1) * dstPitch + (x - ix    )], c); }
+                        if (dstClipRect.contains(x + ix - 1, y - n    )) { renderer(dstPixels + (y - n    ) * dstPitch + (x + ix - 1), &c); }
+                        if (dstClipRect.contains(x - ix,     y - n    )) { renderer(dstPixels + (y - n    ) * dstPitch + (x - ix    ), &c); }
+                        if (dstClipRect.contains(x + ix - 1, y + n - 1)) { renderer(dstPixels + (y + n - 1) * dstPitch + (x + ix - 1), &c); }
+                        if (dstClipRect.contains(x - ix,     y + n - 1)) { renderer(dstPixels + (y + n - 1) * dstPitch + (x - ix    ), &c); }
 
                         if (ix != n) {
-                            if (dstClipRect.contains(x + n - 1, y - ix    )) { renderer(dstPixels[(y - ix    ) * dstPitch + (x + n - 1)], c); }
-                            if (dstClipRect.contains(x - n,     y - ix    )) { renderer(dstPixels[(y - ix    ) * dstPitch + (x - n    )], c); }
-                            if (dstClipRect.contains(x + n - 1, y + ix - 1)) { renderer(dstPixels[(y + ix - 1) * dstPitch + (x + n - 1)], c); }
-                            if (dstClipRect.contains(x - n,     y + ix - 1)) { renderer(dstPixels[(y + ix - 1) * dstPitch + (x - n    )], c); }
+                            if (dstClipRect.contains(x + n - 1, y - ix    )) { renderer(dstPixels + (y - ix    ) * dstPitch + (x + n - 1), &c); }
+                            if (dstClipRect.contains(x - n,     y - ix    )) { renderer(dstPixels + (y - ix    ) * dstPitch + (x - n    ), &c); }
+                            if (dstClipRect.contains(x + n - 1, y + ix - 1)) { renderer(dstPixels + (y + ix - 1) * dstPitch + (x + n - 1), &c); }
+                            if (dstClipRect.contains(x - n,     y + ix - 1)) { renderer(dstPixels + (y + ix - 1) * dstPitch + (x - n    ), &c); }
                         }
                     }
 
@@ -887,6 +895,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename srcT, typename renderT>
+            __attribute__((__noinline__))
             void TexturedRectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -918,7 +927,7 @@ namespace rpgss {
                 while (iy > 0) {
                     int ix = drct.getWidth();
                     while (ix > 0) {
-                        renderer(*dptr, *sptr);
+                        renderer(dptr, sptr);
                         ++dptr;
                         ++sptr;
                         --ix;
@@ -931,6 +940,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename srcT, typename renderT>
+            __attribute__((__noinline__))
             void TexturedRectangle(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -983,7 +993,7 @@ namespace rpgss {
 
                     int ix = drct.getWidth();
                     while (ix > 0) {
-                        renderer(*dptr, *sx_ptr);
+                        renderer(dptr, sx_ptr);
                         sx_ptr += sx_ptr_inc;
                         sx_nom += sx_nom_inc;
                         if (sx_nom >= sx_den) {
@@ -1006,6 +1016,7 @@ namespace rpgss {
 
             //-----------------------------------------------------------------
             template<typename dstT, typename srcT, typename renderT>
+            __attribute__((__noinline__))
             void TexturedQuad(
                 dstT*        dstPixels,
                 int          dstPitch,
@@ -1132,7 +1143,7 @@ namespace rpgss {
                             int iu = minU + (ix - oldMinX) * (maxU - minU) / (oldMaxX - oldMinX);
                             int iv = minV + (ix - oldMinX) * (maxV - minV) / (oldMaxX - oldMinX);
 
-                            renderer(dstPixels[iy * dstPitch + ix], srcPixels[iv * srcPitch + iu]);
+                            renderer(dstPixels + iy * dstPitch + ix, srcPixels + iv * srcPitch + iu);
                         }
                     }
                 }
