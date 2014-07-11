@@ -5,7 +5,7 @@ GameClock = class {
     
     font = Cache:font("Fonts/msmincho.png"),
     
-    windowskin = Cache:windowskin("WindowSkins/"..game.system.graphicFilename..".png"),
+    windowskin = Cache:windowskin("WindowSkins/system4.png"),
 
     playTime = 0, -- total play time in milliseconds
     
