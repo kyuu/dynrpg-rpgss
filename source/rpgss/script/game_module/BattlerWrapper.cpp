@@ -125,6 +125,21 @@ namespace rpgss {
             }
 
             //---------------------------------------------------------
+            void
+            BattlerWrapper::set_name(const std::string& name)
+            {
+                if (This->isMonster()) {
+                    luaL_error(Context::Current().interpreter(), "can not set monster name");
+                }
+                RPG::Actor* this_actor = (RPG::Actor*)This;
+                if (name.empty()) {
+                    this_actor->name = "\x01"; // set to database default
+                } else {
+                    this_actor->name.assign((char*)name.c_str(), name.length());
+                }
+            }
+
+            //---------------------------------------------------------
             bool
             BattlerWrapper::get_isMonster() const
             {

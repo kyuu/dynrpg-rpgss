@@ -1605,7 +1605,7 @@ namespace rpgss {
 
                         .beginClass<BattlerWrapper>("Battler")
                             .addProperty("databaseId",              &BattlerWrapper::get_databaseId)
-                            .addProperty("name",                    &BattlerWrapper::get_name)
+                            .addProperty("name",                    &BattlerWrapper::get_name,                  &BattlerWrapper::set_name)
                             .addProperty("isMonster",               &BattlerWrapper::get_isMonster)
                             .addProperty("notHidden",               &BattlerWrapper::get_notHidden)
                             .addProperty("mirrored",                &BattlerWrapper::get_mirrored)
