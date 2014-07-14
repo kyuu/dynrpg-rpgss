@@ -44,10 +44,10 @@ Sprite = class {
         writer:writeUint32(#y_data)
         writer:writeBytes(y_data)
 
-        -- write scale
-        local scale_data = serialize(obj.scale)
-        writer:writeUint32(#scale_data)
-        writer:writeBytes(scale_data)
+        -- write scaling
+        local scaling_data = serialize(obj.scaling)
+        writer:writeUint32(#scaling_data)
+        writer:writeBytes(scaling_data)
 
         -- write angle
         local angle_data = serialize(obj.angle)
@@ -121,9 +121,9 @@ Sprite = class {
         obj.pos.x = deserialize(x_data)
         obj.pos.y = deserialize(y_data)
 
-        -- read scale
-        local scale_data = reader:readBytes(reader:readUint32())
-        obj.scale = deserialize(scale_data)
+        -- read scaling
+        local scaling_data = reader:readBytes(reader:readUint32())
+        obj.scaling = deserialize(scaling_data)
 
         -- read angle
         local angle_data = reader:readBytes(reader:readUint32())
@@ -157,7 +157,7 @@ Sprite = class {
     end
 }
 
-function Sprite:__init(filename, blendmode, visible, z, x, y, scale, angle)
+function Sprite:__init(filename, blendmode, z, x, y)
     self.scene = "map"
     
     self.filename = filename
@@ -178,7 +178,7 @@ function Sprite:__init(filename, blendmode, visible, z, x, y, scale, angle)
     
     self.blendmode = blendmode or "mix"
     
-    self.visible = visible or true
+    self.visible = true
     
     self.z = z or 0
     
@@ -187,9 +187,9 @@ function Sprite:__init(filename, blendmode, visible, z, x, y, scale, angle)
         y = Tween:new(y or 120)
     }
     
-    self.scale = Tween:new(scale or 1.0)
+    self.scaling = Tween:new(1.0)
     
-    self.angle = Tween:new(angle or 0.0)
+    self.angle = Tween:new(0.0)
     
     self.rot = {
         dir = "",
@@ -213,7 +213,7 @@ function Sprite:update(scene, ms)
         self.pos.y:update(ms)
 
         -- update scaling
-        self.scale:update(ms)
+        self.scaling:update(ms)
 
         -- update rotation
         if self.angle:update(ms) then -- tweening finished
@@ -235,8 +235,8 @@ end
 
 function Sprite:render(scene)
     if scene == self.scene and self.visible then
-        local x = self.pos.x:getValue() - (self.tile.w * self.scale:getValue() / 2)
-        local y = self.pos.y:getValue() - (self.tile.h * self.scale:getValue() / 2)
+        local x = self.pos.x:getValue() - (self.tile.w * self.scaling:getValue() / 2)
+        local y = self.pos.y:getValue() - (self.tile.h * self.scaling:getValue() / 2)
         
         if self.coordsys == "mouse" then
             local mouse_x, mouse_y = mouse.getPosition()
@@ -257,7 +257,7 @@ function Sprite:render(scene)
             x,
             y,
             self.angle:getValue(),
-            self.scale:getValue(),
+            self.scaling:getValue(),
             graphics.packColor(
                 self.color.r:getValue(),
                 self.color.g:getValue(),
@@ -367,21 +367,21 @@ function Sprite:setPosition(x, y)
     self.pos.y:setValue(y)
 end
 
-function Sprite:getScale()
-    return self.scale:getValue()
+function Sprite:getScaling()
+    return self.scaling:getValue()
 end
 
-function Sprite:setScale(scale)
-    -- keep scale >= 0
-    if scale < 0 then
-        scale = 0
+function Sprite:setScaling(scaling)
+    -- keep scaling >= 0
+    if scaling < 0 then
+        scaling = 0
     end
     
-    self.scale:setValue(scale)
+    self.scaling:setValue(scaling)
 end
 
 function Sprite:getAngle()
-    return self.scale:getValue()
+    return self.angle:getValue()
 end
 
 function Sprite:setAngle(angle)
@@ -394,23 +394,54 @@ function Sprite:setAngle(angle)
     self.angle:setValue(angle)
 end
 
-function Sprite:moveBy(ox, oy, ms, easing)
-    self.pos.x:tweenTo(self.pos.x:getValue() + ox, ms, easing)
-    self.pos.y:tweenTo(self.pos.y:getValue() + oy, ms, easing)
+function Sprite:getColor()
+    return self.color.r:getValue(),
+           self.color.g:getValue(),
+           self.color.b:getValue()
 end
 
-function Sprite:moveTo(x, y, ms, easing)
+function Sprite:setColor(r, g, b)
+    -- keep color channels in the range [0, 255]
+    r = math.max(math.min(r, 255), 0)
+    g = math.max(math.min(g, 255), 0)
+    b = math.max(math.min(b, 255), 0)
+    
+    self.color.r:setValue(r)
+    self.color.g:setValue(g)
+    self.color.b:setValue(b)
+end
+
+function Sprite:getOpacity()
+    return self.opacity:getValue()
+end
+
+function Sprite:setOpacity(opacity)
+    -- keep opacity in the range [0, 255]
+    opacity = math.max(math.min(opacity, 255), 0)
+    
+    self.opacity:setValue(opacity)
+end
+
+function Sprite:move(relative, x, y, ms, easing)
+    if relative == true then
+        x = self.pos.x:getValue() + x
+        y = self.pos.y:getValue() + y
+    end
     self.pos.x:tweenTo(x, ms, easing)
     self.pos.y:tweenTo(y, ms, easing)
 end
 
-function Sprite:scaleTo(scale, ms)
-    -- keep scale >= 0
-    if scale < 0 then
-        scale = 0
+function Sprite:scale(relative, scaling, ms)
+    if relative == true then
+        scaling = self.scaling:getValue() + scaling
+    end
+
+    -- keep scaling >= 0
+    if scaling < 0 then
+        scaling = 0
     end
     
-    self.scale:tweenTo(scale, ms)
+    self.scaling:tweenTo(scaling, ms)
 end
 
 function Sprite:consumeRotation()
@@ -548,24 +579,7 @@ function Sprite:stopRotation()
     self.angle:setValue(self.angle:getValue())
 end
 
-function Sprite:getColor()
-    return self.color.r:getValue(),
-           self.color.g:getValue(),
-           self.color.b:getValue()
-end
-
-function Sprite:setColor(r, g, b)
-    -- keep color channels in the range [0, 255]
-    r = math.max(math.min(r, 255), 0)
-    g = math.max(math.min(g, 255), 0)
-    b = math.max(math.min(b, 255), 0)
-    
-    self.color.r:setValue(r)
-    self.color.g:setValue(g)
-    self.color.b:setValue(b)
-end
-
-function Sprite:shiftColorTo(r, g, b, ms)
+function Sprite:colorize(r, g, b, ms)
     -- keep color channels in the range [0, 255]
     r = math.max(math.min(r, 255), 0)
     g = math.max(math.min(g, 255), 0)
@@ -576,20 +590,14 @@ function Sprite:shiftColorTo(r, g, b, ms)
     self.color.b:tweenTo(b, ms)
 end
 
-function Sprite:getOpacity()
-    return self.opacity:getValue()
-end
+function Sprite:fade(relative, opacity, ms)
+    if relative == true then
+        opacity = self.opacity:getValue() + opacity
+    end
 
-function Sprite:setOpacity(opacity)
-    -- keep opacity in the range [0, 255]
-    opacity = math.max(math.min(opacity, 255), 0)
-    
-    self.opacity:setValue(opacity)
-end
-
-function Sprite:shiftOpacityTo(opacity, ms)
     -- keep opacity in the range [0, 255]
     opacity = math.max(math.min(opacity, 255), 0)
     
     self.opacity:tweenTo(opacity, ms)
 end
+

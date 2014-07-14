@@ -191,11 +191,3 @@ function CallbackManager:onBattlerDrawn(battler, isMonster, id)
         end
     end
 end
-
-function CallbackManager:onSystemBackgroundDrawn(x, y, width, height)
-    for _, l in ipairs(self.sortedListeners) do
-        if l.self.onSystemBackgroundDrawn ~= nil then
-            l.self:onSystemBackgroundDrawn(x, y, width, height)
-        end
-    end
-end

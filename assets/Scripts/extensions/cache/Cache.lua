@@ -16,7 +16,7 @@ end
 
 function Cache:image(filename)
     -- sanity checks
-    assert(type(filename) == "string" and #filename > 0)
+    assert(type(filename) == "string" and #filename > 0, "invalid filename")
     
     -- get cached image
     local image = self.images[filename]
@@ -39,7 +39,7 @@ end
 
 function Cache:font(filename)
     -- sanity checks
-    assert(type(filename) == "string" and #filename > 0)
+    assert(type(filename) == "string" and #filename > 0, "invalid filename")
     
     -- get cached font
     local font = self.fonts[filename]
@@ -62,7 +62,7 @@ end
 
 function Cache:windowskin(filename)
     -- sanity checks
-    assert(type(filename) == "string" and #filename > 0)
+    assert(type(filename) == "string" and #filename > 0, "invalid filename")
     
     -- get cached window skin
     local windowskin = self.windowskins[filename]

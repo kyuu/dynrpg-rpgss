@@ -40,7 +40,3 @@ end
 function onBattlerDrawn(battler, isMonster, id)
     CallbackManager:onBattlerDrawn(battler, isMonster, id)
 end
-
-function onSystemBackgroundDrawn(x, y, width, height)
-    CallbackManager:onSystemBackgroundDrawn(x, y, width, height)
-end

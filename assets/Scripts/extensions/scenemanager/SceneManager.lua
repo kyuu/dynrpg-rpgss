@@ -140,7 +140,7 @@ function SceneManager:render(scene)
 
     -- sort them by their z-value in descending order, i.e.
     -- objects with a greater z-value will be drawn first
-    table.sort(render_list, function(a, b) return a:getZ() > b:getZ() end)
+    table.sort(render_list, function(a, b) return a.z > b.z end)
     
     -- render them
     for _, obj in ipairs(render_list) do

@@ -6,27 +6,14 @@
 --                               The filename is relative to the game's root
 --                               directory (e.g. "Picture/sprite1.png").
 -- @param blendmode     (String) Blend mode. One of graphics.BlendMode.
--- @param visible       (Number) Boolean (1 or 0) that determines if the sprite
---                               is visible.
 -- @param z             (Number) Render priority of the sprite. A sprite with a
 --                               higher z-value will be rendered before any
 --                               other sprite with a lower z-value.
 -- @param x             (Number) X-position in pixels.
 -- @param y             (Number) Y-position in pixels.
--- @param scale         (Number) Scaling of the sprite in percent.
--- @param angle         (Number) Angle of the sprite in degrees.
 -------------------------------------------------------------------------------
-function add_sprite(name, filename, blendmode, visible, z, x, y, scale, angle)
-    local sprite = Sprite:new(
-        filename,
-        blendmode,
-        visible,
-        z,
-        x,
-        y,
-        (scale or 100) / 100,
-        angle
-    )
+function add_sprite(name, filename, blendmode, z, x, y)
+    local sprite = Sprite:new(filename, blendmode, z, x, y)
     SceneManager:addObject(name, sprite)
 end
 
@@ -47,11 +34,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_scene(name, scene)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setScene(scene)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setScene(scene)
 end
 
 -------------------------------------------------------------------------------
@@ -62,11 +46,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_image(name, filename)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setTexture(filename)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setTexture(filename)
 end
 
 -------------------------------------------------------------------------------
@@ -77,11 +58,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_blend_mode(name, blend_mode)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setBlendMode(blend_mode)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setBlendMode(blend_mode)
 end
 
 -------------------------------------------------------------------------------
@@ -93,11 +71,8 @@ end
 -------------------------------------------------------------------------------
 function bind_sprite_to(name, coordsys)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:bindTo(coordsys)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:bindTo(coordsys)
 end
 
 -------------------------------------------------------------------------------
@@ -109,13 +84,10 @@ end
 -------------------------------------------------------------------------------
 function get_sprite_tile_dimensions(name, var_w, var_h)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        local w, h = sprite:getTileDimensions()
-        game.variables[var_w] = w
-        game.variables[var_h] = h
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    local w, h = sprite:getTileDimensions()
+    game.variables[var_w] = w
+    game.variables[var_h] = h
 end
 
 -------------------------------------------------------------------------------
@@ -127,11 +99,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_tile_dimensions(name, w, h)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setTileDimensions(w, h)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setTileDimensions(w, h)
 end
 
 -------------------------------------------------------------------------------
@@ -145,13 +114,10 @@ end
 -------------------------------------------------------------------------------
 function get_sprite_tile(name, var_x, var_y)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        local x, y = sprite:getTile()
-        game.variables[var_x] = x
-        game.variables[var_y] = y
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    local x, y = sprite:getTile()
+    game.variables[var_x] = x
+    game.variables[var_y] = y
 end
 
 -------------------------------------------------------------------------------
@@ -163,11 +129,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_tile(name, x, y)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setTile(x, y)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setTile(x, y)
 end
 
 -------------------------------------------------------------------------------
@@ -180,11 +143,8 @@ end
 -------------------------------------------------------------------------------
 function get_sprite_visible(name, var)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        game.variables[var] = sprite:getVisible()
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    game.variables[var] = sprite:getVisible()
 end
 
 -------------------------------------------------------------------------------
@@ -196,11 +156,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_visible(name, visible)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setVisible(visible ~= 0)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setVisible(visible ~= 0)
 end
 
 -------------------------------------------------------------------------------
@@ -211,11 +168,8 @@ end
 -------------------------------------------------------------------------------
 function get_sprite_z(name, var)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        game.variables[var] = sprite:getZ()
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    game.variables[var] = sprite:getZ()
 end
 
 -------------------------------------------------------------------------------
@@ -226,11 +180,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_z(name, z)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setZ(z)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setZ(z)
 end
 
 -------------------------------------------------------------------------------
@@ -242,13 +193,10 @@ end
 -------------------------------------------------------------------------------
 function get_sprite_position(name, var_x, var_y)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        local x, y = sprite:getPosition()
-        game.variables[var_x] = x
-        game.variables[var_y] = y
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    local x, y = sprite:getPosition()
+    game.variables[var_x] = x
+    game.variables[var_y] = y
 end
 
 -------------------------------------------------------------------------------
@@ -260,11 +208,8 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_position(name, x, y)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setPosition(x, y)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setPosition(x, y)
 end
 
 -------------------------------------------------------------------------------
@@ -274,28 +219,22 @@ end
 -- @param var           (Number) ID of the variable that will hold the scaling
 --                               in percent.
 -------------------------------------------------------------------------------
-function get_sprite_scale(name, var)
+function get_sprite_scaling(name, var)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        game.variables[var] = sprite:getScale() * 100
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    game.variables[var] = sprite:getScaling() * 100
 end
 
 -------------------------------------------------------------------------------
 -- Sets the scaling of a sprite.
 --
 -- @param name          (String) Name of the sprite.
--- @param scale         (Number) The new scaling in percent.
+-- @param scaling       (Number) The new scaling in percent.
 -------------------------------------------------------------------------------
-function set_sprite_scale(name, scale)
+function set_sprite_scaling(name, scaling)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setScale(scale / 100)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setScaling(scaling / 100)
 end
 
 -------------------------------------------------------------------------------
@@ -307,11 +246,8 @@ end
 -------------------------------------------------------------------------------
 function get_sprite_angle(name, var)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        game.variables[var] = sprite:getAngle()
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    game.variables[var] = sprite:getAngle()
 end
 
 -------------------------------------------------------------------------------
@@ -322,49 +258,81 @@ end
 -------------------------------------------------------------------------------
 function set_sprite_angle(name, angle)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setAngle(angle)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setAngle(angle)
 end
 
 -------------------------------------------------------------------------------
--- Moves a sprite by an offset, i.e. relative to its current position.
+-- Gets the sprite color.
 --
 -- @param name          (String) Name of the sprite.
--- @param ox            (Number) Offset on the x-axis.
--- @param oy            (Number) Offset on the y-axis.
+-- @param var_r         (Number) ID of the variable that will hold the red channel.
+-- @param var_g         (Number) ID of the variable that will hold the green channel.
+-- @param var_b         (Number) ID of the variable that will hold the blue channel.
+-------------------------------------------------------------------------------
+function get_sprite_color(name, var_r, var_g, var_b)
+    local sprite = SceneManager:getObject(name)
+    assert(sprite, "sprite '"..name.."' does not exist")
+    local r, g, b = sprite:getColor()
+    game.variables[var_r] = r
+    game.variables[var_g] = g
+    game.variables[var_b] = b
+end
+
+-------------------------------------------------------------------------------
+-- Sets the sprite color.
+--
+-- @param name          (String) Name of the sprite.
+-- @param r             (Number) The new red channel of the color.
+-- @param g             (Number) The new green channel of the color.
+-- @param b             (Number) The new blue channel of the color.
+-------------------------------------------------------------------------------
+function set_sprite_color(name, r, g, b)
+    local sprite = SceneManager:getObject(name)
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setColor(r, g, b)
+end
+
+-------------------------------------------------------------------------------
+-- Gets the sprite opacity.
+--
+-- @param name          (String) Name of the sprite.
+-- @param var           (Number) ID of the variable that will hold the opacity.
+-------------------------------------------------------------------------------
+function get_sprite_opacity(name, var)
+    local sprite = SceneManager:getObject(name)
+    assert(sprite, "sprite '"..name.."' does not exist")
+    game.variables[var] = sprite:getOpacity()
+end
+
+-------------------------------------------------------------------------------
+-- Sets the sprite opacity.
+--
+-- @param name          (String) Name of the sprite.
+-- @param opacity       (Number) The new opacity.
+-------------------------------------------------------------------------------
+function set_sprite_opacity(name, opacity)
+    local sprite = SceneManager:getObject(name)
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:setOpacity(opacity)
+end
+
+-------------------------------------------------------------------------------
+-- Moves a sprite.
+--
+-- @param name          (String) Name of the sprite.
+-- @param relative      (Number) If 1, (x, y) will be assumed to be offsets
+--                               from the current position.
+-- @param x             (Number) X-coordinate or offset.
+-- @param y             (Number) Y-coordinate or offset.
 -- @param ms            (Number) Duration in milliseconds.
 -- @param easing        (String) Type of interpolation. See Tween.ease for all
 --                               possible values.
 -------------------------------------------------------------------------------
-function move_sprite_by(name, ox, oy, ms, easing)
+function move_sprite(name, relative, x, y, ms, easing)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:moveBy(ox, oy, ms, easing)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
-end
-
--------------------------------------------------------------------------------
--- Moves a sprite to a new position.
---
--- @param name          (String) Name of the sprite.
--- @param x             (Number) The new x-position.
--- @param y             (Number) The new y-position.
--- @param ms            (Number) Duration in milliseconds.
--- @param easing        (String) Type of interpolation. See Tween.ease for all
---                               possible values.
--------------------------------------------------------------------------------
-function move_sprite_to(name, x, y, ms, easing)
-    local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:moveTo(x, y, ms, easing)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:move((relative == 1), x, y, ms, easing)
 end
 
 -------------------------------------------------------------------------------
@@ -374,13 +342,10 @@ end
 -- @param scale         (Number) The new scaling in percent.
 -- @param ms            (Number) Duration in milliseconds.
 -------------------------------------------------------------------------------
-function scale_sprite_to(name, scale, ms)
+function scale_sprite(name, scaling, ms)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:scaleTo(scale / 100, ms)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:scale(scaling / 100, ms)
 end
 
 -------------------------------------------------------------------------------
@@ -396,11 +361,8 @@ end
 -------------------------------------------------------------------------------
 function rotate_sprite_by(name, direction, angle, ms)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:rotateBy(direction, angle, ms)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:rotateBy(direction, angle, ms)
 end
 
 -------------------------------------------------------------------------------
@@ -414,11 +376,8 @@ end
 -------------------------------------------------------------------------------
 function rotate_sprite_to(name, direction, angle, ms)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:rotateTo(direction, angle, ms)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:rotateTo(direction, angle, ms)
 end
 
 -------------------------------------------------------------------------------
@@ -432,11 +391,8 @@ end
 -------------------------------------------------------------------------------
 function rotate_sprite_forever(name, direction, ms)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:rotateForever(direction, ms)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:rotateForever(direction, ms)
 end
 
 -------------------------------------------------------------------------------
@@ -446,48 +402,8 @@ end
 -------------------------------------------------------------------------------
 function stop_sprite_rotation(name)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:stopRotation()
-    else
-        error("sprite '"..name.."' does not exist")
-    end
-end
-
--------------------------------------------------------------------------------
--- Gets the sprite color.
---
--- @param name          (String) Name of the sprite.
--- @param var_r         (Number) ID of the variable that will hold the red channel.
--- @param var_g         (Number) ID of the variable that will hold the green channel.
--- @param var_b         (Number) ID of the variable that will hold the blue channel.
--------------------------------------------------------------------------------
-function get_sprite_color(name, var_r, var_g, var_b)
-    local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        local r, g, b = sprite:getColor()
-        game.variables[var_r] = r
-        game.variables[var_g] = g
-        game.variables[var_b] = b
-    else
-        error("sprite '"..name.."' does not exist")
-    end
-end
-
--------------------------------------------------------------------------------
--- Sets the sprite color.
---
--- @param name          (String) Name of the sprite.
--- @param r             (Number) The new red channel of the color.
--- @param g             (Number) The new green channel of the color.
--- @param b             (Number) The new blue channel of the color.
--------------------------------------------------------------------------------
-function set_sprite_color(name, r, g, b)
-    local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setColor(r, g, b)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:stopRotation()
 end
 
 -------------------------------------------------------------------------------
@@ -499,58 +415,21 @@ end
 -- @param b             (Number) The new blue channel of the color.
 -- @param ms            (Number) Duration in milliseconds.
 -------------------------------------------------------------------------------
-function shift_sprite_color_to(name, r, g, b, ms)
+function colorize_sprite(name, r, g, b, ms)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:shiftColorTo(r, g, b, ms)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:colorize(r, g, b, ms)
 end
 
 -------------------------------------------------------------------------------
--- Gets the sprite opacity.
---
--- @param name          (String) Name of the sprite.
--- @param var           (Number) ID of the variable that will hold the opacity.
--------------------------------------------------------------------------------
-function get_sprite_opacity(name, var)
-    local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        local opacity = sprite:getOpacity()
-        game.variables[var] = opacity
-    else
-        error("sprite '"..name.."' does not exist")
-    end
-end
-
--------------------------------------------------------------------------------
--- Sets the sprite opacity.
---
--- @param name          (String) Name of the sprite.
--- @param opacity       (Number) The new opacity.
--------------------------------------------------------------------------------
-function set_sprite_opacity(name, opacity)
-    local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:setOpacity(opacity)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
-end
-
--------------------------------------------------------------------------------
--- Shifts the sprite opacity.
+-- Fades the sprite.
 --
 -- @param name          (String) Name of the sprite.
 -- @param opacity       (Number) The new opacity.
 -- @param ms            (Number) Duration in milliseconds.
 -------------------------------------------------------------------------------
-function shift_sprite_opacity_to(name, opacity, ms)
+function fade_sprite(name, opacity, ms)
     local sprite = SceneManager:getObject(name)
-    if sprite ~= nil then
-        sprite:shiftOpacityTo(opacity, ms)
-    else
-        error("sprite '"..name.."' does not exist")
-    end
+    assert(sprite, "sprite '"..name.."' does not exist")
+    sprite:fade(opacity, ms)
 end
