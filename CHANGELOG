@@ -1,3 +1,12 @@
+Changes between 0.9.0 and 0.8.1
+-------------------------------
+
+  * Optimized screen blending.
+  * Added setter for Battler.name.
+  * Shortened blend mode constants.
+  * Added rpg.get[Item,Skill]Name.
+  * Added rpg.get[Item,Skill]Description.
+
 Changes between 0.8.1 and 0.8.0
 -------------------------------
 
