@@ -79,6 +79,46 @@ namespace rpgss {
         namespace game_module {
 
             /**********************************************************
+             *                         RPG
+             **********************************************************/
+
+            //---------------------------------------------------------
+            int rpg_getItemName(lua_State* L)
+            {
+                int id = luaL_checkint(L, 1);
+                luaL_argcheck(L, id >= 1, 1, "invalid id");
+                lua_pushstring(L, RPG::getItemName(id).c_str());
+                return 1;
+            }
+
+            //---------------------------------------------------------
+            int rpg_getItemDescription(lua_State* L)
+            {
+                int id = luaL_checkint(L, 1);
+                luaL_argcheck(L, id >= 1, 1, "invalid id");
+                lua_pushstring(L, RPG::getItemDescription(id).c_str());
+                return 1;
+            }
+
+            //---------------------------------------------------------
+            int rpg_getSkillName(lua_State* L)
+            {
+                int id = luaL_checkint(L, 1);
+                luaL_argcheck(L, id >= 1, 1, "invalid id");
+                lua_pushstring(L, RPG::getSkillName(id).c_str());
+                return 1;
+            }
+
+            //---------------------------------------------------------
+            int rpg_getSkillDescription(lua_State* L)
+            {
+                int id = luaL_checkint(L, 1);
+                luaL_argcheck(L, id >= 1, 1, "invalid id");
+                lua_pushstring(L, RPG::getSkillDescription(id).c_str());
+                return 1;
+            }
+
+            /**********************************************************
              *                         SYSTEM
              **********************************************************/
 
@@ -1557,6 +1597,10 @@ namespace rpgss {
                 luabridge::getGlobalNamespace(L)
 
                     .beginNamespace("rpg")
+                        .addCFunction("getItemName",            &rpg_getItemName)
+                        .addCFunction("getItemDescription",     &rpg_getItemDescription)
+                        .addCFunction("getSkillName",           &rpg_getSkillName)
+                        .addCFunction("getSkillDescription",    &rpg_getSkillDescription)
 
                         .beginClass<CharacterWrapper>("Character")
                             .addProperty("id",                      &CharacterWrapper::get_id)
